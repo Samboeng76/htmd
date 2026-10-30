@@ -85,7 +85,7 @@ HTML node to examine the current context to be correctly translated.
   context; they begin a (new) block context.
 * Thematic breaks (`<hr>`) must occur in a block context to be translated to
   CommonMark. They have no content.
-* Leaf blocks, which are headings (`<h1>`-`<h6>`), paragraphs (`<p>`), and
+* Leaf blocks, which are headings (`<h1>`\-`<h6>`), paragraphs (`<p>`), and
   tables (`<table>`, `<thead>`, `<tbody>`, `<tr>`), can only be translated as
   CommonMark/GFM when they appear in a block context. Headings, paragraphs, and
   table cells (`<td>`/`<th>`) begin an inline context.
@@ -732,125 +732,119 @@ single newline as a space, and math mode ignores the space which replaces a
 comment, so only a comment in text mode renders differently (see step 1).
 
 ### Footnotes
-----------------------------------
+
+---
+
+CommonMark does not define footnote syntax. Both
+[pulldown-cmark](https://pulldown-cmark.github.io/pulldown-cmark/specs/footnotes.html)
+and
+[GitHub](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#footnotes)
+accept this Markdown:
+
+```markdown
+a statement[^1]
+
+[^1]: this is true
+```
+
+The
+[pulldown-cmark footnotes spec](https://pulldown-cmark.github.io/pulldown-cmark/specs/footnotes.html)
+shows this HTML for that Markdown:
+
+```html
+<p>a statement<sup class="footnote-reference"><a href="#1">1</a></sup></p>
+<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
+<p>this is true</p>
+</div>
+```
+
+The [cmark-gfm renderer example](https://github.com/github/cmark-gfm/issues/316)
+shows GitHub's different HTML for the same Markdown:
+
+```html
+<p>a statement<sup class="footnote-ref"><a href="#fn-1" id="fnref-1" data-footnote-ref>1</a></sup></p>
+<section class="footnotes" data-footnotes>
+<ol>
+<li id="fn-1">
+<p>this is true <a href="#fnref-1" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="1" aria-label="Back to reference 1">↩</a></p>
+</li>
+</ol>
+</section>
+```
+
+pulldown-cmark emits the definition at its source position, while GitHub
+[renders footnotes at the bottom](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#footnotes)
+regardless of where their definitions appear in the Markdown. The conversion
+below concerns pulldown-cmark's HTML output; GitHub's HTML illustrates the
+difference but is not an input pattern to support. Other renderers, such as
+[Pandoc](https://pandoc.org/), are outside this scope.
 
 <strong>Scope and identification:</strong>
 
-* This covers longer footnotes linked to later note targets. Short `title`
-  annotations, side notes, and figure or table notes are out of scope.
+* This covers footnote references and definitions in pulldown-cmark’s HTML
+  output. Short `title` annotations, side notes, and figure or table notes are
+  out of scope.
 * Because the converter receives no page URL, treat only same-document links as
   same-page candidates: the `href` must be `#` followed by a nonempty fragment.
   Do not infer same-page status from relative or absolute URLs. If the document
   has a `<base href>`, do not classify its fragment links; without the page URL
   the converter cannot determine whether the base points to the current page.
-* Match the fragment to exactly one target `id` in the parsed document. Compare
-  the literal fragment first, then its UTF-8 percent-decoded value, following
-  HTML fragment matching. The target must occur later in parsed DOM order.
-* For the cue checks below:
-  * A reference wrapper is an ancestor element of the in-text `<a>` that
-    contains no non-whitespace text or element descendant other than the `<a>`
-    and its descendants.
-  * A note-entry block is the target itself when it is a `<li>`, the nearest
-    containing `<li>` when the target is a `<p>` inside one, and otherwise the
-    target `<p>` itself.
-  * A note container is any ancestor of the note-entry block whose tag is
-    `<ol>`, `<ul>`, `<section>`, or `<div>`.
-* Classify the link as a footnote when it has either one strong cue or three
-  supporting cues. Each numbered supporting cue counts at most once per link,
-  even when multiple elements satisfy it:
-  * Strong:
-    1. A link inside the target or its note-entry block points back to an ID on
-       the in-text `<a>` or its immediate inline parent. That ID must occur on
-       exactly one element in the document. Do not use an ID from a more distant
-       ancestor.
-  * Supporting:
-    1. The marker text is the in-text `<a>`'s descendant text nodes concatenated
-       in DOM order, with ASCII whitespace runs collapsed to one space and
-       leading and trailing whitespace removed. It qualifies if it is one or
-       more ASCII digits, optionally enclosed in matching square brackets, or
-       exactly one of `*`, `**`, `†`, `‡`, `§`, or `¶`. Ignore CSS visibility,
-       generated content, `aria-label`, and image `alt` text when reading it.
-    2. An HTML `class` token on the in-text `<a>`, any reference wrapper, the
-       target, its note-entry block, or a note container contains the substring
-       `footnote`, using ASCII case-insensitive matching. Split class attributes
-       on ASCII whitespace; examples include `footnote`, `footnote-ref`,
-       `footnote-reference`, `footnotes`, and `footnote-item`.
-    3. The target ID starts with `fn`, `footnote`, or `cite_note`, or the ID on
-       the in-text `<a>` or a reference wrapper starts with `fnref`,
-       `footnote-ref`, or `cite_ref`. Match prefixes using ASCII
-       case-insensitive comparison; for example, `FN-1` and `cite_note42` match,
-       while `section-fn1` does not.
-    4. The target belongs to a cluster of at least two distinct targets that are
-       direct children of the same `<ol>` or `<ul>` (as `<li>` elements), or the
-       same `<section>` (as `<p>` or `<li>` elements). Each target must have at
-       least one earlier same-document fragment link that resolves uniquely to
-       it. A link to any target in that cluster gets one cluster cue.
-    5. The in-text `<a>` has a `<sup>` ancestor. Count this cue once even if
-       `<sup>` elements are nested.
-* Classify each link independently using the cues above. A cue on one link does
-  not classify other links merely because they point to the same target.
+* Match the fragment to exactly one unique `id` on a `<div
+  class="footnote-definition">` in the parsed document. Compare the literal
+  fragment first, then its UTF-8 percent-decoded value, following HTML fragment
+  matching.
+* A pulldown-cmark footnote candidate has a `<sup>` with the class token
+  `footnote-reference` containing `<a href="#ID">N</a>`, where N is a decimal
+  display number. Its unique target is a `<div class="footnote-definition"
+  id="ID">`. The definition normally begins with `<sup
+  class="footnote-definition-label">N</sup>`. The displayed numbers must agree
+  when the definition label is present; the ID need not be numeric.
+* Classify each reference independently. Another link to the same ID is not a
+  footnote reference unless it has this reference structure.
 * Before extracting a target, account for every same-document link that resolves
-  to it. Excluding recognized backlinks that will be removed with the note, each
-  such link must either be classified as a footnote reference and rewritten, or
-  the target must remain in place so the link still resolves.
+  to it. Each link must be classified as a footnote reference and rewritten, or
+  the definition must remain in place so the link still resolves.
 * Leave unmatched or ambiguous links as ordinary links.
-* Convert a target only when its `id` is on a `<p>` or `<li>`; that element is
-  the note unit. Leave inline targets and targets on other elements in HTML.
-* If a note unit contains another classified target, leave all affected targets
-  and references in HTML.
+* The matched definition `<div>` is the note unit. If it contains another
+  identified definition, conversion fails.
 
 <strong>Markdown Translation:</strong>
 
 CommonMark itself does not define footnote syntax. Translation will use
-[GitHub's documented Markdown footnote syntax](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#footnotes).
+[Pulldown Cmark's documented Markdown footnote syntax](https://pulldown-cmark.github.io/pulldown-cmark/specs/footnotes.html).
+Rendering the generated footnotes requires
+`pulldown_cmark::Options::ENABLE_FOOTNOTES`. This is a setting for the Markdown
+parser consuming htmd’s output, not an htmd conversion option.
 
-These rules depend on translation mode:
-
-* In `TranslationMode::Pure`, convert eligible notes to GitHub Markdown
-  footnotes. This adds a GitHub-specific extension to Pure output; the result is
-  not strict CommonMark.
-
-* In `TranslationMode::Faithful`, do not apply this footnote rewrite. Leave
-  references and targets in their original positions and process them with the
-  existing element handlers, including any HTML preservation those handlers
-  require.
-
-* After all other conversion checks pass, assign convertible targets sequential
-  decimal labels starting at `1`, ordered by their first in-text reference. Use
-  each label for all references to that target and its definition.
-
-* Replace each classified in-text reference at its original position with
-  `[^label]`. Remove the source `<a>` and its displayed contents, including its
-  `href` and other attributes. Also remove each enclosing inline wrapper whose
-  only non-whitespace content is that reference, such as `<sup>`, and discard
-  its attributes. Preserve surrounding text and punctuation. If an enclosing
-  wrapper contains other content, keep it and replace only the link.
-
-* Emit one definition per target at the end of the Markdown, separated from
-  preceding content by a blank line so the definitions begin a new Markdown
-  block. Translate the note unit's contents with the normal element handlers,
-  excluding recognized backlinks and the source list marker.
-
-* Convert a note only when its translated content fits in a single paragraph.
-  Otherwise, keep its source content and references in HTML.
-
-* Treat conversion as all-or-nothing for a target: if any check fails, do not
-  emit a definition or remove source content for that target. In
-  `TranslationMode::Pure`, preserve the original HTML for every classified
-  reference subtree (the `<a>` and its enclosing inline wrappers) and the note
-  target, including their attributes and contents. Bypass normal Pure handlers
-  for those subtrees, and translate unrelated content normally.
-
-* If an unconvertible target is on a `<li>`, preserve the containing list as
-  original HTML, keep every reference to targets in that list in HTML, and do
-  not extract any notes from that list. Apply the same fallback to overlapping
-  target groups, such as when one note contains another.
-
-* For a successfully converted note, remove the selected note unit from its
-  original position. If its containing `<li>` is then empty apart from
-  whitespace, remove it; remove its parent list only if no items remain. Keep
-  other ancestors and content. If removing an `<li>` leaves an ordered list with
-  items, renumber the remaining items consecutively in their new order, honoring
-  the list's `start` value.
-
-* Leave unmatched or ambiguous links as ordinary links.
+* Plan all identified notes together. Convert them only if every note passes
+  the checks below and rendering the complete Markdown with footnotes enabled
+  preserves every displayed number. If any check fails, in
+  `TranslationMode::Faithful` retain every identified reference and definition
+  as HTML in place, with their attributes and IDs. In
+  `TranslationMode::Pure`, process them with the normal Pure handlers; footnote
+  structure and fragment links may be lost. Translate unrelated content
+  normally.
+* Convert a definition and all references to it as one unit. Use one unique
+  Markdown label for the definition and every `[^label]` reference to it. The
+  HTML display number can differ from the definition ID.
+* Replace each accepted reference `<sup>` at its original position with
+  `[^label]`. Keep adjacent text and punctuation. Translate only the content
+  inside the matched definition `<div>`; its display-label `<sup>` is omitted.
+  Blocks adjacent to that `<div>` remain ordinary document content.
+* Emit the definition at the original block position. Put the first paragraph
+  after `[^label]:`. Otherwise, put `[^label]:` on its own line and start the
+  first block on the next line, indented four spaces. Indent subsequent
+  paragraphs and blocks four spaces relative to the definition marker, in
+  addition to any containing list or blockquote prefix. Preserve blank lines
+  between the note’s blocks. Conversion fails if the following sibling would
+  be parsed inside the definition.
+* In `TranslationMode::Faithful`, convert only when the reference, definition,
+  and display label have the expected pulldown-cmark structure and their
+  structural elements have no extra attributes. Use the definition's original
+  ID as the Markdown label; conversion fails if the rendered definition ID or
+  any reference `href` differs from the original. Apply the usual Faithful
+  rules to the note content; conversion fails if any part cannot round-trip.
+* In `TranslationMode::Pure`, ignore extra attributes on the consumed footnote
+  elements and tolerate a missing display label or wrappers with no other
+  content when the same unique reference and definition remain identifiable. Do
+  not consume unrelated content or leave another link to the removed ID.
