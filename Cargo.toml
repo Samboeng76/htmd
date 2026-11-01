@@ -15,9 +15,9 @@ readme = "README.md"
 html5ever = "0.39"
 markup5ever_rcdom = "0.39"
 phf = { version = "0.14", features = ["macros"] }
-pulldown-cmark = "0.13.4"
 
 [dev-dependencies]
+pulldown-cmark = "0.13.4"
 html5ever = "0.39"
 markup5ever_rcdom = "0.39"
 indoc = "2.0.6"

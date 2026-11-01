@@ -169,13 +169,12 @@ impl HtmlToMarkdown {
     /// Convert a DOM tree to Markdown. For convenience, `Node` is re-exported;
     /// simply `use htmd::Node;` to access this type.
     pub fn tree_to_markdown(&self, tree: &Rc<Node>) -> String {
-        if let Some(plan) = FootnotePlan::build(tree, self.handlers.options.translation_mode) {
-            let content = with_plan(plan.clone(), || self.render_tree(tree));
-            if plan.validate(&content) {
-                return content;
-            }
+        // Pure footnotes are recognized as their elements are walked.
+        if self.handlers.options.translation_mode == options::TranslationMode::Pure {
+            return self.render_tree(tree);
         }
-        with_plan(FootnotePlan::default(), || self.render_tree(tree))
+        let plan = FootnotePlan::build(tree, &self.handlers.options);
+        with_plan(plan, || self.render_tree(tree))
     }
 
     fn render_tree(&self, tree: &Rc<Node>) -> String {

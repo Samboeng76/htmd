@@ -779,36 +779,23 @@ below concerns pulldown-cmark's HTML output; GitHub's HTML illustrates the
 difference but is not an input pattern to support. Other renderers, such as
 [Pandoc](https://pandoc.org/), are outside this scope.
 
-<strong>Scope and identification:</strong>
+#### Scope and identification
 
 * This covers footnote references and definitions in pulldown-cmark’s HTML
   output. Short `title` annotations, side notes, and figure or table notes are
   out of scope.
-* Because the converter receives no page URL, treat only same-document links as
-  same-page candidates: the `href` must be `#` followed by a nonempty fragment.
-  Do not infer same-page status from relative or absolute URLs. If the document
-  has a `<base href>`, do not classify its fragment links; without the page URL
-  the converter cannot determine whether the base points to the current page.
-* Match the fragment to exactly one unique `id` on a `<div
-  class="footnote-definition">` in the parsed document. Compare the literal
-  fragment first, then its UTF-8 percent-decoded value, following HTML fragment
-  matching.
-* A pulldown-cmark footnote candidate has a `<sup>` with the class token
-  `footnote-reference` containing `<a href="#ID">N</a>`, where N is a decimal
-  display number. Its unique target is a `<div class="footnote-definition"
-  id="ID">`. The definition normally begins with `<sup
-  class="footnote-definition-label">N</sup>`. The displayed numbers must agree
-  when the definition label is present; the ID need not be numeric.
-* Classify each reference independently. Another link to the same ID is not a
-  footnote reference unless it has this reference structure.
-* Before extracting a target, account for every same-document link that resolves
-  to it. Each link must be classified as a footnote reference and rewritten, or
-  the definition must remain in place so the link still resolves.
-* Leave unmatched or ambiguous links as ordinary links.
-* The matched definition `<div>` is the note unit. If it contains another
-  identified definition, conversion fails.
+* In the forms below, `ID` is 1–999 UTF-8 bytes with no whitespace, control
+  characters, `[`, `]`, `\`, or `|`. It need not be numeric. `N` is a positive
+  decimal display number.
+* In Faithful mode, index definition candidates by their literal `ID`. Convert
+  a note only when exactly one definition has that ID and at least one reference
+  with the exact `href="#ID"` points to it. Use the direct `<sup>` and `<a>` forms
+  below; do not percent-decode fragments or resolve other URLs to find a match.
+  This is an ID lookup, not a check of every link in the document. Other links
+  remain ordinary links. Pure mode may recognize references and definitions
+  independently.
 
-<strong>Markdown Translation:</strong>
+#### Markdown translation
 
 CommonMark itself does not define footnote syntax. Translation will use
 [Pulldown Cmark's documented Markdown footnote syntax](https://pulldown-cmark.github.io/pulldown-cmark/specs/footnotes.html).
@@ -816,35 +803,88 @@ Rendering the generated footnotes requires
 `pulldown_cmark::Options::ENABLE_FOOTNOTES`. This is a setting for the Markdown
 parser consuming htmd’s output, not an htmd conversion option.
 
-* Plan all identified notes together. Convert them only if every note passes
-  the checks below and rendering the complete Markdown with footnotes enabled
-  preserves every displayed number. If any check fails, in
-  `TranslationMode::Faithful` retain every identified reference and definition
-  as HTML in place, with their attributes and IDs. In
-  `TranslationMode::Pure`, process them with the normal Pure handlers; footnote
-  structure and fragment links may be lost. Translate unrelated content
-  normally.
-* Convert a definition and all references to it as one unit. Use one unique
-  Markdown label for the definition and every `[^label]` reference to it. The
-  HTML display number can differ from the definition ID.
-* Replace each accepted reference `<sup>` at its original position with
-  `[^label]`. Keep adjacent text and punctuation. Translate only the content
-  inside the matched definition `<div>`; its display-label `<sup>` is omitted.
-  Blocks adjacent to that `<div>` remain ordinary document content.
-* Emit the definition at the original block position. Put the first paragraph
-  after `[^label]:`. Otherwise, put `[^label]:` on its own line and start the
-  first block on the next line, indented four spaces. Indent subsequent
-  paragraphs and blocks four spaces relative to the definition marker, in
-  addition to any containing list or blockquote prefix. Preserve blank lines
-  between the note’s blocks. Conversion fails if the following sibling would
-  be parsed inside the definition.
-* In `TranslationMode::Faithful`, convert only when the reference, definition,
-  and display label have the expected pulldown-cmark structure and their
-  structural elements have no extra attributes. Use the definition's original
-  ID as the Markdown label; conversion fails if the rendered definition ID or
-  any reference `href` differs from the original. Apply the usual Faithful
-  rules to the note content; conversion fails if any part cannot round-trip.
-* In `TranslationMode::Pure`, ignore extra attributes on the consumed footnote
-  elements and tolerate a missing display label or wrappers with no other
-  content when the same unique reference and definition remain identifiable. Do
-  not consume unrelated content or leave another link to the removed ID.
+##### Footnote definition
+
+For example, this complete definition has `ID = note-1` and `N = 2`:
+
+```html
+<div class="footnote-definition" id="note-1"><sup class="footnote-definition-label">2</sup>
+<p>First paragraph.</p>
+<ul><li>Another point.</li></ul>
+</div>
+```
+
+Translate it at its original block position to:
+
+```markdown
+[^note-1]: First paragraph.
+
+    * Another point.
+```
+
+Accept a `<div class="footnote-definition" id="ID">` with a leading
+`<sup class="footnote-definition-label">N</sup>` and translate its remaining content
+as the definition body. The body may contain any CommonMark block element,
+including paragraphs, lists, blockquotes, headings, and code blocks. Omit the
+display-label `<sup>`; `N` does not appear in the Markdown. Put a first paragraph
+after `[^ID]:`. Otherwise, put `[^ID]:` on its own line and start the first block
+on the next line, indented four spaces. Indent subsequent blocks four spaces
+relative to the marker, in addition to any containing list or blockquote prefix,
+and preserve blank lines between blocks. Blocks adjacent to the `<div>` remain
+ordinary document content. Conversion fails if the following sibling would be
+parsed inside the definition. In Faithful mode, keep the note as HTML when an
+empty paragraph or blockquote in its body would disappear during translation.
+
+##### Footnote reference
+
+For the same `ID` and `N`, this complete reference:
+
+```html
+<sup class="footnote-reference"><a href="#note-1">2</a></sup>
+```
+
+translates at its original inline position to:
+
+```markdown
+[^note-1]
+```
+
+Accept a `<sup class="footnote-reference">` containing only an
+`<a href="#ID">N</a>`. The reference contains no block content. Keep adjacent text
+and punctuation. Escape an immediately following colon as `\:` so a reference
+at the start of a line cannot be parsed as a definition. `N` does not appear in
+the Markdown.
+
+In `TranslationMode::Faithful`, convert a matched note only when its structural
+elements have the shown form and no extra attributes, and every matched
+reference's `N` agrees with the definition's `N`. Use the original ID as the
+Markdown label. Apply the usual Faithful rules to definition content. If a
+reference or definition fails these local checks, retain that note's references
+and definition as HTML in place. This approach does not render the generated
+Markdown back to HTML for whole-document validation. In `TranslationMode::Pure`,
+ignore extra attributes on consumed footnote elements and tolerate a missing
+display label or wrappers with no other content when the candidate remains
+identifiable. Process a failed candidate with the normal Pure handlers without
+consuming unrelated content.
+
+#### Limits of independent translation
+
+Independent translation in Pure mode has these limits. Faithful mode checks
+literal IDs and display numbers but does not validate footnote relationships
+across the rendered document. Consequently:
+
+* A reference without a definition renders as literal `[^ID]`; a definition
+  without a reference has no footnote link to it.
+* pulldown-cmark assigns display numbers in reference order, so `N` may change.
+  Duplicate or case-equivalent IDs may also collide as Markdown labels.
+* Other links to an ID, percent-encoded fragments, duplicate HTML IDs, and a
+  `<base href>` are not checked; fragment navigation may change.
+
+The numbering and fragment-navigation limits also apply in Faithful mode. Its
+literal ID lookup avoids converting an unmatched reference, but does not check
+relationships with other elements.
+
+Faithful mode plans matched notes before walking the document. If a containing
+element is later emitted as raw HTML, footnote nodes inside it remain in that
+HTML while matched nodes outside it may become Markdown. This can leave a
+Markdown reference without a Markdown definition, or the reverse.

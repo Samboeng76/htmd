@@ -1,8 +1,7 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-use html5ever::{Attribute, tendril::TendrilSink};
-use markup5ever_rcdom::{Node, NodeData, RcDom};
-use pulldown_cmark::{Event, Options as MarkdownOptions, Parser, html::push_html};
+use html5ever::Attribute;
+use markup5ever_rcdom::{Node, NodeData};
 
 use crate::{
     Context, Element,
@@ -10,7 +9,7 @@ use crate::{
         HandlerResult, Handlers,
         element_util::{serialize_element, serialize_inline_subtree},
     },
-    options::TranslationMode,
+    options::{CodeBlockStyle, Options, TranslationMode},
     util::{
         node::{get_node_tag_name, get_parent_node},
         text::{frame_as_block, indent_text_except_first_line},
@@ -26,122 +25,21 @@ enum Role {
     },
 }
 
-/// One document's footnotes, accepted or rejected as a group.
-#[derive(Clone, Default)]
+/// Faithful footnote elements to translate during one document walk.
+#[derive(Default)]
 pub(crate) struct FootnotePlan {
     roles: HashMap<usize, Role>,
-    notes: Vec<Note>,
-    faithful: bool,
 }
 
-#[derive(Clone)]
-struct Note {
-    id: String,
-    number: String,
-    reference_count: usize,
-    source: Rc<Node>,
-    source_label: Option<usize>,
+struct ReferenceCandidate {
+    node_key: usize,
+    number: Option<String>,
 }
 
 #[derive(Default)]
-struct TargetLinks {
-    references: Vec<(usize, String)>,
-    has_ordinary_link: bool,
-}
-
-#[derive(PartialEq, Eq)]
-enum CanonicalNode {
-    Element(String, Vec<(String, String)>, Vec<CanonicalNode>),
-    Text(String),
-    Comment(String),
-}
-
-fn canonical_children(
-    parent: &Node,
-    omit: Option<usize>,
-    skip_blank_text: bool,
-) -> Vec<CanonicalNode> {
-    parent
-        .children
-        .borrow()
-        .iter()
-        .filter_map(|child| {
-            if omit == Some(node_key(child)) {
-                return None;
-            }
-            match &child.data {
-                NodeData::Text { contents } => {
-                    let value = contents.borrow();
-                    if skip_blank_text && value.trim().is_empty() {
-                        return None;
-                    }
-                    let mut normalized = String::new();
-                    let mut previous_space = false;
-                    for ch in value.chars() {
-                        if ch.is_whitespace() {
-                            if !previous_space {
-                                normalized.push(' ');
-                            }
-                            previous_space = true;
-                        } else {
-                            normalized.push(ch);
-                            previous_space = false;
-                        }
-                    }
-                    Some(CanonicalNode::Text(normalized))
-                }
-                NodeData::Comment { contents } => {
-                    Some(CanonicalNode::Comment(contents.to_string()))
-                }
-                NodeData::Element { name, attrs, .. } => {
-                    let mut attributes: Vec<_> = attrs
-                        .borrow()
-                        .iter()
-                        .map(|attr| (attr.name.local.to_string(), attr.value.to_string()))
-                        .collect();
-                    attributes.sort();
-                    Some(CanonicalNode::Element(
-                        name.local.to_string(),
-                        attributes,
-                        canonical_children(
-                            child,
-                            None,
-                            matches!(
-                                name.local.as_ref(),
-                                "ul" | "ol"
-                                    | "li"
-                                    | "blockquote"
-                                    | "div"
-                                    | "table"
-                                    | "tbody"
-                                    | "thead"
-                                    | "tr"
-                            ),
-                        ),
-                    ))
-                }
-                _ => None,
-            }
-        })
-        .collect()
-}
-
-fn body_text(parent: &Node, omit: Option<usize>) -> String {
-    fn collect(parent: &Node, omit: Option<usize>, output: &mut String) {
-        for child in parent.children.borrow().iter() {
-            if omit == Some(node_key(child)) {
-                continue;
-            }
-            if let NodeData::Text { contents } = &child.data {
-                output.push_str(&contents.borrow());
-            } else {
-                collect(child, None, output);
-            }
-        }
-    }
-    let mut content = String::new();
-    collect(parent, omit, &mut content);
-    content.split_whitespace().collect::<Vec<_>>().join(" ")
+struct DefinitionInfo {
+    label_node: Option<usize>,
+    number: Option<String>,
 }
 
 thread_local! {
@@ -178,6 +76,17 @@ fn exact_attrs(attrs: &[Attribute], expected: &[&str]) -> bool {
             .all(|name| attrs.iter().any(|attr| attr.name.local.as_ref() == *name))
 }
 
+fn exact_class(attrs: &[Attribute], class: &str, expected: &[&str]) -> bool {
+    exact_attrs(attrs, expected) && attribute(attrs, "class") == Some(class)
+}
+
+fn valid_id(id: &str) -> bool {
+    (1..=999).contains(&id.len())
+        && !id
+            .chars()
+            .any(|ch| ch.is_whitespace() || ch.is_control() || matches!(ch, '[' | ']' | '\\' | '|'))
+}
+
 fn text(node: &Node) -> Option<String> {
     let children = node.children.borrow();
     if children.len() != 1 {
@@ -190,7 +99,11 @@ fn text(node: &Node) -> Option<String> {
 }
 
 fn decimal(node: &Node) -> Option<String> {
-    text(node).filter(|value| !value.is_empty() && value.bytes().all(|byte| byte.is_ascii_digit()))
+    text(node).filter(|value| {
+        !value.is_empty()
+            && value.bytes().all(|byte| byte.is_ascii_digit())
+            && value.bytes().any(|byte| byte != b'0')
+    })
 }
 
 fn descendants(node: &Rc<Node>, nodes: &mut Vec<Rc<Node>>) {
@@ -198,41 +111,6 @@ fn descendants(node: &Rc<Node>, nodes: &mut Vec<Rc<Node>>) {
     for child in node.children.borrow().iter() {
         descendants(child, nodes);
     }
-}
-
-fn decode_fragment(fragment: &str) -> Option<String> {
-    let bytes = fragment.as_bytes();
-    let mut decoded = Vec::with_capacity(bytes.len());
-    let mut index = 0;
-    while index < bytes.len() {
-        if bytes[index] == b'%' {
-            let high = bytes.get(index + 1)?.to_ascii_uppercase();
-            let low = bytes.get(index + 2)?.to_ascii_uppercase();
-            let hex = |byte: u8| match byte {
-                b'0'..=b'9' => Some(byte - b'0'),
-                b'A'..=b'F' => Some(byte - b'A' + 10),
-                _ => None,
-            };
-            decoded.push(hex(high)? * 16 + hex(low)?);
-            index += 3;
-        } else {
-            decoded.push(bytes[index]);
-            index += 1;
-        }
-    }
-    String::from_utf8(decoded).ok()
-}
-
-fn target_id<'a>(href: &str, ids: &'a HashMap<String, usize>) -> Option<&'a str> {
-    let fragment = href
-        .strip_prefix('#')
-        .filter(|fragment| !fragment.is_empty())?;
-    if let Some((id, count)) = ids.get_key_value(fragment) {
-        return (*count == 1).then_some(id.as_str());
-    }
-    let decoded = decode_fragment(fragment)?;
-    ids.get_key_value(&decoded)
-        .and_then(|(id, count)| (*count == 1).then_some(id.as_str()))
 }
 
 fn only_element_child(parent: &Rc<Node>, allow_blank_text: bool) -> Option<Rc<Node>> {
@@ -262,349 +140,234 @@ fn reference_anchor(sup: &Rc<Node>, pure: bool) -> Option<Rc<Node>> {
     }
 }
 
-fn definition_label(definition: &Rc<Node>, pure: bool) -> Option<(Rc<Node>, usize)> {
-    let first = (*definition
+// Include malformed references so Faithful mode can reject their note.
+fn reference_ids(sup: &Rc<Node>) -> Vec<String> {
+    let mut nodes = Vec::new();
+    descendants(sup, &mut nodes);
+    nodes
+        .into_iter()
+        .filter(|node| get_node_tag_name(node) == Some("a"))
+        .filter_map(|node| {
+            let attrs = attributes(&node)?;
+            let id = attribute(&attrs, "href")?.strip_prefix('#')?;
+            valid_id(id).then(|| id.to_owned())
+        })
+        .collect()
+}
+
+fn reference_data(sup: &Rc<Node>, pure: bool) -> Option<(String, String)> {
+    let sup_attrs = attributes(sup)?;
+    if !pure && !exact_class(&sup_attrs, "footnote-reference", &["class"]) {
+        return None;
+    }
+    let anchor = reference_anchor(sup, pure)?;
+    let anchor_attrs = attributes(&anchor)?;
+    if !pure && !exact_attrs(&anchor_attrs, &["href"]) {
+        return None;
+    }
+    let id = attribute(&anchor_attrs, "href")?.strip_prefix('#')?;
+    let number = decimal(&anchor)?;
+    valid_id(id).then(|| (id.to_owned(), number))
+}
+
+fn definition_info(definition: &Rc<Node>, pure: bool) -> Option<DefinitionInfo> {
+    let attrs = attributes(definition)?;
+    if !pure && !exact_class(&attrs, "footnote-definition", &["class", "id"]) {
+        return None;
+    }
+    let first = definition
         .children
         .borrow()
         .iter()
         .find(|child| match &child.data {
             NodeData::Text { contents } => !contents.borrow().trim().is_empty(),
             _ => true,
-        })?)
-    .clone();
-    let omit = node_key(&first);
-    let mut current = first;
+        })
+        .cloned();
+    let Some(mut current) = first else {
+        return pure.then_some(DefinitionInfo::default());
+    };
+    let label_node = node_key(&current);
     loop {
         if get_node_tag_name(&current) == Some("sup")
-            && attributes(&current)
-                .is_some_and(|attrs| class_token(&attrs, "footnote-definition-label"))
+            && let Some(label_attrs) = attributes(&current)
+            && class_token(&label_attrs, "footnote-definition-label")
         {
-            return Some((current, omit));
+            if !pure && !exact_class(&label_attrs, "footnote-definition-label", &["class"]) {
+                return None;
+            }
+            return Some(DefinitionInfo {
+                label_node: Some(label_node),
+                number: Some(decimal(&current)?),
+            });
         }
         if !pure || get_node_tag_name(&current).is_none() {
-            return None;
+            break;
         }
-        current = only_element_child(&current, true)?;
+        let Some(child) = only_element_child(&current, true) else {
+            break;
+        };
+        current = child;
+    }
+    pure.then_some(DefinitionInfo::default())
+}
+
+fn pure_role(element: &Element, options: &Options) -> Option<Role> {
+    match element.tag {
+        "sup" if class_token(element.attrs, "footnote-reference") => {
+            reference_data(element.node, true).map(|(id, _)| Role::Reference(id))
+        }
+        "div"
+            if element.context.is_block() && class_token(element.attrs, "footnote-definition") =>
+        {
+            let id = attribute(element.attrs, "id")?;
+            if !valid_id(id) || following_indented_code(element.node, options) {
+                return None;
+            }
+            let info = definition_info(element.node, true)?;
+            Some(Role::Definition {
+                label: id.to_owned(),
+                label_node: info.label_node,
+            })
+        }
+        _ => None,
     }
 }
 
-fn classify_reference(
-    anchor: &Rc<Node>,
-    href: &str,
-    id: &str,
-    pure: bool,
-) -> Result<Option<(usize, String)>, ()> {
-    let mut parent = get_parent_node(anchor);
-    if pure {
-        while parent
-            .as_ref()
-            .is_some_and(|node| get_node_tag_name(node) != Some("sup"))
+fn has_nested_definition(definition: &Rc<Node>) -> bool {
+    definition.children.borrow().iter().any(|child| {
+        (get_node_tag_name(child) == Some("div")
+            && attributes(child).is_some_and(|attrs| class_token(&attrs, "footnote-definition")))
+            || has_nested_definition(child)
+    })
+}
+
+fn has_empty_translated_block(container: &Rc<Node>) -> bool {
+    container.children.borrow().iter().any(|child| {
+        let tag = get_node_tag_name(child);
+        if matches!(tag, Some("p" | "blockquote"))
+            && child.children.borrow().iter().all(|content| {
+                matches!(&content.data, NodeData::Text { contents } if contents.borrow().trim().is_empty())
+            })
         {
-            parent = parent.as_ref().and_then(get_parent_node);
+            return true;
         }
+        matches!(tag, Some("blockquote" | "ul" | "ol" | "li"))
+            && has_empty_translated_block(child)
+    })
+}
+
+// A following indented code block parses as footnote content.
+fn following_indented_code(definition: &Rc<Node>, options: &Options) -> bool {
+    if options.code_block_style != CodeBlockStyle::Indented {
+        return false;
     }
-    let Some(sup) = parent.filter(|node| get_node_tag_name(node) == Some("sup")) else {
-        return Ok(None);
+    let Some(parent) = get_parent_node(definition) else {
+        return false;
     };
-    let sup_attrs = attributes(&sup).ok_or(())?;
-    if !class_token(&sup_attrs, "footnote-reference") {
-        return Ok(None);
-    }
-    let contained_anchor = reference_anchor(&sup, pure).ok_or(())?;
-    if !Rc::ptr_eq(&contained_anchor, anchor) {
-        return Err(());
-    }
-    let number = decimal(anchor).ok_or(())?;
-    if !pure {
-        let attrs = attributes(anchor).ok_or(())?;
-        if !exact_attrs(&attrs, &["href"])
-            || !exact_attrs(&sup_attrs, &["class"])
-            || attribute(&sup_attrs, "class") != Some("footnote-reference")
-            || href != format!("#{id}")
-        {
-            return Err(());
-        }
-    }
-    Ok(Some((node_key(&sup), number)))
+    let siblings = parent.children.borrow();
+    siblings
+        .iter()
+        .skip_while(|sibling| !Rc::ptr_eq(sibling, definition))
+        .skip(1)
+        .find(|sibling| match &sibling.data {
+            NodeData::Text { contents } => !contents.borrow().trim().is_empty(),
+            _ => true,
+        })
+        .is_some_and(|sibling| get_node_tag_name(sibling) == Some("pre"))
 }
 
 impl FootnotePlan {
-    /// Identify pulldown-cmark footnotes before walking the document.
-    pub(crate) fn build(tree: &Rc<Node>, mode: TranslationMode) -> Option<Self> {
+    /// Identify footnotes by their literal ID before walking the document.
+    pub(crate) fn build(tree: &Rc<Node>, options: &Options) -> Self {
         let mut nodes = Vec::new();
         descendants(tree, &mut nodes);
-        if nodes.iter().any(|node| {
-            get_node_tag_name(node) == Some("base")
-                && attributes(node).is_some_and(|attrs| attribute(&attrs, "href").is_some())
-        }) {
-            return None;
-        }
+        let mut definitions = HashMap::<String, Vec<Rc<Node>>>::new();
+        let mut references = HashMap::<String, Vec<ReferenceCandidate>>::new();
 
-        let mut ids = HashMap::<String, usize>::new();
-        let mut definitions = HashMap::<String, Rc<Node>>::new();
         for node in &nodes {
             let Some(attrs) = attributes(node) else {
                 continue;
             };
-            if let Some(id) = attribute(&attrs, "id") {
-                *ids.entry(id.to_owned()).or_default() += 1;
-                if get_node_tag_name(node) == Some("div")
-                    && class_token(&attrs, "footnote-definition")
-                {
-                    definitions.insert(id.to_owned(), node.clone());
+            match get_node_tag_name(node) {
+                Some("div") if class_token(&attrs, "footnote-definition") => {
+                    if let Some(id) = attribute(&attrs, "id").filter(|id| valid_id(id)) {
+                        definitions
+                            .entry(id.to_owned())
+                            .or_default()
+                            .push(node.clone());
+                    }
                 }
+                Some("sup") if class_token(&attrs, "footnote-reference") => {
+                    let parsed = reference_data(node, false);
+                    for id in reference_ids(node) {
+                        let number = parsed.as_ref().and_then(|(matched_id, number)| {
+                            (matched_id == &id).then(|| number.clone())
+                        });
+                        references.entry(id).or_default().push(ReferenceCandidate {
+                            node_key: node_key(node),
+                            number,
+                        });
+                    }
+                }
+                _ => {}
             }
         }
 
-        let pure = mode == TranslationMode::Pure;
-        let mut links = HashMap::<String, TargetLinks>::new();
-        for node in &nodes {
-            if get_node_tag_name(node) != Some("a") {
-                continue;
-            }
-            let Some(attrs) = attributes(node) else {
+        let mut plan = Self::default();
+        for (id, definitions) in definitions {
+            let Some(references) = references.get(&id).filter(|refs| !refs.is_empty()) else {
                 continue;
             };
-            let Some(href) = attribute(&attrs, "href") else {
-                continue;
-            };
-            let Some(id) = target_id(href, &ids) else {
-                continue;
-            };
-            if !definitions.contains_key(id) {
-                continue;
-            }
-            let links_to_id = links.entry(id.to_owned()).or_default();
-            match classify_reference(node, href, id, pure) {
-                Ok(Some(reference)) => links_to_id.references.push(reference),
-                Ok(None) => links_to_id.has_ordinary_link = true,
-                Err(()) => return None,
-            }
+            plan.add_if_valid(id, &definitions, references, options);
         }
-        if !links.values().any(|target| !target.references.is_empty()) {
-            return None;
-        }
+        plan
+    }
 
-        let mut plan = Self {
-            faithful: !pure,
-            ..Self::default()
+    fn add_if_valid(
+        &mut self,
+        id: String,
+        definitions: &[Rc<Node>],
+        references: &[ReferenceCandidate],
+        options: &Options,
+    ) {
+        let [definition] = definitions else {
+            return;
         };
-        let mut used_labels = HashMap::<String, ()>::new();
-        for node in &nodes {
-            if get_node_tag_name(node) != Some("div") {
-                continue;
-            }
-            let Some(attrs) = attributes(node) else {
-                continue;
-            };
-            let Some(id) = attribute(&attrs, "id") else {
-                continue;
-            };
-            let Some(target) = links
-                .remove(id)
-                .filter(|target| !target.references.is_empty())
-            else {
-                continue;
-            };
-            if target.has_ordinary_link {
-                return None;
-            }
-            let references = target.references;
-            if ids.get(id) != Some(&1) || !class_token(&attrs, "footnote-definition") {
-                return None;
-            }
-            if !pure
-                && (!exact_attrs(&attrs, &["class", "id"])
-                    || attribute(&attrs, "class") != Some("footnote-definition"))
-            {
-                return None;
-            }
-            let number = references[0].1.clone();
-            if references.iter().any(|(_, display)| display != &number) {
-                return None;
-            }
-            let label = definition_label(node, pure);
-            if !pure && label.is_none() {
-                return None;
-            }
-            if let Some((label_node, _)) = &label {
-                let label_attrs = attributes(label_node)?;
-                if !pure
-                    && (!exact_attrs(&label_attrs, &["class"])
-                        || attribute(&label_attrs, "class") != Some("footnote-definition-label"))
-                {
-                    return None;
-                }
-                if decimal(label_node).as_deref() != Some(number.as_str()) {
-                    return None;
-                }
-            }
-            if nodes.iter().any(|other| {
-                !Rc::ptr_eq(other, node)
-                    && get_node_tag_name(other) == Some("div")
-                    && attributes(other)
-                        .is_some_and(|attrs| class_token(&attrs, "footnote-definition"))
-                    && is_descendant_of(other, node)
-            }) {
-                return None;
-            }
-            let markdown_label = if pure {
-                number.to_owned()
-            } else {
-                id.to_owned()
-            };
-            if used_labels.insert(markdown_label.clone(), ()).is_some() {
-                return None;
-            }
-            let reference_count = references.len();
-            plan.roles.insert(
-                node_key(node),
-                Role::Definition {
-                    label: markdown_label.clone(),
-                    label_node: label.as_ref().map(|(_, omit)| *omit),
-                },
-            );
-            for (sup_key, _) in references {
-                plan.roles
-                    .insert(sup_key, Role::Reference(markdown_label.clone()));
-            }
-            plan.notes.push(Note {
-                id: if pure { markdown_label } else { id.to_owned() },
-                number,
-                reference_count,
-                source: node.clone(),
-                source_label: label.as_ref().map(|(_, omit)| *omit),
-            });
+        if has_nested_definition(definition)
+            || has_empty_translated_block(definition)
+            || following_indented_code(definition, options)
+        {
+            return;
         }
-        (!plan.notes.is_empty()).then_some(plan)
-    }
-
-    /// Check the rendered labels, references, and note bodies before committing the plan.
-    pub(crate) fn validate(&self, markdown: &str) -> bool {
-        let mut html = String::new();
-        let mut parsed_references = HashMap::<String, usize>::new();
-        push_html(
-            &mut html,
-            Parser::new_ext(markdown, MarkdownOptions::ENABLE_FOOTNOTES).inspect(|event| {
-                if let Event::FootnoteReference(label) = event {
-                    *parsed_references.entry(label.to_string()).or_default() += 1;
-                }
-            }),
+        let Some(info) = definition_info(definition, false) else {
+            return;
+        };
+        let Some(number) = info.number else {
+            return;
+        };
+        if references
+            .iter()
+            .any(|reference| reference.number.as_deref() != Some(number.as_str()))
+        {
+            return;
+        }
+        self.roles.insert(
+            node_key(definition),
+            Role::Definition {
+                label: id.clone(),
+                label_node: info.label_node,
+            },
         );
-        if self.notes.iter().any(|note| {
-            parsed_references.get(&note.id) != Some(&note.reference_count)
-        }) {
-            return false;
+        for reference in references {
+            self.roles
+                .insert(reference.node_key, Role::Reference(id.clone()));
         }
-        let tree =
-            html5ever::parse_document(RcDom::default(), Default::default()).one(html.as_str());
-        let mut nodes = Vec::new();
-        descendants(&tree.document, &mut nodes);
-        for note in &self.notes {
-            if nodes
-                .iter()
-                .filter(|node| {
-                    attributes(node)
-                        .is_some_and(|attrs| attribute(&attrs, "id") == Some(note.id.as_str()))
-                })
-                .count()
-                != 1
-            {
-                return false;
-            }
-            let definitions: Vec<_> = nodes
-                .iter()
-                .filter(|node| {
-                    get_node_tag_name(node) == Some("div")
-                        && attributes(node).is_some_and(|attrs| {
-                            attribute(&attrs, "id") == Some(note.id.as_str())
-                                && class_token(&attrs, "footnote-definition")
-                        })
-                })
-                .collect();
-            if definitions.len() != 1 {
-                return false;
-            }
-            let definition = definitions[0];
-            let label = definition
-                .children
-                .borrow()
-                .iter()
-                .find(|child| {
-                    get_node_tag_name(child) == Some("sup")
-                        && attributes(child)
-                            .is_some_and(|attrs| class_token(&attrs, "footnote-definition-label"))
-                })
-                .cloned();
-            if label.as_ref().and_then(|node| decimal(node)).as_deref()
-                != Some(note.number.as_str())
-            {
-                return false;
-            }
-            let references: Vec<_> = nodes
-                .iter()
-                .filter(|node| {
-                    get_node_tag_name(node) == Some("sup")
-                        && attributes(node)
-                            .is_some_and(|attrs| class_token(&attrs, "footnote-reference"))
-                        && node.children.borrow().iter().any(|child| {
-                            get_node_tag_name(child) == Some("a")
-                                && attributes(child).is_some_and(|attrs| {
-                                    attribute(&attrs, "href")
-                                        == Some(format!("#{}", note.id).as_str())
-                                })
-                        })
-                })
-                .collect();
-            if references.len() != note.reference_count
-                || references.iter().any(|node| {
-                    node.children
-                        .borrow()
-                        .iter()
-                        .filter(|child| get_node_tag_name(child) == Some("a"))
-                        .any(|child| decimal(child).as_deref() != Some(note.number.as_str()))
-                })
-            {
-                return false;
-            }
-            if self.faithful
-                && canonical_children(&note.source, note.source_label, true)
-                    != canonical_children(definition, label.as_ref().map(node_key), true)
-            {
-                return false;
-            }
-            if !self.faithful
-                && body_text(&note.source, note.source_label)
-                    != body_text(definition, label.as_ref().map(node_key))
-            {
-                return false;
-            }
-        }
-        true
     }
 }
 
-fn is_descendant_of(node: &Rc<Node>, ancestor: &Rc<Node>) -> bool {
-    let mut parent = get_parent_node(node);
-    while let Some(current) = parent {
-        if Rc::ptr_eq(&current, ancestor) {
-            return true;
-        }
-        parent = get_parent_node(&current);
-    }
-    false
-}
-
-struct BorrowedChildrenGuard(Rc<Node>);
-
-impl Drop for BorrowedChildrenGuard {
-    fn drop(&mut self) {
-        // rcdom's Node::drop drains descendants even when another tree owns them.
-        self.0.children.borrow_mut().clear();
-    }
-}
-
-/// Make a conversion plan available to handlers during one document walk.
+/// Make a Faithful conversion plan available during one document walk.
+/// The stack restores an enclosing conversion's plan after a nested conversion.
 pub(crate) fn with_plan<R>(plan: FootnotePlan, convert: impl FnOnce() -> R) -> R {
     struct PlanGuard;
     impl Drop for PlanGuard {
@@ -619,50 +382,92 @@ pub(crate) fn with_plan<R>(plan: FootnotePlan, convert: impl FnOnce() -> R) -> R
     convert()
 }
 
+/// Escape a colon that would turn an emitted footnote reference into a definition.
+pub(crate) fn escape_colon_after_reference(output: &mut String, following: &str) {
+    if !following.starts_with(':') || !output.ends_with(']') {
+        return;
+    }
+    let closing_bracket = output.len() - 1;
+    let suffix = &output.as_bytes()[closing_bracket.saturating_sub(1001)..closing_bracket];
+    let Some(opening_bracket) = suffix.windows(2).rposition(|pair| pair == b"[^") else {
+        return;
+    };
+    let Some(label) = std::str::from_utf8(&suffix[opening_bracket + 2..]).ok() else {
+        return;
+    };
+    if valid_id(label) {
+        output.push('\\');
+    }
+}
+
+fn render_reference(label: &str) -> HandlerResult {
+    format!("[^{label}]").into()
+}
+
+struct BorrowedChildrenGuard(Rc<Node>);
+
+impl Drop for BorrowedChildrenGuard {
+    fn drop(&mut self) {
+        // rcdom's Node::drop drains descendants even when another tree owns them.
+        self.0.children.borrow_mut().clear();
+    }
+}
+
+fn render_definition(
+    handlers: &dyn Handlers,
+    node: &Rc<Node>,
+    label: &str,
+    label_node: Option<usize>,
+) -> HandlerResult {
+    let body = Node::new(NodeData::Document);
+    let _guard = BorrowedChildrenGuard(body.clone());
+    body.children.borrow_mut().extend(
+        node.children
+            .borrow()
+            .iter()
+            .filter(|child| label_node != Some(node_key(child)))
+            .cloned(),
+    );
+    let content = handlers.walk_children_content(&body, Context::BLOCK);
+    let content = content.trim_matches('\n').trim_end();
+    let first_is_paragraph = body
+        .children
+        .borrow()
+        .iter()
+        .find(|child| get_node_tag_name(child).is_some())
+        .is_some_and(|child| get_node_tag_name(child) == Some("p"));
+    let mut definition = format!("[^{label}]:");
+    if !content.is_empty() {
+        let indented = indent_text_except_first_line(content, 4, false);
+        if first_is_paragraph {
+            definition.push(' ');
+        } else {
+            definition.push_str("\n    ");
+        }
+        definition.push_str(&indented);
+    }
+    frame_as_block(&definition).into()
+}
+
 pub(super) fn footnote_handler(
     handlers: &dyn Handlers,
     element: &Element,
 ) -> Option<HandlerResult> {
-    let role = PLANS.with(|plans| {
-        plans
-            .borrow()
-            .last()
-            .and_then(|plan| plan.roles.get(&node_key(element.node)).cloned())
-    });
-    match role {
-        Some(Role::Reference(label)) => Some(format!("[^{label}]").into()),
-        Some(Role::Definition { label, label_node }) if element.context.is_block() => {
-            let body = Node::new(NodeData::Document);
-            let _guard = BorrowedChildrenGuard(body.clone());
-            body.children.borrow_mut().extend(
-                element
-                    .node
-                    .children
-                    .borrow()
-                    .iter()
-                    .filter(|child| label_node != Some(node_key(child)))
-                    .cloned(),
-            );
-            let content = handlers.walk_children_content(&body, Context::BLOCK);
-            let content = content.trim_matches('\n').trim();
-            let first_is_paragraph = body
-                .children
+    let role = if handlers.options().translation_mode == TranslationMode::Pure {
+        pure_role(element, handlers.options())
+    } else {
+        PLANS.with(|plans| {
+            plans
                 .borrow()
-                .iter()
-                .find(|child| get_node_tag_name(child).is_some())
-                .is_some_and(|child| get_node_tag_name(child) == Some("p"));
-            let mut definition = format!("[^{label}]:");
-            if !content.is_empty() {
-                let indented = indent_text_except_first_line(content, 4, false);
-                if first_is_paragraph {
-                    definition.push(' ');
-                } else {
-                    definition.push_str("\n    ");
-                }
-                definition.push_str(&indented);
-            }
-            Some(frame_as_block(&definition).into())
-        }
+                .last()
+                .and_then(|plan| plan.roles.get(&node_key(element.node)).cloned())
+        })
+    };
+    match role {
+        Some(Role::Reference(label)) => Some(render_reference(&label)),
+        Some(Role::Definition { label, label_node }) if element.context.is_block() => Some(
+            render_definition(handlers, element.node, &label, label_node),
+        ),
         _ if element.tag == "sup"
             && handlers.options().translation_mode == TranslationMode::Faithful
             && class_token(element.attrs, "footnote-reference") =>
