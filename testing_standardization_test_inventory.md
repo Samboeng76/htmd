@@ -1,7 +1,7 @@
-Test migration inventory
-========================
+git Test migration inventory
+============================
 
-This is a planning table for all 253 named integration tests in `tests/`. The
+This is a planning table for all 221 named integration tests in `tests/`. The
 `Faithful round trip` column concerns **Faithful-mode** HTML → Markdown → HTML
 checks only. A candidate may need a compact fixture; this table does not claim
 that a new tree comparison has already passed. Keep Pure-mode assertions in
@@ -198,43 +198,6 @@ Integration tests
 | [`test_span_events_dispatched_in_pure_mode`](tests/event_tests.rs#L194)            | No                  | Yes           | No                  |
 | [`test_unhandled_tag_events_dispatched_in_pure_mode`](tests/event_tests.rs#L248)   | No                  | Yes           | No                  |
 | [`test_span_and_unhandled_tag_events_in_faithful_mode`](tests/event_tests.rs#L302) | No                  | N/A           | No                  |
-
-### [tests/footnote\_tests.rs](tests/footnote_tests.rs) (32)
-
-| Test                                                                                                         | Faithful round trip   | Keep Markdown | Existing round trip |
-| ------------------------------------------------------------------------------------------------------------ | --------------------- | ------------- | ------------------- |
-| [`translates_the_pulldown_cmark_example`](tests/footnote_tests.rs#L17)                                       | Configured + expected | Yes           | Faithful            |
-| [`keeps_a_note_as_html_when_an_empty_block_would_disappear`](tests/footnote_tests.rs#L26)                    | Configured + expected | Yes           | Faithful            |
-| [`a_reference_followed_by_a_colon_remains_a_reference`](tests/footnote_tests.rs#L46)                         | Configured + expected | Yes           | Both                |
-| [`a_pure_reference_inside_spans_followed_by_a_colon_remains_a_reference`](tests/footnote_tests.rs#L62)       | No                    | Yes           | Pure only           |
-| [`a_pure_reference_skips_empty_spans_before_a_colon`](tests/footnote_tests.rs#L73)                           | No                    | Yes           | Pure only           |
-| [`pure_mode_escapes_colons_across_transparent_wrappers`](tests/footnote_tests.rs#L90)                        | No                    | Yes           | Pure only           |
-| [`keeps_multiple_references_and_the_definition_in_source_order`](tests/footnote_tests.rs#L109)               | Configured + expected | Yes           | Faithful            |
-| [`keeps_a_note_local_when_another_reference_is_inside_raw_html`](tests/footnote_tests.rs#L119)               | Configured + expected | Yes           | No                  |
-| [`indents_following_paragraphs_inside_the_definition`](tests/footnote_tests.rs#L128)                         | Configured + expected | Yes           | Faithful            |
-| [`leaves_an_ordinary_link_to_the_target_ordinary`](tests/footnote_tests.rs#L138)                             | Configured + expected | Yes           | No                  |
-| [`ignores_unrelated_ids_and_base_href`](tests/footnote_tests.rs#L147)                                        | Configured + expected | Yes           | No                  |
-| [`faithful_mode_rejects_extra_attributes_and_a_changed_fragment`](tests/footnote_tests.rs#L157)              | Configured + expected | Yes           | No                  |
-| [`preserves_a_rejected_reference_inside_a_heading_with_a_multiline_attribute`](tests/footnote_tests.rs#L171) | Configured + expected | Yes           | Faithful            |
-| [`pure_mode_uses_the_id_as_a_label`](tests/footnote_tests.rs#L188)                                           | No                    | Yes           | Pure only           |
-| [`leaves_mismatched_display_numbers_as_html`](tests/footnote_tests.rs#L196)                                  | Configured + expected | Yes           | No                  |
-| [`rejects_only_the_note_that_cannot_convert`](tests/footnote_tests.rs#L207)                                  | Configured + expected | Yes           | No                  |
-| [`rejects_a_definition_nested_inside_another`](tests/footnote_tests.rs#L229)                                 | Configured + expected | Yes           | No                  |
-| [`pure_mode_accepts_empty_wrappers_around_the_structural_elements`](tests/footnote_tests.rs#L237)            | No                    | Yes           | No                  |
-| [`a_full_url_does_not_count_as_a_same_document_link`](tests/footnote_tests.rs#L243)                          | Configured + expected | Yes           | No                  |
-| [`faithful_mode_keeps_a_nonnumeric_id_when_the_display_number_survives`](tests/footnote_tests.rs#L250)       | Configured + expected | Yes           | Faithful            |
-| [`places_a_first_nonparagraph_block_below_the_marker`](tests/footnote_tests.rs#L262)                         | Configured + expected | Yes           | Faithful            |
-| [`checks_display_numbers_per_note_without_reordering_references`](tests/footnote_tests.rs#L272)              | Configured + expected | Yes           | No                  |
-| [`retains_inline_formatting_in_a_note_body`](tests/footnote_tests.rs#L281)                                   | Configured + expected | Yes           | Faithful            |
-| [`does_not_percent_decode_fragments_in_either_mode`](tests/footnote_tests.rs#L289)                           | Configured + expected | Yes           | No                  |
-| [`pure_mode_translates_references_and_definitions_independently`](tests/footnote_tests.rs#L300)              | Yes                   | Yes           | No                  |
-| [`rejects_duplicate_definitions_for_an_id`](tests/footnote_tests.rs#L319)                                    | Configured + expected | Yes           | No                  |
-| [`rejects_invalid_ids_and_zero_display_numbers`](tests/footnote_tests.rs#L334)                               | Configured + expected | Yes           | No                  |
-| [`rejects_mismatched_references_for_one_id`](tests/footnote_tests.rs#L347)                                   | Configured + expected | Yes           | No                  |
-| [`faithful_mode_rejects_extra_attributes_on_each_structural_element`](tests/footnote_tests.rs#L364)          | Configured + expected | Yes           | No                  |
-| [`keeps_a_following_block_outside_the_definition`](tests/footnote_tests.rs#L384)                             | Configured + expected | Yes           | Faithful            |
-| [`keeps_a_first_indented_code_block_inside_the_definition`](tests/footnote_tests.rs#L396)                    | Configured + expected | Yes           | Faithful            |
-| [`rejects_a_definition_before_an_indented_code_block`](tests/footnote_tests.rs#L412)                         | Configured + expected | Yes           | No                  |
 
 ### [tests/link\_tests.rs](tests/link_tests.rs) (26)
 
