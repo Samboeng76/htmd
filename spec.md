@@ -41,20 +41,47 @@ purpose of each migrated test.
 
 ## 2. Migration of existing tests
 
-Inventory the tests by feature and classify each as a preservation case, a
-documented representation difference or loss, or a test of another contract.
-Pilot the format on paragraphs and headings before extending it to links,
-lists, tables, and raw HTML. Inventory both standalone tests and the cases in
-`tests/html/turndown_test_index.html`.
+Review each input and mode case for the behavior it checks, including cases
+grouped inside one test function. Classify it as preservation, a documented
+representation difference or loss, or a test of another contract. The
+[per-test inventory](testing_standardization_test_inventory.md) records proposed
+Faithful treatment, Markdown assertions to retain, and existing round-trip
+coverage. Its `Partial` entries identify cases still lacking a round trip.
+Keep the inventory in its own file, and inventory the individual cases in
+`tests/html/turndown_test_index.html` before migrating them.
 
-Add round-trip assertions where they test preservation. Retain exact Markdown
-assertions for requirements such as heading style, list markers, and escaping;
-a round trip alone cannot distinguish equivalent Markdown spellings. Preserve
-existing Pure-mode and API-specific assertions.
+Select Faithful-mode cases whose claim concerns preserved HTML or an approved
+documented difference. A test function may also contain Pure-mode assertions;
+leave those assertions in place. Do not add a duplicate round trip for an input
+already checked, though an existing check may still need the case format and
+correctness criteria in sections 1 and 3.
 
-Record each existing test's destination and classification. An unexpected
-mismatch needs investigation against the translation specification; migration
-must not silently replace an expected result with current converter output.
+| Case purpose | Selection |
+| --- | --- |
+| Preserve ordinary HTML structure | Add a `Preserved` round trip, using a compact input when formatting whitespace would change the claim. |
+| Check Markdown syntax, escaping, or style options | Keep the exact Markdown assertion; add a round trip only when the case also checks preservation. |
+| Check raw-HTML fallback or an intentional transformation | Keep the Markdown assertion and select `Preserved` or `DocumentedDifference` according to the approved conversion rule. |
+| Check Pure mode, handler events, or Turndown compatibility | Keep the existing assertion; these are not Faithful round-trip candidates. |
+
+Pilot compact Faithful paragraph and heading cases in `basic_tests.rs`,
+including `paragraphs`, `consecutive_blocks`, and `headings`. Preserve the
+original indented fixtures and Markdown checks when adding compact variants.
+Then review simple lists in `list_tests.rs`, paragraph-wrapped links in
+`link_tests.rs`, and raw-HTML fallback such as `faithful_mode_p` in
+`basic_tests.rs`. The main link input in `a_bang_before_a_link_is_escaped`
+already has a round trip; its other Faithful inputs remain partial candidates.
+
+After the base cases, review full documents with `<head>` content and then
+tables, math, and footnotes. Use the case's exact htmd options and matching
+pulldown-cmark extensions. For a selected intentional transformation, record
+its approved rule and expected HTML rather than treating the current output as
+the expectation. For example, flow text `<p>a\nb</p>` becoming `<p>a b</p>`
+changes text, so it requires an approved `DocumentedDifference` of kind `Loss`.
+
+Record each selected case's destination, classification, mode, options, and
+reference HTML. An unexpected mismatch needs investigation against the
+translation specification; migration must not silently replace an expected
+result with current converter output.
 
 ## 3. HTML comparison and correctness criteria
 
