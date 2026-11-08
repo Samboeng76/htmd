@@ -1,15 +1,15 @@
-git Test migration inventory
-============================
+Test migration inventory
+========================
 
-This is a planning table for all 221 named integration tests in `tests/`. The
+This is a planning table for all 227 named integration tests in `tests/`. The
 `Faithful round trip` column concerns **Faithful-mode** HTML → Markdown → HTML
 checks only. A candidate may need a compact fixture; this table does not claim
-that a new tree comparison has already passed. Keep Pure-mode assertions in
+that the exact comparison of section 3 of `spec.md` has already passed. Keep Pure-mode assertions in
 mixed tests.
 
 | Round trip            | Meaning                                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------------------ |
-| Yes                   | Compare the rendered HTML with the input body using the proposed tree rules.                     |
+| Yes                   | Compare the rendered HTML with the input exactly, as section 3 of `spec.md` requires.            |
 | Expected              | Use an explicit expected HTML result for a documented transformation, parser repair, or wrapper. |
 | Configured            | Use the test's htmd options or the matching pulldown-cmark extension.                            |
 | Configured + expected | Both configuration and explicit expected HTML are needed.                                        |
@@ -42,95 +42,101 @@ currently renders.
 Integration tests
 -----------------
 
-### [tests/basic\_tests.rs](tests/basic_tests.rs) (85)
+### [tests/basic\_tests.rs](tests/basic_tests.rs) (91)
 
-| Test                                                                                         | Faithful round trip   | Keep Markdown | Existing round trip                 |
-| -------------------------------------------------------------------------------------------- | --------------------- | ------------- | ----------------------------------- |
-| [`links_with_spaces`](tests/basic_tests.rs#L16)                                              | Expected              | Yes           | No                                  |
-| [`referenced_links_with_title`](tests/basic_tests.rs#L27)                                    | Configured            | Yes           | No                                  |
-| [`consecutive_referenced_links_with_title`](tests/basic_tests.rs#L47)                        | Configured            | Yes           | No                                  |
-| [`images`](tests/basic_tests.rs#L73)                                                         | Expected              | Yes           | No                                  |
-| [`images_with_spaces_in_url`](tests/basic_tests.rs#L87)                                      | Expected              | Yes           | No                                  |
-| [`image_title_stays_outside_an_angle_bracket_destination`](tests/basic_tests.rs#L98)         | No                    | Yes           | No                                  |
-| [`headings`](tests/basic_tests.rs#L111)                                                      | Yes                   | Yes           | No                                  |
-| [`paragraphs`](tests/basic_tests.rs#L128)                                                    | Yes                   | Yes           | No                                  |
-| [`quotes`](tests/basic_tests.rs#L140)                                                        | Expected              | Yes           | No                                  |
-| [`br`](tests/basic_tests.rs#L148)                                                            | Yes                   | Yes           | No                                  |
-| [`hr`](tests/basic_tests.rs#L155)                                                            | Expected              | Yes           | No                                  |
-| [`strong_italic`](tests/basic_tests.rs#L161)                                                 | Expected              | Yes           | No                                  |
-| [`faithful_mode_keeps_adjacent_emphasis_apart`](tests/basic_tests.rs#L178)                   | Yes                   | Yes           | No                                  |
-| [`faithful_mode_keeps_adjacent_code_spans_apart`](tests/basic_tests.rs#L197)                 | Yes                   | Yes           | No                                  |
-| [`faithful_mode_keeps_adjacent_untranslated_elements_apart`](tests/basic_tests.rs#L207)      | Yes                   | Yes           | No                                  |
-| [`pure_mode_merges_adjacent_inline_elements`](tests/basic_tests.rs#L224)                     | No                    | Yes           | No                                  |
-| [`adjacent_math_spans_stay_math`](tests/basic_tests.rs#L236)                                 | Configured            | Yes           | Both                                |
-| [`blank_emphasis_leaves_its_whitespace_behind`](tests/basic_tests.rs#L270)                   | No                    | Yes           | No                                  |
-| [`italic_inside_word`](tests/basic_tests.rs#L281)                                            | Expected              | Yes           | No                                  |
-| [`italic_with_br`](tests/basic_tests.rs#L287)                                                | Expected              | Yes           | No                                  |
-| [`inline_raw_html_escaping`](tests/basic_tests.rs#L296)                                      | Expected              | Yes           | No                                  |
-| [`multiline_raw_html_escaping`](tests/basic_tests.rs#L305)                                   | Expected              | Yes           | No                                  |
-| [`inline_email_autolink_escaping`](tests/basic_tests.rs#L328)                                | Yes                   | Yes           | Faithful                            |
-| [`a_sequence_finished_by_a_sibling_stays_text`](tests/basic_tests.rs#L347)                   | No                    | Yes           | Pure only                           |
-| [`html_escaping`](tests/basic_tests.rs#L383)                                                 | Yes                   | Yes           | No                                  |
-| [`faithful_mode_inline`](tests/basic_tests.rs#L413)                                          | Expected              | Yes           | No                                  |
-| [`faithful_mode_hr`](tests/basic_tests.rs#L433)                                              | Yes                   | Yes           | No                                  |
-| [`faithful_mode_blockquote`](tests/basic_tests.rs#L441)                                      | Expected              | Yes           | No                                  |
-| [`faithful_mode_h1`](tests/basic_tests.rs#L461)                                              | Yes                   | Yes           | No                                  |
-| [`faithful_mode_p`](tests/basic_tests.rs#L469)                                               | Yes                   | Yes           | No                                  |
-| [`faithful_mode_ol1`](tests/basic_tests.rs#L477)                                             | Yes                   | Yes           | No                                  |
-| [`faithful_mode_ol2`](tests/basic_tests.rs#L498)                                             | Yes                   | Yes           | No                                  |
-| [`faithful_mode_comment`](tests/basic_tests.rs#L515)                                         | Yes                   | Yes           | No                                  |
-| [`faithful_mode_html`](tests/basic_tests.rs#L523)                                            | Expected              | Yes           | No                                  |
-| [`faithful_mode_table`](tests/basic_tests.rs#L546)                                           | Expected              | Yes           | No                                  |
-| [`faithful_mode_serializes_a_table_with_a_caption`](tests/basic_tests.rs#L589)               | Yes                   | Yes           | Faithful                            |
-| [`pure_mode_writes_a_caption_as_a_paragraph`](tests/basic_tests.rs#L611)                     | No                    | Yes           | No                                  |
-| [`pure_mode_separates_a_caption_from_the_table_it_sits_above`](tests/basic_tests.rs#L628)    | No                    | Yes           | Pure only                           |
-| [`faithful_mode_nested_inline_html`](tests/basic_tests.rs#L655)                              | Yes                   | Yes           | No                                  |
-| [`spaces_check`](tests/basic_tests.rs#L663)                                                  | Expected              | Yes           | No                                  |
-| [`consecutive_blocks`](tests/basic_tests.rs#L672)                                            | Yes                   | No            | No                                  |
-| [`raw_text`](tests/basic_tests.rs#L686)                                                      | Expected              | Yes           | No                                  |
-| [`nested_divs`](tests/basic_tests.rs#L692)                                                   | No                    | Yes           | No                                  |
-| [`with_head`](tests/basic_tests.rs#L706)                                                     | No                    | Yes           | No                                  |
-| [`with_custom_rules`](tests/basic_tests.rs#L726)                                             | No                    | Yes           | No                                  |
-| [`with_custom_rules_and_fallback`](tests/basic_tests.rs#L738)                                | No                    | Yes           | No                                  |
-| [`upper_case_tags`](tests/basic_tests.rs#L766)                                               | Expected              | Yes           | No                                  |
-| [`html_entities`](tests/basic_tests.rs#L775)                                                 | Yes                   | Yes           | Partial (first two Faithful inputs) |
-| [`scripting_option`](tests/basic_tests.rs#L793)                                              | No                    | Yes           | No                                  |
-| [`multithreading`](tests/basic_tests.rs#L811)                                                | No                    | Yes           | No                                  |
-| [`unterminated_html`](tests/basic_tests.rs#L847)                                             | Expected              | Yes           | No                                  |
-| [`misnested_formatting_does_not_duplicate_or_lose_text`](tests/basic_tests.rs#L853)          | No                    | Yes           | No                                  |
-| [`math`](tests/basic_tests.rs#L860)                                                          | Configured            | Yes           | No                                  |
-| [`empty_math_span`](tests/basic_tests.rs#L894)                                               | Configured            | Yes           | Faithful                            |
-| [`math_span_whitespace`](tests/basic_tests.rs#L909)                                          | Configured + expected | Yes           | Partial (trimmed inline math)       |
-| [`unwritable_math_span`](tests/basic_tests.rs#L934)                                          | Configured            | Yes           | Faithful                            |
-| [`span_not_of_the_math_form`](tests/basic_tests.rs#L963)                                     | Configured            | Yes           | Faithful                            |
-| [`math_span_in_a_table_cell`](tests/basic_tests.rs#L978)                                     | Configured + expected | Yes           | Faithful                            |
-| [`dollar_sign_in_text`](tests/basic_tests.rs#L996)                                           | Configured            | Yes           | Faithful                            |
-| [`document_whitespace`](tests/basic_tests.rs#L1003)                                          | Yes                   | Yes           | No                                  |
-| [`multibyte_ordered_list_escape_half`](tests/basic_tests.rs#L1021)                           | Yes                   | Yes           | No                                  |
-| [`multibyte_ordered_list_escape_accented`](tests/basic_tests.rs#L1027)                       | Yes                   | Yes           | No                                  |
-| [`multibyte_ordered_list_escape_trademark`](tests/basic_tests.rs#L1034)                      | Yes                   | Yes           | No                                  |
-| [`ascii_ordered_list_escape`](tests/basic_tests.rs#L1041)                                    | Yes                   | Yes           | No                                  |
-| [`multibyte_no_dot`](tests/basic_tests.rs#L1047)                                             | Yes                   | Yes           | No                                  |
-| [`cjk_before_ordered_list`](tests/basic_tests.rs#L1054)                                      | Yes                   | Yes           | No                                  |
-| [`multibyte_atx_heading_escape`](tests/basic_tests.rs#L1061)                                 | Yes                   | Yes           | No                                  |
-| [`multibyte_atx_heading_escape_umlaut`](tests/basic_tests.rs#L1067)                          | Yes                   | Yes           | No                                  |
-| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph`](tests/basic_tests.rs#L1101)           | Yes                   | Yes           | Faithful                            |
-| [`an_atx_marker_alone_in_a_paragraph_is_escaped`](tests/basic_tests.rs#L1119)                | Yes                   | Yes           | Faithful                            |
-| [`a_bullet_marker_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1142)           | Expected              | Yes           | Faithful                            |
-| [`an_atx_marker_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1151)             | Expected              | Yes           | Faithful                            |
-| [`an_ordered_item_delimiter_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1160) | Expected              | Yes           | Faithful                            |
-| [`a_marker_behind_leading_whitespace_is_escaped`](tests/basic_tests.rs#L1170)                | Expected              | Yes           | Faithful                            |
-| [`a_marker_which_starts_no_line_is_not_escaped`](tests/basic_tests.rs#L1184)                 | Yes                   | Yes           | Faithful                            |
-| [`a_run_of_ordered_item_delimiters_opens_no_list`](tests/basic_tests.rs#L1197)               | Yes                   | Yes           | Faithful                            |
-| [`a_paragraph_of_unicode_numerics_needs_no_escape`](tests/basic_tests.rs#L1208)              | Yes                   | Yes           | Faithful                            |
-| [`a_literal_cdata_section_is_lost_unescaped`](tests/basic_tests.rs#L1224)                    | Expected              | No            | Faithful                            |
-| [`round_trip_in_a_block_context`](tests/basic_tests.rs#L1255)                                | Expected              | No            | Faithful                            |
-| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1294)      | Yes                   | No            | Faithful                            |
-| [`round_trip_of_a_setext_heading_of_leaf_block_syntax`](tests/basic_tests.rs#L1345)          | Configured            | No            | Faithful                            |
-| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1359)                              | Expected              | No            | Faithful                            |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1417)                            | Yes                   | No            | Faithful                            |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1454)                     | Expected              | No            | Faithful                            |
-| [`append_content_when_the_body_is_empty`](tests/basic_tests.rs#L1524)                        | No                    | Yes           | No                                  |
+| Test                                                                                         | Faithful round trip   | Keep Markdown | Existing round trip                         |
+| -------------------------------------------------------------------------------------------- | --------------------- | ------------- | ------------------------------------------- |
+| [`links_with_spaces`](tests/basic_tests.rs#L18)                                              | Expected              | Yes           | No                                          |
+| [`referenced_links_with_title`](tests/basic_tests.rs#L29)                                    | Configured            | Yes           | No                                          |
+| [`consecutive_referenced_links_with_title`](tests/basic_tests.rs#L49)                        | Configured            | Yes           | No                                          |
+| [`images`](tests/basic_tests.rs#L75)                                                         | Expected              | Yes           | No                                          |
+| [`images_with_spaces_in_url`](tests/basic_tests.rs#L89)                                      | Expected              | Yes           | No                                          |
+| [`image_title_stays_outside_an_angle_bracket_destination`](tests/basic_tests.rs#L100)        | No                    | Yes           | No                                          |
+| [`headings`](tests/basic_tests.rs#L113)                                                      | Yes                   | Yes           | No                                          |
+| [`pure_heading_in_an_inline_context`](tests/basic_tests.rs#L133)                             | No                    | Yes           | No                                          |
+| [`heading_content_trims_only_document_whitespace`](tests/basic_tests.rs#L154)                | Configured + expected | Yes           | No                                          |
+| [`setext_underline`](tests/basic_tests.rs#L170)                                              | Configured            | Yes           | No                                          |
+| [`paragraphs`](tests/basic_tests.rs#L189)                                                    | Yes                   | Yes           | No                                          |
+| [`quotes`](tests/basic_tests.rs#L201)                                                        | Expected              | Yes           | No                                          |
+| [`br`](tests/basic_tests.rs#L209)                                                            | Yes                   | Yes           | No                                          |
+| [`hr`](tests/basic_tests.rs#L216)                                                            | Expected              | Yes           | No                                          |
+| [`strong_italic`](tests/basic_tests.rs#L222)                                                 | Expected              | Yes           | No                                          |
+| [`faithful_mode_keeps_adjacent_emphasis_apart`](tests/basic_tests.rs#L239)                   | Yes                   | Yes           | No                                          |
+| [`faithful_mode_keeps_adjacent_code_spans_apart`](tests/basic_tests.rs#L258)                 | Yes                   | Yes           | No                                          |
+| [`faithful_mode_keeps_adjacent_untranslated_elements_apart`](tests/basic_tests.rs#L268)      | Yes                   | Yes           | No                                          |
+| [`pure_mode_merges_adjacent_inline_elements`](tests/basic_tests.rs#L285)                     | No                    | Yes           | No                                          |
+| [`adjacent_math_spans_stay_math`](tests/basic_tests.rs#L297)                                 | Configured            | Yes           | Both                                        |
+| [`blank_emphasis_leaves_its_whitespace_behind`](tests/basic_tests.rs#L331)                   | No                    | Yes           | No                                          |
+| [`italic_inside_word`](tests/basic_tests.rs#L342)                                            | Expected              | Yes           | No                                          |
+| [`italic_with_br`](tests/basic_tests.rs#L348)                                                | Expected              | Yes           | No                                          |
+| [`inline_raw_html_escaping`](tests/basic_tests.rs#L357)                                      | Expected              | Yes           | No                                          |
+| [`multiline_raw_html_escaping`](tests/basic_tests.rs#L366)                                   | Expected              | Yes           | No                                          |
+| [`inline_email_autolink_escaping`](tests/basic_tests.rs#L389)                                | Yes                   | Yes           | Faithful                                    |
+| [`a_sequence_finished_by_a_sibling_stays_text`](tests/basic_tests.rs#L408)                   | No                    | Yes           | Pure only                                   |
+| [`html_escaping`](tests/basic_tests.rs#L444)                                                 | Yes                   | Yes           | No                                          |
+| [`faithful_mode_inline`](tests/basic_tests.rs#L474)                                          | Expected              | Yes           | No                                          |
+| [`faithful_mode_hr`](tests/basic_tests.rs#L494)                                              | Yes                   | Yes           | No                                          |
+| [`faithful_mode_blockquote`](tests/basic_tests.rs#L502)                                      | Expected              | Yes           | No                                          |
+| [`faithful_mode_h1`](tests/basic_tests.rs#L522)                                              | Yes                   | Yes           | No                                          |
+| [`heading_attributes`](tests/basic_tests.rs#L533)                                            | Expected              | Yes           | No                                          |
+| [`faithful_mode_p`](tests/basic_tests.rs#L546)                                               | Yes                   | Yes           | No                                          |
+| [`faithful_mode_ol1`](tests/basic_tests.rs#L554)                                             | Yes                   | Yes           | No                                          |
+| [`faithful_mode_ol2`](tests/basic_tests.rs#L575)                                             | Yes                   | Yes           | No                                          |
+| [`faithful_mode_comment`](tests/basic_tests.rs#L592)                                         | Yes                   | Yes           | No                                          |
+| [`faithful_mode_html`](tests/basic_tests.rs#L600)                                            | Expected              | Yes           | No                                          |
+| [`faithful_mode_table`](tests/basic_tests.rs#L623)                                           | Expected              | Yes           | No                                          |
+| [`faithful_mode_serializes_a_table_with_a_caption`](tests/basic_tests.rs#L666)               | Yes                   | Yes           | Faithful                                    |
+| [`pure_mode_writes_a_caption_as_a_paragraph`](tests/basic_tests.rs#L688)                     | No                    | Yes           | No                                          |
+| [`pure_mode_separates_a_caption_from_the_table_it_sits_above`](tests/basic_tests.rs#L705)    | No                    | Yes           | Pure only                                   |
+| [`faithful_mode_nested_inline_html`](tests/basic_tests.rs#L732)                              | Yes                   | Yes           | No                                          |
+| [`spaces_check`](tests/basic_tests.rs#L740)                                                  | Expected              | Yes           | No                                          |
+| [`consecutive_blocks`](tests/basic_tests.rs#L749)                                            | Yes                   | No            | No                                          |
+| [`raw_text`](tests/basic_tests.rs#L763)                                                      | Expected              | Yes           | No                                          |
+| [`nested_divs`](tests/basic_tests.rs#L769)                                                   | No                    | Yes           | No                                          |
+| [`with_head`](tests/basic_tests.rs#L783)                                                     | No                    | Yes           | No                                          |
+| [`with_custom_rules`](tests/basic_tests.rs#L803)                                             | No                    | Yes           | No                                          |
+| [`with_custom_rules_and_fallback`](tests/basic_tests.rs#L815)                                | No                    | Yes           | No                                          |
+| [`upper_case_tags`](tests/basic_tests.rs#L843)                                               | Expected              | Yes           | No                                          |
+| [`html_entities`](tests/basic_tests.rs#L852)                                                 | Yes                   | Yes           | Partial (first two Faithful inputs)         |
+| [`scripting_option`](tests/basic_tests.rs#L870)                                              | No                    | Yes           | No                                          |
+| [`multithreading`](tests/basic_tests.rs#L888)                                                | No                    | Yes           | No                                          |
+| [`unterminated_html`](tests/basic_tests.rs#L924)                                             | Expected              | Yes           | No                                          |
+| [`misnested_formatting_does_not_duplicate_or_lose_text`](tests/basic_tests.rs#L930)          | No                    | Yes           | No                                          |
+| [`math`](tests/basic_tests.rs#L937)                                                          | Configured            | Yes           | No                                          |
+| [`empty_math_span`](tests/basic_tests.rs#L971)                                               | Configured            | Yes           | Faithful                                    |
+| [`math_span_whitespace`](tests/basic_tests.rs#L986)                                          | Configured + expected | Yes           | Partial (trimmed inline math)               |
+| [`unwritable_math_span`](tests/basic_tests.rs#L1011)                                         | Configured            | Yes           | Faithful                                    |
+| [`span_not_of_the_math_form`](tests/basic_tests.rs#L1040)                                    | Configured            | Yes           | Faithful                                    |
+| [`math_span_in_a_table_cell`](tests/basic_tests.rs#L1055)                                    | Configured + expected | Yes           | Faithful                                    |
+| [`dollar_sign_in_text`](tests/basic_tests.rs#L1073)                                          | Configured            | Yes           | Faithful                                    |
+| [`document_whitespace`](tests/basic_tests.rs#L1080)                                          | Yes                   | Yes           | No                                          |
+| [`multibyte_ordered_list_escape_half`](tests/basic_tests.rs#L1098)                           | Yes                   | Yes           | No                                          |
+| [`multibyte_ordered_list_escape_accented`](tests/basic_tests.rs#L1104)                       | Yes                   | Yes           | No                                          |
+| [`multibyte_ordered_list_escape_trademark`](tests/basic_tests.rs#L1111)                      | Yes                   | Yes           | No                                          |
+| [`ascii_ordered_list_escape`](tests/basic_tests.rs#L1118)                                    | Yes                   | Yes           | No                                          |
+| [`multibyte_no_dot`](tests/basic_tests.rs#L1124)                                             | Yes                   | Yes           | No                                          |
+| [`cjk_before_ordered_list`](tests/basic_tests.rs#L1131)                                      | Yes                   | Yes           | No                                          |
+| [`multibyte_atx_heading_escape`](tests/basic_tests.rs#L1138)                                 | Yes                   | Yes           | No                                          |
+| [`multibyte_atx_heading_escape_umlaut`](tests/basic_tests.rs#L1144)                          | Yes                   | Yes           | No                                          |
+| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph`](tests/basic_tests.rs#L1178)           | Yes                   | Yes           | Faithful                                    |
+| [`an_atx_marker_alone_in_a_paragraph_is_escaped`](tests/basic_tests.rs#L1196)                | Yes                   | Yes           | Faithful                                    |
+| [`a_bullet_marker_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1219)           | Expected              | Yes           | Faithful                                    |
+| [`an_atx_marker_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1228)             | Expected              | Yes           | Faithful                                    |
+| [`an_ordered_item_delimiter_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1237) | Expected              | Yes           | Faithful                                    |
+| [`a_marker_behind_leading_whitespace_is_escaped`](tests/basic_tests.rs#L1247)                | Expected              | Yes           | Faithful                                    |
+| [`a_marker_which_starts_no_line_is_not_escaped`](tests/basic_tests.rs#L1261)                 | Yes                   | Yes           | Faithful                                    |
+| [`a_run_of_ordered_item_delimiters_opens_no_list`](tests/basic_tests.rs#L1274)               | Yes                   | Yes           | Faithful                                    |
+| [`a_paragraph_of_unicode_numerics_needs_no_escape`](tests/basic_tests.rs#L1285)              | Yes                   | Yes           | Faithful                                    |
+| [`a_literal_cdata_section_is_lost_unescaped`](tests/basic_tests.rs#L1301)                    | Expected              | No            | Faithful                                    |
+| [`round_trip_in_a_block_context`](tests/basic_tests.rs#L1332)                                | Expected              | No            | Faithful                                    |
+| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1371)      | Yes                   | No            | Faithful                                    |
+| [`round_trip_of_a_setext_heading_of_leaf_block_syntax`](tests/basic_tests.rs#L1422)          | Configured            | No            | Faithful                                    |
+| [`round_trip_of_an_atx_heading_ending_in_a_hash_run`](tests/basic_tests.rs#L1433)            | Expected              | Yes           | Partial (runs which follow no space or tab) |
+| [`atx_heading_of_a_hash_run_from_a_handler`](tests/basic_tests.rs#L1452)                     | No                    | Yes           | Partial (two-run input)                     |
+| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1484)                              | Expected              | No            | Faithful                                    |
+| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542)                            | Yes                   | No            | Faithful                                    |
+| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579)                     | Expected              | No            | Faithful                                    |
+| [`append_content_when_the_body_is_empty`](tests/basic_tests.rs#L1649)                        | No                    | Yes           | No                                          |
 
 ### [tests/code\_tests.rs](tests/code_tests.rs) (20)
 
@@ -284,22 +290,22 @@ Integration tests
 
 | Test                                                                                     | Faithful round trip   | Keep Markdown | Existing round trip |
 | ---------------------------------------------------------------------------------------- | --------------------- | ------------- | ------------------- |
-| [`translating_html_nodes`](tests/translation_approach_tests.rs#L16)                      | Expected              | Yes           | No                  |
-| [`blocks_inside_inlines`](tests/translation_approach_tests.rs#L26)                       | Expected              | Yes           | No                  |
-| [`code_blocks_and_code_spans`](tests/translation_approach_tests.rs#L88)                  | Expected              | Yes           | No                  |
-| [`code_span_holding_a_line_ending`](tests/translation_approach_tests.rs#L134)            | Configured + expected | Yes           | No                  |
-| [`empty_code_span`](tests/translation_approach_tests.rs#L169)                            | Expected              | Yes           | No                  |
-| [`emphasis_and_strong_emphasis`](tests/translation_approach_tests.rs#L202)               | Expected              | Yes           | No                  |
-| [`brs_alone_in_a_raw_html_inline`](tests/translation_approach_tests.rs#L263)             | Yes                   | Yes           | No                  |
-| [`links`](tests/translation_approach_tests.rs#L286)                                      | Yes                   | Yes           | No                  |
-| [`at_the_document_root`](tests/translation_approach_tests.rs#L317)                       | Expected              | Yes           | No                  |
-| [`setext_headings`](tests/translation_approach_tests.rs#L340)                            | Configured            | Yes           | No                  |
-| [`an_empty_setext_heading_falls_back_to_atx`](tests/translation_approach_tests.rs#L361)  | Configured + expected | Yes           | No                  |
-| [`atx_headings`](tests/translation_approach_tests.rs#L376)                               | Expected              | Yes           | No                  |
-| [`paragraphs`](tests/translation_approach_tests.rs#L405)                                 | Yes                   | Yes           | No                  |
-| [`blockquotes`](tests/translation_approach_tests.rs#L440)                                | Expected              | Yes           | No                  |
-| [`tables`](tests/translation_approach_tests.rs#L468)                                     | Configured            | Yes           | No                  |
-| [`table_children_which_only_html_can_express`](tests/translation_approach_tests.rs#L493) | Yes                   | Yes           | No                  |
+| [`translating_html_nodes`](tests/translation_approach_tests.rs#L17)                      | Expected              | Yes           | No                  |
+| [`blocks_inside_inlines`](tests/translation_approach_tests.rs#L27)                       | Expected              | Yes           | No                  |
+| [`code_blocks_and_code_spans`](tests/translation_approach_tests.rs#L89)                  | Expected              | Yes           | No                  |
+| [`code_span_holding_a_line_ending`](tests/translation_approach_tests.rs#L135)            | Configured + expected | Yes           | No                  |
+| [`empty_code_span`](tests/translation_approach_tests.rs#L170)                            | Expected              | Yes           | No                  |
+| [`emphasis_and_strong_emphasis`](tests/translation_approach_tests.rs#L203)               | Expected              | Yes           | No                  |
+| [`brs_alone_in_a_raw_html_inline`](tests/translation_approach_tests.rs#L264)             | Yes                   | Yes           | No                  |
+| [`links`](tests/translation_approach_tests.rs#L287)                                      | Yes                   | Yes           | No                  |
+| [`at_the_document_root`](tests/translation_approach_tests.rs#L318)                       | Expected              | Yes           | No                  |
+| [`setext_headings`](tests/translation_approach_tests.rs#L341)                            | Configured            | Yes           | No                  |
+| [`an_empty_setext_heading_falls_back_to_atx`](tests/translation_approach_tests.rs#L356)  | Configured + expected | Yes           | No                  |
+| [`atx_headings`](tests/translation_approach_tests.rs#L374)                               | Expected              | Yes           | No                  |
+| [`paragraphs`](tests/translation_approach_tests.rs#L397)                                 | Yes                   | Yes           | No                  |
+| [`blockquotes`](tests/translation_approach_tests.rs#L432)                                | Expected              | Yes           | No                  |
+| [`tables`](tests/translation_approach_tests.rs#L460)                                     | Configured            | Yes           | No                  |
+| [`table_children_which_only_html_can_express`](tests/translation_approach_tests.rs#L485) | Yes                   | Yes           | No                  |
 
 ### [tests/turndown\_cases\_tests.rs](tests/turndown_cases_tests.rs) (1)
 
@@ -339,9 +345,9 @@ the normal test run because it generates a table.
 
 | Test                                                                                            | Faithful round trip | Keep Markdown | Existing round trip |
 | ----------------------------------------------------------------------------------------------- | ------------------- | ------------- | ------------------- |
-| [`encodes_the_line_endings_and_pipes_of_an_open_tag`](src/element_handler/element_util.rs#L323) | No                  | Yes           | N/A                 |
-| [`escapes_blank_lines_for_each_line_ending_style`](src/element_handler/element_util.rs#L335)    | No                  | Yes           | N/A                 |
-| [`escapes_only_the_lines_which_are_blank`](src/element_handler/element_util.rs#L345)            | No                  | Yes           | N/A                 |
+| [`encodes_the_line_endings_and_pipes_of_an_open_tag`](src/element_handler/element_util.rs#L304) | No                  | Yes           | N/A                 |
+| [`escapes_blank_lines_for_each_line_ending_style`](src/element_handler/element_util.rs#L316)    | No                  | Yes           | N/A                 |
+| [`escapes_only_the_lines_which_are_blank`](src/element_handler/element_util.rs#L326)            | No                  | Yes           | N/A                 |
 
 ### [src/element\_handler/list.rs](src/element_handler/list.rs) (1)
 
