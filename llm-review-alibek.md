@@ -1,8 +1,7 @@
 # Alibek Baisholanov — LLM review and project verification
 
 Reviewed section: [3. HTML comparison and correctness criteria](spec.md#3-html-comparison-and-correctness-criteria).
-Model: **GPT-6.1 Sol**, reasoning **Extra High**, as confirmed by the user from
-the Codex interface. These are successive self-reviews in this Codex session.
+Model: **GPT-6.1 Sol**, reasoning **Extra High**, as confirmed in the Codex interface. These are successive self-reviews in this Codex session.
 Other authors' review histories belong in their own `llm-review-NAME.md` files.
 
 ## 1. Team contributions
@@ -37,8 +36,9 @@ saved earlier inputs, not every later edit to the shared specification.
 | 4 | 0 | The revised Section 3 had no further relevant specification findings. |
 
 All four findings across rounds 1 and 3 were applied; none were crossed out.
-The last review used the actual 31-case observations and the primary HTML and
-CSS references linked in the specification. It reviewed the strategy, not a
+The last review used the actual 31-case observations and the primary
+[HTML parsing](https://html.spec.whatwg.org/multipage/parsing.html#preprocessing-the-input-stream)
+and [CSS whitespace](https://www.w3.org/TR/css-text-3/#white-space-processing) rules. It reviewed the strategy, not a
 completed implementation of the proposed generalized runner.
 
 ## 3. Last review: exact prompt, model, and output
@@ -112,4 +112,3 @@ approve them. Source changes and stability results are reported separately.
 The strategy is shared in `spec.md`. This file is Alibek's personal record;
 Kamila's supplied record is preserved in [llm-review-kamila.md](llm-review-kamila.md).
 Sam and Yuriy add their own actual review records under the same naming scheme.
-The team email is deferred at the user's request.
