@@ -47,246 +47,1922 @@ Integration tests
 
 ### [tests/basic\_tests.rs](tests/basic_tests.rs) (91)
 
-| Test | Faithful round trip | Keep Markdown | Existing round trip |
-| --- | --- | --- | --- |
-| [`links_with_spaces`](tests/basic_tests.rs#L18) | Expected | Yes | No |
-| [`referenced_links_with_title`](tests/basic_tests.rs#L29) | Configured | Yes | No |
-| [`consecutive_referenced_links_with_title`](tests/basic_tests.rs#L49) | Configured | Yes | No |
-| [`images`](tests/basic_tests.rs#L75) | Expected | Yes | No |
-| [`images_with_spaces_in_url`](tests/basic_tests.rs#L89) | Expected | Yes | No |
-| [`image_title_stays_outside_an_angle_bracket_destination`](tests/basic_tests.rs#L100) | No | Yes | No |
-| [`headings`](tests/basic_tests.rs#L113) | Yes | Yes | No |
-| [`pure_heading_in_an_inline_context`](tests/basic_tests.rs#L133) / [input 1, Pure](tests/basic_tests.rs#L134) `"<em><h2>b</h2></em>"` | No | Yes | No |
-| [`pure_heading_in_an_inline_context`](tests/basic_tests.rs#L133) / [input 2, Pure](tests/basic_tests.rs#L137) `r#"<a href="u"><h2>b</h2></a>"#` | No | Yes | No |
-| [`pure_heading_in_an_inline_context`](tests/basic_tests.rs#L133) / [input 3, Pure](tests/basic_tests.rs#L141) `"<table><thead><tr><th><h2>b</h2></th></tr></thead></table>"` | No | Yes | No |
-| [`pure_heading_in_an_inline_context`](tests/basic_tests.rs#L133) / [input 4, Pure](tests/basic_tests.rs#L147) `"<h1><div><h2> a # </h2></div></h1>"` | No | Yes | No |
-| [`heading_content_trims_only_document_whitespace`](tests/basic_tests.rs#L154) / [input 1, Faithful](tests/basic_tests.rs#L157) `"<h1> \t\r\n a \t\r\n </h1>"` | Configured + expected | Yes | No |
-| [`heading_content_trims_only_document_whitespace`](tests/basic_tests.rs#L154) / [input 2, Faithful](tests/basic_tests.rs#L159) `"<h1>&nbsp;</h1>"` | Configured + expected | Yes | No |
-| [`heading_content_trims_only_document_whitespace`](tests/basic_tests.rs#L154) / [input 3, Faithful, setext](tests/basic_tests.rs#L162) `"<h1>&nbsp;</h1>"` | Configured + expected | Yes | No |
-| [`setext_underline`](tests/basic_tests.rs#L170) / [input 1, Faithful, setext](tests/basic_tests.rs#L171) `"<h2>a</h2>"` | Configured | Yes | No |
-| [`setext_underline`](tests/basic_tests.rs#L170) / [input 2, Faithful, setext](tests/basic_tests.rs#L172) `"<h1>é</h1>"` | Configured | Yes | No |
-| [`setext_underline`](tests/basic_tests.rs#L170) / [input 3, Faithful, setext](tests/basic_tests.rs#L175) `"<h1>a*b</h1>"` | Configured | Yes | No |
-| [`setext_underline`](tests/basic_tests.rs#L170) / [input 4, Faithful, setext](tests/basic_tests.rs#L179) `"<h1><br><em>b</em></h1>"` | Configured | Yes | No |
-| [`setext_underline`](tests/basic_tests.rs#L170) / [input 5, Faithful, setext](tests/basic_tests.rs#L183) `"<h1><em>a</em><br></h1>"` | Configured | Yes | No |
-| [`setext_underline`](tests/basic_tests.rs#L170) / [input 6, Faithful, setext](tests/basic_tests.rs#L185) `"<h3>a</h3>"` | Configured | Yes | No |
-| [`paragraphs`](tests/basic_tests.rs#L189) | Yes | Yes | No |
-| [`quotes`](tests/basic_tests.rs#L201) | Expected | Yes | No |
-| [`br`](tests/basic_tests.rs#L209) | Yes | Yes | No |
-| [`hr`](tests/basic_tests.rs#L216) | Expected | Yes | No |
-| [`strong_italic`](tests/basic_tests.rs#L222) / [input 1, Faithful](tests/basic_tests.rs#L226) `r#"<i>Italic</i><em>Also italic</em><strong>Strong</strong><b>Stronger</b>"#` | Expected | Yes | No |
-| [`strong_italic`](tests/basic_tests.rs#L222) / [input 2, Pure](tests/basic_tests.rs#L230) `r#"<i>Italic</i><em>Also italic</em><strong>Strong</strong><b>Stronger</b>"#` | No | Yes | No |
-| [`faithful_mode_keeps_adjacent_emphasis_apart`](tests/basic_tests.rs#L239) / [input 1, Faithful](tests/basic_tests.rs#L242) `"<p><em>a</em><em>b</em></p>"` | Yes | Yes | No |
-| [`faithful_mode_keeps_adjacent_emphasis_apart`](tests/basic_tests.rs#L239) / [input 2, Faithful](tests/basic_tests.rs#L246) `"<p><i>a</i><em>b</em></p>"` | Yes | Yes | No |
-| [`faithful_mode_keeps_adjacent_emphasis_apart`](tests/basic_tests.rs#L239) / [input 3, Faithful](tests/basic_tests.rs#L250) `"<p><b>a</b><strong>b</strong></p>"` | Yes | Yes | No |
-| [`faithful_mode_keeps_adjacent_code_spans_apart`](tests/basic_tests.rs#L258) | Yes | Yes | No |
-| [`faithful_mode_keeps_adjacent_untranslated_elements_apart`](tests/basic_tests.rs#L268) / [input 1, Faithful](tests/basic_tests.rs#L271) `"<p><sub>a</sub><sub>b</sub></p>"` | Yes | Yes | No |
-| [`faithful_mode_keeps_adjacent_untranslated_elements_apart`](tests/basic_tests.rs#L268) / [input 2, Faithful](tests/basic_tests.rs#L275) `r#"<p><abbr title="t">a</abbr><abbr title="t">b</abbr></p>"#` | Yes | Yes | No |
-| [`faithful_mode_keeps_adjacent_untranslated_elements_apart`](tests/basic_tests.rs#L268) / [input 3, Faithful](tests/basic_tests.rs#L279) `r#"<p><span class="x">a</span><span class="x">b</span></p>"#` | Yes | Yes | No |
-| [`pure_mode_merges_adjacent_inline_elements`](tests/basic_tests.rs#L285) / [input 1, Pure](tests/basic_tests.rs#L286) `"<p><em>a</em><em>b</em></p>"` | No | Yes | No |
-| [`pure_mode_merges_adjacent_inline_elements`](tests/basic_tests.rs#L285) / [input 2, Pure](tests/basic_tests.rs#L289) `"<p><sub>a</sub><sub>b</sub></p>"` | No | Yes | No |
-| [`adjacent_math_spans_stay_math`](tests/basic_tests.rs#L297) / [input 1, Faithful](tests/basic_tests.rs#L299) `r#"<p><span class="math math-inline">a</span><span class="math math-inline">b</span><…` | Configured | Yes | Faithful |
-| [`adjacent_math_spans_stay_math`](tests/basic_tests.rs#L297) / [input 2, Pure](tests/basic_tests.rs#L299) `r#"<p><span class="math math-inline">a</span><span class="math math-inline">b</span><…` | No | Yes | Pure only |
-| [`adjacent_math_spans_stay_math`](tests/basic_tests.rs#L297) / [input 3, Faithful](tests/basic_tests.rs#L303) `r#"<p><span class="math math-display">a</span><span class="math math-display">b</span…` | Configured | Yes | Faithful |
-| [`adjacent_math_spans_stay_math`](tests/basic_tests.rs#L297) / [input 4, Pure](tests/basic_tests.rs#L303) `r#"<p><span class="math math-display">a</span><span class="math math-display">b</span…` | No | Yes | Pure only |
-| [`adjacent_math_spans_stay_math`](tests/basic_tests.rs#L297) / [input 5, Faithful](tests/basic_tests.rs#L307) `r#"<p><span class="math math-inline">a</span><span class="math math-display">b</span>…` | Configured | Yes | Faithful |
-| [`adjacent_math_spans_stay_math`](tests/basic_tests.rs#L297) / [input 6, Pure](tests/basic_tests.rs#L307) `r#"<p><span class="math math-inline">a</span><span class="math math-display">b</span>…` | No | Yes | Pure only |
-| [`adjacent_math_spans_stay_math`](tests/basic_tests.rs#L297) / [input 7, Faithful](tests/basic_tests.rs#L311) `r#"<p><span class="math math-display">a</span><span class="math math-inline">b</span>…` | Configured | Yes | Faithful |
-| [`adjacent_math_spans_stay_math`](tests/basic_tests.rs#L297) / [input 8, Pure](tests/basic_tests.rs#L311) `r#"<p><span class="math math-display">a</span><span class="math math-inline">b</span>…` | No | Yes | Pure only |
-| [`blank_emphasis_leaves_its_whitespace_behind`](tests/basic_tests.rs#L331) / [input 1, Pure](tests/basic_tests.rs#L332) `"<p>a<em> </em>b</p>"` | No | Yes | No |
-| [`blank_emphasis_leaves_its_whitespace_behind`](tests/basic_tests.rs#L331) / [input 2, Pure](tests/basic_tests.rs#L333) `"<p>a<strong> </strong>b</p>"` | No | Yes | No |
-| [`blank_emphasis_leaves_its_whitespace_behind`](tests/basic_tests.rs#L331) / [input 3, Pure](tests/basic_tests.rs#L336) `"<p>a<em>&#160;</em>b</p>"` | No | Yes | No |
-| [`blank_emphasis_leaves_its_whitespace_behind`](tests/basic_tests.rs#L331) / [input 4, Pure](tests/basic_tests.rs#L338) `"<p>a<em></em>b</p>"` | No | Yes | No |
-| [`italic_inside_word`](tests/basic_tests.rs#L342) | Expected | Yes | No |
-| [`italic_with_br`](tests/basic_tests.rs#L348) | Expected | Yes | No |
-| [`inline_raw_html_escaping`](tests/basic_tests.rs#L357) | Expected | Yes | No |
-| [`multiline_raw_html_escaping`](tests/basic_tests.rs#L366) | Expected | Yes | No |
-| [`inline_email_autolink_escaping`](tests/basic_tests.rs#L389) | Yes | Yes | Faithful |
-| [`a_sequence_finished_by_a_sibling_stays_text`](tests/basic_tests.rs#L408) / [input 1, Pure](tests/basic_tests.rs#L410) `"<p>&lt;<span>div</span> class&gt;x</p>"` | No | Yes | Pure only |
-| [`a_sequence_finished_by_a_sibling_stays_text`](tests/basic_tests.rs#L408) / [input 2, Pure](tests/basic_tests.rs#L415) `"<p>&lt;<a>!--</a> x --&gt; y</p>"` | No | Yes | Pure only |
-| [`a_sequence_finished_by_a_sibling_stays_text`](tests/basic_tests.rs#L408) / [input 3, Pure](tests/basic_tests.rs#L420) `"<p>a&lt;<em></em>b&gt;c</p>"` | No | Yes | Pure only |
-| [`a_sequence_finished_by_a_sibling_stays_text`](tests/basic_tests.rs#L408) / [input 4, Pure](tests/basic_tests.rs#L421) `"<p>&lt;/<span>p</span> &gt;</p>"` | No | Yes | Pure only |
-| [`a_sequence_finished_by_a_sibling_stays_text`](tests/basic_tests.rs#L408) / [input 5, Pure](tests/basic_tests.rs#L422) `"<p>&lt;<span>http://x.y</span>&gt;</p>"` | No | Yes | Pure only |
-| [`a_sequence_finished_by_a_sibling_stays_text`](tests/basic_tests.rs#L408) / [input 6, Pure](tests/basic_tests.rs#L427) `"<p>&lt;1<span>@b.co&gt;</span></p>"` | No | Yes | Pure only |
-| [`html_escaping`](tests/basic_tests.rs#L444) | Yes | Yes | No |
-| [`faithful_mode_inline`](tests/basic_tests.rs#L474) | Expected | Yes | No |
-| [`faithful_mode_hr`](tests/basic_tests.rs#L494) | Yes | Yes | No |
-| [`faithful_mode_blockquote`](tests/basic_tests.rs#L502) | Expected | Yes | No |
-| [`faithful_mode_h1`](tests/basic_tests.rs#L522) | Yes | Yes | No |
-| [`heading_attributes`](tests/basic_tests.rs#L533) / [input 1, Faithful](tests/basic_tests.rs#L536) `r#"<h1 class="">a</h1>"#` | Expected | Yes | No |
-| [`heading_attributes`](tests/basic_tests.rs#L533) / [input 2, Faithful](tests/basic_tests.rs#L540) `"<h2 id>a</h2>"` | Expected | Yes | No |
-| [`heading_attributes`](tests/basic_tests.rs#L533) / [input 3, Pure](tests/basic_tests.rs#L542) `r#"<h1 class="x">a</h1>"#` | No | Yes | No |
-| [`faithful_mode_p`](tests/basic_tests.rs#L546) | Yes | Yes | No |
-| [`faithful_mode_ol1`](tests/basic_tests.rs#L554) | Yes | Yes | No |
-| [`faithful_mode_ol2`](tests/basic_tests.rs#L575) | Yes | Yes | No |
-| [`faithful_mode_comment`](tests/basic_tests.rs#L592) | Yes | Yes | No |
-| [`faithful_mode_html`](tests/basic_tests.rs#L600) | Expected | Yes | No |
-| [`faithful_mode_table`](tests/basic_tests.rs#L623) | Expected | Yes | No |
-| [`faithful_mode_serializes_a_table_with_a_caption`](tests/basic_tests.rs#L666) / [input 1, Faithful](tests/basic_tests.rs#L677) `concat!( r#"<table><caption><span class="label">Caption</span></caption>"#, "<tr><th>…` | Yes | Yes | Faithful |
-| [`faithful_mode_serializes_a_table_with_a_caption`](tests/basic_tests.rs#L666) / [input 2, Faithful](tests/basic_tests.rs#L682) `concat!( r#"<table><caption><span class="label">Caption</span></caption>"#, "<tbody><…` | Yes | Yes | Faithful |
-| [`pure_mode_writes_a_caption_as_a_paragraph`](tests/basic_tests.rs#L688) | No | Yes | No |
-| [`pure_mode_separates_a_caption_from_the_table_it_sits_above`](tests/basic_tests.rs#L705) / [input 1, Pure](tests/basic_tests.rs#L706) `"<ul><li>a</li></ul>"` | No | Yes | Pure only |
-| [`pure_mode_separates_a_caption_from_the_table_it_sits_above`](tests/basic_tests.rs#L705) / [input 2, Pure](tests/basic_tests.rs#L706) `"<blockquote>a</blockquote>"` | No | Yes | Pure only |
-| [`faithful_mode_nested_inline_html`](tests/basic_tests.rs#L732) | Yes | Yes | No |
-| [`spaces_check`](tests/basic_tests.rs#L740) | Expected | Yes | No |
-| [`consecutive_blocks`](tests/basic_tests.rs#L749) | Yes | Yes | No |
-| [`raw_text`](tests/basic_tests.rs#L763) | Expected | Yes | No |
-| [`nested_divs`](tests/basic_tests.rs#L769) | No | Yes | No |
-| [`with_head`](tests/basic_tests.rs#L783) | No | Yes | No |
-| [`with_custom_rules`](tests/basic_tests.rs#L803) | No | Yes | No |
-| [`with_custom_rules_and_fallback`](tests/basic_tests.rs#L815) / [input 1, Pure](tests/basic_tests.rs#L833) `r#"<img src="https://example.com"/>"#` | No | Yes | No |
-| [`with_custom_rules_and_fallback`](tests/basic_tests.rs#L815) / [input 2, Pure](tests/basic_tests.rs#L838) `r#"<img src="https://example.com" id="do_not_skip_me"/>"#` | No | Yes | No |
-| [`upper_case_tags`](tests/basic_tests.rs#L843) | Expected | Yes | No |
-| [`html_entities`](tests/basic_tests.rs#L852) / [input 1, Faithful](tests/basic_tests.rs#L856) `r#"<p><a href="/my%20&amp;uri" title="my%20&amp;title">my%20&amp;link</a></p>"#` | Yes | Yes | No |
-| [`html_entities`](tests/basic_tests.rs#L852) / [input 2, Faithful](tests/basic_tests.rs#L862) `r#"<p>This &amp; that, then &lt; &gt; now.</p>"#` | Yes | Yes | No |
-| [`html_entities`](tests/basic_tests.rs#L852) / [input 3, Faithful](tests/basic_tests.rs#L866) `"<p>&amp;copy; &amp;#169; &amp;#xA9;</p>"` | Yes | Yes | Faithful |
-| [`scripting_option`](tests/basic_tests.rs#L870) | No | Yes | No |
-| [`multithreading`](tests/basic_tests.rs#L888) | No | Yes | No |
-| [`unterminated_html`](tests/basic_tests.rs#L924) | Expected | Yes | No |
-| [`misnested_formatting_does_not_duplicate_or_lose_text`](tests/basic_tests.rs#L930) | No | Yes | No |
-| [`math`](tests/basic_tests.rs#L937) / [input 1, Faithful](tests/basic_tests.rs#L940) `r#"<p><span class="math math-inline">x^2</span></p>"#` | Configured | Yes | No |
-| [`math`](tests/basic_tests.rs#L937) / [input 2, Faithful](tests/basic_tests.rs#L945) `r#"<p><span class="math math-display">x^2</span></p>"#` | Configured | Yes | No |
-| [`math`](tests/basic_tests.rs#L937) / [input 3, Faithful](tests/basic_tests.rs#L951) `r#"<p><span class="math math-display">{a}_1, b_{2}, a*1, b*2, [a](b), 3 &lt;a&gt; b, …` | Configured | Yes | No |
-| [`empty_math_span`](tests/basic_tests.rs#L971) / [input 1, Faithful](tests/basic_tests.rs#L972) `r#"<p><span class="math math-display"></span></p>"#` | Configured | Yes | Faithful |
-| [`empty_math_span`](tests/basic_tests.rs#L971) / [input 2, Faithful](tests/basic_tests.rs#L973) `r#"<p><span class="math math-inline"></span></p>"#` | Configured | Yes | Faithful |
-| [`empty_math_span`](tests/basic_tests.rs#L971) / [input 3, Pure](tests/basic_tests.rs#L979) `r#"<p><span class="math math-inline"></span></p>"#` | No | Yes | No |
-| [`math_span_whitespace`](tests/basic_tests.rs#L986) / [input 1, Faithful](tests/basic_tests.rs#L989) `"<p><span class="math math-inline"> \u{b}x\t</span></p>"` | Configured + expected | Yes | No |
-| [`math_span_whitespace`](tests/basic_tests.rs#L986) / [input 2, Faithful](tests/basic_tests.rs#L991) `r#"<p><span class="math math-display"> x </span></p>"#` | Configured + expected | Yes | Faithful |
-| [`math_span_whitespace`](tests/basic_tests.rs#L986) / [input 3, Faithful](tests/basic_tests.rs#L997) `r#"<p><span class="math math-inline">a\ </span></p>"#` | Configured + expected | Yes | Faithful |
-| [`math_span_whitespace`](tests/basic_tests.rs#L986) / [input 4, Faithful](tests/basic_tests.rs#L1001) `r#"<p><span class="math math-display">a\ </span></p>"#` | Configured + expected | Yes | Faithful |
-| [`unwritable_math_span`](tests/basic_tests.rs#L1011) / [input 1, Faithful](tests/basic_tests.rs#L1013) `"a$b"` | Configured | Yes | Faithful |
-| [`unwritable_math_span`](tests/basic_tests.rs#L1011) / [input 2, Faithful](tests/basic_tests.rs#L1015) `r"a\$b"` | Configured | Yes | Faithful |
-| [`unwritable_math_span`](tests/basic_tests.rs#L1011) / [input 3, Faithful](tests/basic_tests.rs#L1016) `r"a"` | Configured | Yes | Faithful |
-| [`unwritable_math_span`](tests/basic_tests.rs#L1011) / [input 4, Faithful](tests/basic_tests.rs#L1018) `"}a{"` | Configured | Yes | Faithful |
-| [`unwritable_math_span`](tests/basic_tests.rs#L1011) / [input 5, Faithful](tests/basic_tests.rs#L1020) `"a{"` | Configured | Yes | Faithful |
-| [`unwritable_math_span`](tests/basic_tests.rs#L1011) / [input 6, Faithful](tests/basic_tests.rs#L1021) `r"\{a"` | Configured | Yes | Faithful |
-| [`unwritable_math_span`](tests/basic_tests.rs#L1011) / [input 7, Faithful](tests/basic_tests.rs#L1028) `r"a$b"` | Configured | Yes | Faithful |
-| [`unwritable_math_span`](tests/basic_tests.rs#L1011) / [input 8, Faithful](tests/basic_tests.rs#L1028) `r"a\"` | Configured | Yes | Faithful |
-| [`unwritable_math_span`](tests/basic_tests.rs#L1011) / [input 9, Faithful](tests/basic_tests.rs#L1028) `"{a}"` | Configured | Yes | Faithful |
-| [`unwritable_math_span`](tests/basic_tests.rs#L1011) / [input 10, Faithful](tests/basic_tests.rs#L1028) `r"{a"` | Configured | Yes | Faithful |
-| [`unwritable_math_span`](tests/basic_tests.rs#L1011) / [input 11, Faithful](tests/basic_tests.rs#L1028) `r"a}"` | Configured | Yes | Faithful |
-| [`span_not_of_the_math_form`](tests/basic_tests.rs#L1040) / [input 1, Faithful](tests/basic_tests.rs#L1042) `r#"<p><span class="math math-inline">a<em>b</em></span></p>"#` | Configured | Yes | Faithful |
-| [`span_not_of_the_math_form`](tests/basic_tests.rs#L1040) / [input 2, Pure](tests/basic_tests.rs#L1043) `r#"<p><span class="math math-inline">a<em>b</em></span></p>"#` | No | Yes | No |
-| [`span_not_of_the_math_form`](tests/basic_tests.rs#L1040) / [input 3, Faithful](tests/basic_tests.rs#L1045) `r#"<p><span class="math math-inline">a<!--c--></span></p>"#` | Configured | Yes | Faithful |
-| [`span_not_of_the_math_form`](tests/basic_tests.rs#L1040) / [input 4, Pure](tests/basic_tests.rs#L1046) `r#"<p><span class="math math-inline">a<!--c--></span></p>"#` | No | Yes | No |
-| [`span_not_of_the_math_form`](tests/basic_tests.rs#L1040) / [input 5, Faithful](tests/basic_tests.rs#L1048) `r#"<p><span class="math math-inline" id="x">a</span></p>"#` | Configured | Yes | Faithful |
-| [`span_not_of_the_math_form`](tests/basic_tests.rs#L1040) / [input 6, Pure](tests/basic_tests.rs#L1049) `r#"<p><span class="math math-inline" id="x">a</span></p>"#` | No | Yes | No |
-| [`math_span_in_a_table_cell`](tests/basic_tests.rs#L1055) | Configured + expected | Yes | Faithful |
-| [`dollar_sign_in_text`](tests/basic_tests.rs#L1073) / [input 1, Faithful](tests/basic_tests.rs#L1074) `"<p>$5,$6</p>"` | Configured | Yes | Faithful |
-| [`dollar_sign_in_text`](tests/basic_tests.rs#L1073) / [input 2, Pure](tests/basic_tests.rs#L1075) `"<p>$5,$6</p>"` | No | Yes | No |
-| [`document_whitespace`](tests/basic_tests.rs#L1080) | Yes | Yes | No |
-| [`multibyte_ordered_list_escape_half`](tests/basic_tests.rs#L1098) | Yes | Yes | No |
-| [`multibyte_ordered_list_escape_accented`](tests/basic_tests.rs#L1104) | Yes | Yes | No |
-| [`multibyte_ordered_list_escape_trademark`](tests/basic_tests.rs#L1111) | Yes | Yes | No |
-| [`ascii_ordered_list_escape`](tests/basic_tests.rs#L1118) | Yes | Yes | No |
-| [`multibyte_no_dot`](tests/basic_tests.rs#L1124) | Yes | Yes | No |
-| [`cjk_before_ordered_list`](tests/basic_tests.rs#L1131) | Yes | Yes | No |
-| [`multibyte_atx_heading_escape`](tests/basic_tests.rs#L1138) | Yes | Yes | No |
-| [`multibyte_atx_heading_escape_umlaut`](tests/basic_tests.rs#L1144) | Yes | Yes | No |
-| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph`](tests/basic_tests.rs#L1178) / [input 1, Faithful](tests/basic_tests.rs#L1179) `"<p>-</p>"` | Yes | Yes | Faithful |
-| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph`](tests/basic_tests.rs#L1178) / [input 2, Faithful](tests/basic_tests.rs#L1180) `"<p>*</p>"` | Yes | Yes | Faithful |
-| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph`](tests/basic_tests.rs#L1178) / [input 3, Faithful](tests/basic_tests.rs#L1181) `"<p>+</p>"` | Yes | Yes | Faithful |
-| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph`](tests/basic_tests.rs#L1178) / [input 4, Faithful](tests/basic_tests.rs#L1182) `"<p>---</p>"` | Yes | Yes | Faithful |
-| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph`](tests/basic_tests.rs#L1178) / [input 5, Faithful](tests/basic_tests.rs#L1183) `"<p>===</p>"` | Yes | Yes | Faithful |
-| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph`](tests/basic_tests.rs#L1178) / [input 6, Faithful](tests/basic_tests.rs#L1184) `"<p>1.</p>"` | Yes | Yes | Faithful |
-| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph`](tests/basic_tests.rs#L1178) / [input 7, Faithful](tests/basic_tests.rs#L1185) `"<p>1)</p>"` | Yes | Yes | Faithful |
-| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph`](tests/basic_tests.rs#L1178) / [input 8, Faithful](tests/basic_tests.rs#L1186) `"<p>- - -</p>"` | Yes | Yes | Faithful |
-| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph`](tests/basic_tests.rs#L1178) / [input 9, Faithful](tests/basic_tests.rs#L1190) `"<p>--foo</p>"` | Yes | Yes | Faithful |
-| [`an_atx_marker_alone_in_a_paragraph_is_escaped`](tests/basic_tests.rs#L1196) / [input 1, Faithful](tests/basic_tests.rs#L1197) `"<p>#</p>"` | Yes | Yes | Faithful |
-| [`an_atx_marker_alone_in_a_paragraph_is_escaped`](tests/basic_tests.rs#L1196) / [input 2, Faithful](tests/basic_tests.rs#L1198) `"<p>######</p>"` | Yes | Yes | Faithful |
-| [`an_atx_marker_alone_in_a_paragraph_is_escaped`](tests/basic_tests.rs#L1196) / [input 3, Faithful](tests/basic_tests.rs#L1202) `"<p>#######</p>"` | Yes | Yes | Faithful |
-| [`an_atx_marker_alone_in_a_paragraph_is_escaped`](tests/basic_tests.rs#L1196) / [input 4, Faithful](tests/basic_tests.rs#L1206) `"<p>#x</p>"` | Yes | Yes | Faithful |
-| [`a_bullet_marker_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1219) / [input 1, Faithful](tests/basic_tests.rs#L1220) `"<p>-\nfoo</p>"` | Expected | Yes | Faithful |
-| [`a_bullet_marker_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1219) / [input 2, Faithful](tests/basic_tests.rs#L1221) `"<p>+\nfoo</p>"` | Expected | Yes | Faithful |
-| [`a_bullet_marker_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1219) / [input 3, Faithful](tests/basic_tests.rs#L1222) `"<p>-\tfoo</p>"` | Expected | Yes | Faithful |
-| [`an_atx_marker_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1228) / [input 1, Faithful](tests/basic_tests.rs#L1229) `"<p>#\nfoo</p>"` | Expected | Yes | Faithful |
-| [`an_atx_marker_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1228) / [input 2, Faithful](tests/basic_tests.rs#L1230) `"<p>###\nfoo</p>"` | Expected | Yes | Faithful |
-| [`an_atx_marker_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1228) / [input 3, Faithful](tests/basic_tests.rs#L1231) `"<p>#\tfoo</p>"` | Expected | Yes | Faithful |
-| [`an_ordered_item_delimiter_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1237) / [input 1, Faithful](tests/basic_tests.rs#L1238) `"<p>1.\nfoo</p>"` | Expected | Yes | Faithful |
-| [`an_ordered_item_delimiter_closed_by_a_line_ending_is_escaped`](tests/basic_tests.rs#L1237) / [input 2, Faithful](tests/basic_tests.rs#L1239) `"<p>1)\nfoo</p>"` | Expected | Yes | Faithful |
-| [`a_marker_behind_leading_whitespace_is_escaped`](tests/basic_tests.rs#L1247) / [input 1, Faithful](tests/basic_tests.rs#L1248) `"<p> 1. foo</p>"` | Expected | Yes | Faithful |
-| [`a_marker_behind_leading_whitespace_is_escaped`](tests/basic_tests.rs#L1247) / [input 2, Faithful](tests/basic_tests.rs#L1249) `"<p> - foo</p>"` | Expected | Yes | Faithful |
-| [`a_marker_behind_leading_whitespace_is_escaped`](tests/basic_tests.rs#L1247) / [input 3, Faithful](tests/basic_tests.rs#L1250) `"<p>\n# foo</p>"` | Expected | Yes | Faithful |
-| [`a_marker_behind_leading_whitespace_is_escaped`](tests/basic_tests.rs#L1247) / [input 4, Faithful](tests/basic_tests.rs#L1251) `"<p>\n 1.\n Item numbering\n</p>"` | Expected | Yes | Faithful |
-| [`a_marker_which_starts_no_line_is_not_escaped`](tests/basic_tests.rs#L1261) / [input 1, Faithful](tests/basic_tests.rs#L1262) `"<p>a <em>b</em> - c</p>"` | Yes | Yes | Faithful |
-| [`a_marker_which_starts_no_line_is_not_escaped`](tests/basic_tests.rs#L1261) / [input 2, Faithful](tests/basic_tests.rs#L1263) `"<p>a <em>b</em> 1. c</p>"` | Yes | Yes | Faithful |
-| [`a_run_of_ordered_item_delimiters_opens_no_list`](tests/basic_tests.rs#L1274) / [input 1, Faithful](tests/basic_tests.rs#L1275) `"<p>1)))</p>"` | Yes | Yes | Faithful |
-| [`a_run_of_ordered_item_delimiters_opens_no_list`](tests/basic_tests.rs#L1274) / [input 2, Faithful](tests/basic_tests.rs#L1276) `"<p>1.)</p>"` | Yes | Yes | Faithful |
-| [`a_paragraph_of_unicode_numerics_needs_no_escape`](tests/basic_tests.rs#L1285) / [input 1, Faithful](tests/basic_tests.rs#L1286) `"<p>2½. text</p>"` | Yes | Yes | Faithful |
-| [`a_paragraph_of_unicode_numerics_needs_no_escape`](tests/basic_tests.rs#L1285) / [input 2, Faithful](tests/basic_tests.rs#L1287) `"<p>1١. text</p>"` | Yes | Yes | Faithful |
-| [`a_literal_cdata_section_is_lost_unescaped`](tests/basic_tests.rs#L1301) | Expected | No | Faithful |
-| [`round_trip_in_a_block_context`](tests/basic_tests.rs#L1332) / [input 1, Faithful](tests/basic_tests.rs#L1338) `"<body><script>a*b\n\nc</script></body>"` | Expected | No | Faithful |
-| [`round_trip_in_a_block_context`](tests/basic_tests.rs#L1332) / [input 2, Faithful](tests/basic_tests.rs#L1342) `"<body><style>a*b\n\nc</style></body>"` | Expected | No | Faithful |
-| [`round_trip_in_a_block_context`](tests/basic_tests.rs#L1332) / [input 3, Faithful](tests/basic_tests.rs#L1347) `"<div>a*b\n\nc</div>"` | Expected | No | Faithful |
-| [`round_trip_in_a_block_context`](tests/basic_tests.rs#L1332) / [input 4, Faithful](tests/basic_tests.rs#L1356) `"<del>a*b\n\nc</del>"` | Expected | No | Faithful |
-| [`round_trip_in_a_block_context`](tests/basic_tests.rs#L1332) / [input 5, Faithful](tests/basic_tests.rs#L1360) `"<br><br>"` | Expected | No | Faithful |
-| [`round_trip_in_a_block_context`](tests/basic_tests.rs#L1332) / [input 6, Faithful](tests/basic_tests.rs#L1363) `"<br>"` | Expected | No | Faithful |
-| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1371) / [input 1, Faithful](tests/basic_tests.rs#L1373) `"<p><br></p>"` | Yes | No | Faithful |
-| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1371) / [input 2, Faithful](tests/basic_tests.rs#L1375) `"<p><!--c--></p>"` | Yes | No | Faithful |
-| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1371) / [input 3, Faithful](tests/basic_tests.rs#L1376) `"<p><!--c-->a</p>"` | Yes | No | Faithful |
-| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1371) / [input 4, Faithful](tests/basic_tests.rs#L1379) `r#"<p><iframe src="u">a</iframe></p>"#` | Yes | No | Faithful |
-| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1371) / [input 5, Faithful](tests/basic_tests.rs#L1385) `"<blockquote><p><br></p></blockquote>"` | Yes | No | Faithful |
-| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1371) / [input 6, Faithful](tests/basic_tests.rs#L1390) `"<p><br><br></p>"` | Yes | No | Faithful |
-| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1371) / [input 7, Faithful](tests/basic_tests.rs#L1391) `"<p><br>a</p>"` | Yes | No | Faithful |
-| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1371) / [input 8, Faithful](tests/basic_tests.rs#L1392) `"<p><del><br></del></p>"` | Yes | No | Faithful |
-| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1371) / [input 9, Faithful, setext](tests/basic_tests.rs#L1396) `"<h1><br></h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1371) / [input 10, Faithful, setext](tests/basic_tests.rs#L1399) `"<h1><div>a</div></h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve`](tests/basic_tests.rs#L1371) / [input 11, Faithful, setext](tests/basic_tests.rs#L1404) `"<h1><br><br></h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_setext_heading_of_leaf_block_syntax`](tests/basic_tests.rs#L1422) / [input 1, Faithful, setext](tests/basic_tests.rs#L1423) `"<h1>-</h1>"` | Configured | No | Faithful |
-| [`round_trip_of_a_setext_heading_of_leaf_block_syntax`](tests/basic_tests.rs#L1422) / [input 2, Faithful, setext](tests/basic_tests.rs#L1424) `"<h2>-</h2>"` | Configured | No | Faithful |
-| [`round_trip_of_a_setext_heading_of_leaf_block_syntax`](tests/basic_tests.rs#L1422) / [input 3, Faithful, setext](tests/basic_tests.rs#L1425) `"<h1>---</h1>"` | Configured | No | Faithful |
-| [`round_trip_of_a_setext_heading_of_leaf_block_syntax`](tests/basic_tests.rs#L1422) / [input 4, Faithful, setext](tests/basic_tests.rs#L1426) `"<h1>1.</h1>"` | Configured | No | Faithful |
-| [`round_trip_of_an_atx_heading_ending_in_a_hash_run`](tests/basic_tests.rs#L1433) / [input 1, Faithful](tests/basic_tests.rs#L1434) `"<h1>a #</h1>"` | Expected | Yes | Faithful |
-| [`round_trip_of_an_atx_heading_ending_in_a_hash_run`](tests/basic_tests.rs#L1433) / [input 2, Faithful](tests/basic_tests.rs#L1435) `"<h1>a ##</h1>"` | Expected | Yes | Faithful |
-| [`round_trip_of_an_atx_heading_ending_in_a_hash_run`](tests/basic_tests.rs#L1433) / [input 3, Faithful](tests/basic_tests.rs#L1436) `"<h1><em>a</em> #</h1>"` | Expected | Yes | Faithful |
-| [`round_trip_of_an_atx_heading_ending_in_a_hash_run`](tests/basic_tests.rs#L1433) / [input 4, Faithful](tests/basic_tests.rs#L1437) `"<h3>#</h3>"` | Expected | Yes | Faithful |
-| [`round_trip_of_an_atx_heading_ending_in_a_hash_run`](tests/basic_tests.rs#L1433) / [input 5, Faithful](tests/basic_tests.rs#L1439) `"<h1>a\t#</h1>"` | Expected | Yes | Faithful |
-| [`round_trip_of_an_atx_heading_ending_in_a_hash_run`](tests/basic_tests.rs#L1433) / [input 6, Faithful](tests/basic_tests.rs#L1440) `r"<h1>a #</h1>"` | Expected | Yes | Faithful |
-| [`round_trip_of_an_atx_heading_ending_in_a_hash_run`](tests/basic_tests.rs#L1433) / [input 7, Faithful](tests/basic_tests.rs#L1443) `"<h1>a#</h1>"` | Expected | Yes | No |
-| [`round_trip_of_an_atx_heading_ending_in_a_hash_run`](tests/basic_tests.rs#L1433) / [input 8, Faithful](tests/basic_tests.rs#L1444) `"<h1>a&nbsp;#</h1>"` | Expected | Yes | No |
-| [`atx_heading_of_a_hash_run_from_a_handler`](tests/basic_tests.rs#L1452) / [input 1, Faithful, custom handler](tests/basic_tests.rs#L1463) `"<h1><x-hash></x-hash></h1>"` | No | Yes | Faithful |
-| [`atx_heading_of_a_hash_run_from_a_handler`](tests/basic_tests.rs#L1452) / [input 2, Faithful, custom handler](tests/basic_tests.rs#L1472) `"<h1><x-hash></x-hash><x-hash></x-hash></h1>"` | No | Yes | No |
-| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1484) / [input 1, Faithful](tests/basic_tests.rs#L1488) `"<h1>x<script>a*b\nc</script>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1484) / [input 2, Faithful](tests/basic_tests.rs#L1492) `"<h1>x<style>a*b\nc</style>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1484) / [input 3, Faithful](tests/basic_tests.rs#L1494) `"<h1>x<script>a*b*c</script>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1484) / [input 4, Faithful](tests/basic_tests.rs#L1495) `"<h1>x<style>a*b*c</style>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1484) / [input 5, Faithful](tests/basic_tests.rs#L1496) `"<h1>x<script>[a](b)</script>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1484) / [input 6, Faithful](tests/basic_tests.rs#L1503) `"<h1>x<textarea>a*b\nc</textarea>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1484) / [input 7, Faithful](tests/basic_tests.rs#L1507) `"<h1>x<pre>a*b\nc</pre>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1484) / [input 8, Faithful](tests/basic_tests.rs#L1510) `"<h1>x<div>a*b*c</div>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1484) / [input 9, Faithful](tests/basic_tests.rs#L1513) `"<h1>x<div>a*b\nc</div>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1484) / [input 10, Faithful](tests/basic_tests.rs#L1517) `"<h1>x<del>a*b\nc</del>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_in_an_inline_context`](tests/basic_tests.rs#L1484) / [input 11, Faithful](tests/basic_tests.rs#L1523) `"<h1>x<!--a\nb-->y</h1>"` | Expected | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 1, Faithful](tests/basic_tests.rs#L1544) `"<h1>x<div>a<em>b</em>c</div>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 2, Faithful](tests/basic_tests.rs#L1545) `"<h1>x<del>a<em>b</em>c</del>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 3, Faithful](tests/basic_tests.rs#L1546) `"<h1>x<pre>a<em>b</em>c</pre>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 4, Faithful](tests/basic_tests.rs#L1549) `"<h1>x<div>a&lt;b&gt;c</div>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 5, Faithful](tests/basic_tests.rs#L1550) `"<h1>x<del>a&lt;b&gt;c</del>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 6, Faithful](tests/basic_tests.rs#L1551) `"<h1>x<pre>a&lt;b&gt;c</pre>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 7, Faithful](tests/basic_tests.rs#L1552) `"<h1>x<textarea>a&lt;b&gt;c</textarea>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 8, Faithful](tests/basic_tests.rs#L1555) `"<h1>x<div>a&amp;b</div>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 9, Faithful](tests/basic_tests.rs#L1556) `"<h1>x<pre>a&amp;b</pre>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 10, Faithful](tests/basic_tests.rs#L1559) `"<h1>x<div>a*b_c[d]</div>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 11, Faithful](tests/basic_tests.rs#L1560) `"<h1>x<pre>a*b_c[d]</pre>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 12, Faithful](tests/basic_tests.rs#L1561) `"<h1>x<script>a*b_c[d]</script>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 13, Faithful](tests/basic_tests.rs#L1562) `"<h1>x<style>a*b_c[d]</style>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 14, Faithful](tests/basic_tests.rs#L1566) `"<h1>x<div>a<code>c*d</code>b</div>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 15, Faithful](tests/basic_tests.rs#L1567) `"<h1>x<pre>a<code>c*d</code>b</pre>y</h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 16, Faithful](tests/basic_tests.rs#L1568) `"<h1><pre><code>a</code></pre></h1>"` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 17, Faithful](tests/basic_tests.rs#L1569) `r#"<h1>x<div>a<code class="q">c*d</code>b</div>y</h1>"#` | Yes | No | Faithful |
-| [`round_trip_of_a_walked_raw_inline`](tests/basic_tests.rs#L1542) / [input 18, Faithful](tests/basic_tests.rs#L1573) `"<pre>a*b\n\nc</pre>"` | Yes | No | Faithful |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579) / [input 1, Faithful](tests/basic_tests.rs#L1629) `"<h1>x<div>a\nb</div>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579) / [input 2, Faithful](tests/basic_tests.rs#L1630) `"<h1>x<pre>a\nb</pre>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579) / [input 3, Faithful](tests/basic_tests.rs#L1631) `"<h1>x<script>a\nb</script>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579) / [input 4, Faithful](tests/basic_tests.rs#L1635) `"<h1>x<textarea>a\nb</textarea>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579) / [input 5, Faithful](tests/basic_tests.rs#L1639) `"<h1><pre><code>a*b\nc</code></pre></h1>"` | Expected | No | Faithful |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579) / [input 6, Faithful](tests/basic_tests.rs#L1587) `"<h1>x<script>if(a<b){}</script>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579) / [input 7, Faithful](tests/basic_tests.rs#L1591) `"<h1>x<script>a<em>b</em>c</script>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579) / [input 8, Faithful](tests/basic_tests.rs#L1598) `"<h1>x<script>a&amp;b</script>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579) / [input 9, Faithful](tests/basic_tests.rs#L1602) `"<h1>x<script>a&lt;b&gt;c</script>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579) / [input 10, Faithful](tests/basic_tests.rs#L1609) `"<h1><pre><b>a</b></pre></h1>"` | Expected | No | Faithful |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579) / [input 11, Faithful](tests/basic_tests.rs#L1615) `"<h1>x<textarea>a<em>b</em>c</textarea>y</h1>"` | Expected | No | Faithful |
-| [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs#L1579) / [input 12, Faithful](tests/basic_tests.rs#L1621) `"<pre><code>a*b\nc</code></pre>"` | Expected | No | Faithful |
-| [`append_content_when_the_body_is_empty`](tests/basic_tests.rs#L1649) | No | Yes | No |
+<table style="width: 98.2342%; height: 7339.6px;">
+  <thead>
+    <tr style="height: 53.2px;">
+      <th style="width: 66.6613%;">Test</th>
+      <th style="width: 11.2716%;">Faithful round trip</th>
+      <th style="width: 11.8525%;">Keep Markdown</th>
+      <th style="width: 10.12%;">Existing round trip</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L18"><code>links_with_spaces</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L29"><code>referenced_links_with_title</code></a>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L49"><code>consecutive_referenced_links_with_title</code></a>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L75"><code>images</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L89"><code>images_with_spaces_in_url</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L100"><code>image_title_stays_outside_an_angle_bracket_destination</code></a>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L113"><code>headings</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L133"><code>pure_heading_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L134">input 1, Pure</a> <code>"&lt;em&gt;&lt;h2&gt;b&lt;/h2&gt;&lt;/em&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L133"><code>pure_heading_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L137">input 2, Pure</a> <code>r#"&lt;a href="u"&gt;&lt;h2&gt;b&lt;/h2&gt;&lt;/a&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L133"><code>pure_heading_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L141">input 3, Pure</a> <code>"&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;&lt;h2&gt;b&lt;/h2&gt;&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;/table&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L133"><code>pure_heading_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L147">input 4, Pure</a> <code>"&lt;h1&gt;&lt;div&gt;&lt;h2&gt; a # &lt;/h2&gt;&lt;/div&gt;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L154"><code>heading_content_trims_only_document_whitespace</code></a> / <a href="tests/basic_tests.rs#L157">input 1, Faithful</a> <code>"&lt;h1&gt; \t\r\n a \t\r\n &lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured + expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L154"><code>heading_content_trims_only_document_whitespace</code></a> / <a href="tests/basic_tests.rs#L159">input 2, Faithful</a> <code>"&lt;h1&gt;&amp;nbsp;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured + expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L154"><code>heading_content_trims_only_document_whitespace</code></a> / <a href="tests/basic_tests.rs#L162">input 3, Faithful, setext</a> <code>"&lt;h1&gt;&amp;nbsp;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured + expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L170"><code>setext_underline</code></a> / <a href="tests/basic_tests.rs#L171">input 1, Faithful, setext</a> <code>"&lt;h2&gt;a&lt;/h2&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L170"><code>setext_underline</code></a> / <a href="tests/basic_tests.rs#L172">input 2, Faithful, setext</a> <code>"&lt;h1&gt;é&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L170"><code>setext_underline</code></a> / <a href="tests/basic_tests.rs#L175">input 3, Faithful, setext</a> <code>"&lt;h1&gt;a*b&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L170"><code>setext_underline</code></a> / <a href="tests/basic_tests.rs#L179">input 4, Faithful, setext</a> <code>"&lt;h1&gt;&lt;br&gt;&lt;em&gt;b&lt;/em&gt;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L170"><code>setext_underline</code></a> / <a href="tests/basic_tests.rs#L183">input 5, Faithful, setext</a> <code>"&lt;h1&gt;&lt;em&gt;a&lt;/em&gt;&lt;br&gt;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L170"><code>setext_underline</code></a> / <a href="tests/basic_tests.rs#L185">input 6, Faithful, setext</a> <code>"&lt;h3&gt;a&lt;/h3&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L189"><code>paragraphs</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L201"><code>quotes</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L209"><code>br</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L216"><code>hr</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L222"><code>strong_italic</code></a> / <a href="tests/basic_tests.rs#L226">input 1, Faithful</a> <code>r#"&lt;i&gt;Italic&lt;/i&gt;&lt;em&gt;Also italic&lt;/em&gt;&lt;strong&gt;Strong&lt;/strong&gt;&lt;b&gt;Stronger&lt;/b&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L222"><code>strong_italic</code></a> / <a href="tests/basic_tests.rs#L230">input 2, Pure</a> <code>r#"&lt;i&gt;Italic&lt;/i&gt;&lt;em&gt;Also italic&lt;/em&gt;&lt;strong&gt;Strong&lt;/strong&gt;&lt;b&gt;Stronger&lt;/b&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L239"><code>faithful_mode_keeps_adjacent_emphasis_apart</code></a> / <a href="tests/basic_tests.rs#L242">input 1, Faithful</a> <code>"&lt;p&gt;&lt;em&gt;a&lt;/em&gt;&lt;em&gt;b&lt;/em&gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L239"><code>faithful_mode_keeps_adjacent_emphasis_apart</code></a> / <a href="tests/basic_tests.rs#L246">input 2, Faithful</a> <code>"&lt;p&gt;&lt;i&gt;a&lt;/i&gt;&lt;em&gt;b&lt;/em&gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L239"><code>faithful_mode_keeps_adjacent_emphasis_apart</code></a> / <a href="tests/basic_tests.rs#L250">input 3, Faithful</a> <code>"&lt;p&gt;&lt;b&gt;a&lt;/b&gt;&lt;strong&gt;b&lt;/strong&gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L258"><code>faithful_mode_keeps_adjacent_code_spans_apart</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L268"><code>faithful_mode_keeps_adjacent_untranslated_elements_apart</code></a> / <a href="tests/basic_tests.rs#L271">input 1, Faithful</a> <code>"&lt;p&gt;&lt;sub&gt;a&lt;/sub&gt;&lt;sub&gt;b&lt;/sub&gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L268"><code>faithful_mode_keeps_adjacent_untranslated_elements_apart</code></a> / <a href="tests/basic_tests.rs#L275">input 2, Faithful</a> <code>r#"&lt;p&gt;&lt;abbr title="t"&gt;a&lt;/abbr&gt;&lt;abbr title="t"&gt;b&lt;/abbr&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L268"><code>faithful_mode_keeps_adjacent_untranslated_elements_apart</code></a> / <a href="tests/basic_tests.rs#L279">input 3, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="x"&gt;a&lt;/span&gt;&lt;span class="x"&gt;b&lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L285"><code>pure_mode_merges_adjacent_inline_elements</code></a> / <a href="tests/basic_tests.rs#L286">input 1, Pure</a> <code>"&lt;p&gt;&lt;em&gt;a&lt;/em&gt;&lt;em&gt;b&lt;/em&gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L285"><code>pure_mode_merges_adjacent_inline_elements</code></a> / <a href="tests/basic_tests.rs#L289">input 2, Pure</a> <code>"&lt;p&gt;&lt;sub&gt;a&lt;/sub&gt;&lt;sub&gt;b&lt;/sub&gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L297"><code>adjacent_math_spans_stay_math</code></a> / <a href="tests/basic_tests.rs#L299">input 1, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline"&gt;a&lt;/span&gt;&lt;span class="math math-inline"&gt;b&lt;/span&gt;&lt;…</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L297"><code>adjacent_math_spans_stay_math</code></a> / <a href="tests/basic_tests.rs#L299">input 2, Pure</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline"&gt;a&lt;/span&gt;&lt;span class="math math-inline"&gt;b&lt;/span&gt;&lt;…</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Pure only</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L297"><code>adjacent_math_spans_stay_math</code></a> / <a href="tests/basic_tests.rs#L303">input 3, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-display"&gt;a&lt;/span&gt;&lt;span class="math math-display"&gt;b&lt;/span…</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L297"><code>adjacent_math_spans_stay_math</code></a> / <a href="tests/basic_tests.rs#L303">input 4, Pure</a> <code>r#"&lt;p&gt;&lt;span class="math math-display"&gt;a&lt;/span&gt;&lt;span class="math math-display"&gt;b&lt;/span…</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Pure only</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L297"><code>adjacent_math_spans_stay_math</code></a> / <a href="tests/basic_tests.rs#L307">input 5, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline"&gt;a&lt;/span&gt;&lt;span class="math math-display"&gt;b&lt;/span&gt;…</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L297"><code>adjacent_math_spans_stay_math</code></a> / <a href="tests/basic_tests.rs#L307">input 6, Pure</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline"&gt;a&lt;/span&gt;&lt;span class="math math-display"&gt;b&lt;/span&gt;…</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Pure only</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L297"><code>adjacent_math_spans_stay_math</code></a> / <a href="tests/basic_tests.rs#L311">input 7, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-display"&gt;a&lt;/span&gt;&lt;span class="math math-inline"&gt;b&lt;/span&gt;…</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L297"><code>adjacent_math_spans_stay_math</code></a> / <a href="tests/basic_tests.rs#L311">input 8, Pure</a> <code>r#"&lt;p&gt;&lt;span class="math math-display"&gt;a&lt;/span&gt;&lt;span class="math math-inline"&gt;b&lt;/span&gt;…</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Pure only</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L331"><code>blank_emphasis_leaves_its_whitespace_behind</code></a> / <a href="tests/basic_tests.rs#L332">input 1, Pure</a> <code>"&lt;p&gt;a&lt;em&gt; &lt;/em&gt;b&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L331"><code>blank_emphasis_leaves_its_whitespace_behind</code></a> / <a href="tests/basic_tests.rs#L333">input 2, Pure</a> <code>"&lt;p&gt;a&lt;strong&gt; &lt;/strong&gt;b&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L331"><code>blank_emphasis_leaves_its_whitespace_behind</code></a> / <a href="tests/basic_tests.rs#L336">input 3, Pure</a> <code>"&lt;p&gt;a&lt;em&gt;&amp;#160;&lt;/em&gt;b&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L331"><code>blank_emphasis_leaves_its_whitespace_behind</code></a> / <a href="tests/basic_tests.rs#L338">input 4, Pure</a> <code>"&lt;p&gt;a&lt;em&gt;&lt;/em&gt;b&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L342"><code>italic_inside_word</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L348"><code>italic_with_br</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L357"><code>inline_raw_html_escaping</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L366"><code>multiline_raw_html_escaping</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L389"><code>inline_email_autolink_escaping</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L408"><code>a_sequence_finished_by_a_sibling_stays_text</code></a> / <a href="tests/basic_tests.rs#L410">input 1, Pure</a> <code>"&lt;p&gt;&amp;lt;&lt;span&gt;div&lt;/span&gt; class&amp;gt;x&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Pure only</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L408"><code>a_sequence_finished_by_a_sibling_stays_text</code></a> / <a href="tests/basic_tests.rs#L415">input 2, Pure</a> <code>"&lt;p&gt;&amp;lt;&lt;a&gt;!--&lt;/a&gt; x --&amp;gt; y&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Pure only</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L408"><code>a_sequence_finished_by_a_sibling_stays_text</code></a> / <a href="tests/basic_tests.rs#L420">input 3, Pure</a> <code>"&lt;p&gt;a&amp;lt;&lt;em&gt;&lt;/em&gt;b&amp;gt;c&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Pure only</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L408"><code>a_sequence_finished_by_a_sibling_stays_text</code></a> / <a href="tests/basic_tests.rs#L421">input 4, Pure</a> <code>"&lt;p&gt;&amp;lt;/&lt;span&gt;p&lt;/span&gt; &amp;gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Pure only</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L408"><code>a_sequence_finished_by_a_sibling_stays_text</code></a> / <a href="tests/basic_tests.rs#L422">input 5, Pure</a> <code>"&lt;p&gt;&amp;lt;&lt;span&gt;http://x.y&lt;/span&gt;&amp;gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Pure only</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L408"><code>a_sequence_finished_by_a_sibling_stays_text</code></a> / <a href="tests/basic_tests.rs#L427">input 6, Pure</a> <code>"&lt;p&gt;&amp;lt;1&lt;span&gt;@b.co&amp;gt;&lt;/span&gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Pure only</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L444"><code>html_escaping</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L474"><code>faithful_mode_inline</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L494"><code>faithful_mode_hr</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L502"><code>faithful_mode_blockquote</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L522"><code>faithful_mode_h1</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L533"><code>heading_attributes</code></a> / <a href="tests/basic_tests.rs#L536">input 1, Faithful</a> <code>r#"&lt;h1 class=""&gt;a&lt;/h1&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L533"><code>heading_attributes</code></a> / <a href="tests/basic_tests.rs#L540">input 2, Faithful</a> <code>"&lt;h2 id&gt;a&lt;/h2&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L533"><code>heading_attributes</code></a> / <a href="tests/basic_tests.rs#L542">input 3, Pure</a> <code>r#"&lt;h1 class="x"&gt;a&lt;/h1&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L546"><code>faithful_mode_p</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L554"><code>faithful_mode_ol1</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L575"><code>faithful_mode_ol2</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L592"><code>faithful_mode_comment</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L600"><code>faithful_mode_html</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L623"><code>faithful_mode_table</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 53.2px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L666"><code>faithful_mode_serializes_a_table_with_a_caption</code></a> / <a href="tests/basic_tests.rs#L677">input 1, Faithful</a> <code>concat!( r#"&lt;table&gt;&lt;caption&gt;&lt;span class="label"&gt;Caption&lt;/span&gt;&lt;/caption&gt;"#, "&lt;tr&gt;&lt;th&gt;…</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 53.2px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L666"><code>faithful_mode_serializes_a_table_with_a_caption</code></a> / <a href="tests/basic_tests.rs#L682">input 2, Faithful</a> <code>concat!( r#"&lt;table&gt;&lt;caption&gt;&lt;span class="label"&gt;Caption&lt;/span&gt;&lt;/caption&gt;"#, "&lt;tbody&gt;&lt;…</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L688"><code>pure_mode_writes_a_caption_as_a_paragraph</code></a>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L705"><code>pure_mode_separates_a_caption_from_the_table_it_sits_above</code></a> / <a href="tests/basic_tests.rs#L706">input 1, Pure</a> <code>"&lt;ul&gt;&lt;li&gt;a&lt;/li&gt;&lt;/ul&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Pure only</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L705"><code>pure_mode_separates_a_caption_from_the_table_it_sits_above</code></a> / <a href="tests/basic_tests.rs#L706">input 2, Pure</a> <code>"&lt;blockquote&gt;a&lt;/blockquote&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Pure only</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L732"><code>faithful_mode_nested_inline_html</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L740"><code>spaces_check</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L749"><code>consecutive_blocks</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L763"><code>raw_text</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L769"><code>nested_divs</code></a>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L783"><code>with_head</code></a>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L803"><code>with_custom_rules</code></a>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L815"><code>with_custom_rules_and_fallback</code></a> / <a href="tests/basic_tests.rs#L833">input 1, Pure</a> <code>r#"&lt;img src="https://example.com"/&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L815"><code>with_custom_rules_and_fallback</code></a> / <a href="tests/basic_tests.rs#L838">input 2, Pure</a> <code>r#"&lt;img src="https://example.com" id="do_not_skip_me"/&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L843"><code>upper_case_tags</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L852"><code>html_entities</code></a> / <a href="tests/basic_tests.rs#L856">input 1, Faithful</a> <code>r#"&lt;p&gt;&lt;a href="/my%20&amp;amp;uri" title="my%20&amp;amp;title"&gt;my%20&amp;amp;link&lt;/a&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L852"><code>html_entities</code></a> / <a href="tests/basic_tests.rs#L862">input 2, Faithful</a> <code>r#"&lt;p&gt;This &amp;amp; that, then &amp;lt; &amp;gt; now.&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L852"><code>html_entities</code></a> / <a href="tests/basic_tests.rs#L866">input 3, Faithful</a> <code>"&lt;p&gt;&amp;amp;copy; &amp;amp;#169; &amp;amp;#xA9;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L870"><code>scripting_option</code></a>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L888"><code>multithreading</code></a>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L924"><code>unterminated_html</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L930"><code>misnested_formatting_does_not_duplicate_or_lose_text</code></a>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L937"><code>math</code></a> / <a href="tests/basic_tests.rs#L940">input 1, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline"&gt;x^2&lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L937"><code>math</code></a> / <a href="tests/basic_tests.rs#L945">input 2, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-display"&gt;x^2&lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L937"><code>math</code></a> / <a href="tests/basic_tests.rs#L951">input 3, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-display"&gt;{a}_1, b_{2}, a*1, b*2, [a](b), 3 &amp;lt;a&amp;gt; b, …</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L971"><code>empty_math_span</code></a> / <a href="tests/basic_tests.rs#L972">input 1, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-display"&gt;&lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L971"><code>empty_math_span</code></a> / <a href="tests/basic_tests.rs#L973">input 2, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline"&gt;&lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L971"><code>empty_math_span</code></a> / <a href="tests/basic_tests.rs#L979">input 3, Pure</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline"&gt;&lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L986"><code>math_span_whitespace</code></a> / <a href="tests/basic_tests.rs#L989">input 1, Faithful</a> <code>"&lt;p&gt;&lt;span class="math math-inline"&gt; \u{b}x\t&lt;/span&gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured + expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L986"><code>math_span_whitespace</code></a> / <a href="tests/basic_tests.rs#L991">input 2, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-display"&gt; x &lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Configured + expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L986"><code>math_span_whitespace</code></a> / <a href="tests/basic_tests.rs#L997">input 3, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline"&gt;a\ &lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Configured + expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L986"><code>math_span_whitespace</code></a> / <a href="tests/basic_tests.rs#L1001">input 4, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-display"&gt;a\ &lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Configured + expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1011"><code>unwritable_math_span</code></a> / <a href="tests/basic_tests.rs#L1013">input 1, Faithful</a> <code>"a$b"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1011"><code>unwritable_math_span</code></a> / <a href="tests/basic_tests.rs#L1015">input 2, Faithful</a> <code>r"a\$b"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1011"><code>unwritable_math_span</code></a> / <a href="tests/basic_tests.rs#L1016">input 3, Faithful</a> <code>r"a"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1011"><code>unwritable_math_span</code></a> / <a href="tests/basic_tests.rs#L1018">input 4, Faithful</a> <code>"}a{"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1011"><code>unwritable_math_span</code></a> / <a href="tests/basic_tests.rs#L1020">input 5, Faithful</a> <code>"a{"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1011"><code>unwritable_math_span</code></a> / <a href="tests/basic_tests.rs#L1021">input 6, Faithful</a> <code>r"\{a"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1011"><code>unwritable_math_span</code></a> / <a href="tests/basic_tests.rs#L1028">input 7, Faithful</a> <code>r"a$b"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1011"><code>unwritable_math_span</code></a> / <a href="tests/basic_tests.rs#L1028">input 8, Faithful</a> <code>r"a\"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1011"><code>unwritable_math_span</code></a> / <a href="tests/basic_tests.rs#L1028">input 9, Faithful</a> <code>"{a}"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1011"><code>unwritable_math_span</code></a> / <a href="tests/basic_tests.rs#L1028">input 10, Faithful</a> <code>r"{a"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1011"><code>unwritable_math_span</code></a> / <a href="tests/basic_tests.rs#L1028">input 11, Faithful</a> <code>r"a}"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1040"><code>span_not_of_the_math_form</code></a> / <a href="tests/basic_tests.rs#L1042">input 1, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline"&gt;a&lt;em&gt;b&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1040"><code>span_not_of_the_math_form</code></a> / <a href="tests/basic_tests.rs#L1043">input 2, Pure</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline"&gt;a&lt;em&gt;b&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1040"><code>span_not_of_the_math_form</code></a> / <a href="tests/basic_tests.rs#L1045">input 3, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline"&gt;a&lt;!--c--&gt;&lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1040"><code>span_not_of_the_math_form</code></a> / <a href="tests/basic_tests.rs#L1046">input 4, Pure</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline"&gt;a&lt;!--c--&gt;&lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1040"><code>span_not_of_the_math_form</code></a> / <a href="tests/basic_tests.rs#L1048">input 5, Faithful</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline" id="x"&gt;a&lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1040"><code>span_not_of_the_math_form</code></a> / <a href="tests/basic_tests.rs#L1049">input 6, Pure</a> <code>r#"&lt;p&gt;&lt;span class="math math-inline" id="x"&gt;a&lt;/span&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1055"><code>math_span_in_a_table_cell</code></a>
+      </td>
+      <td style="width: 11.2716%;">Configured + expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1073"><code>dollar_sign_in_text</code></a> / <a href="tests/basic_tests.rs#L1074">input 1, Faithful</a> <code>"&lt;p&gt;$5,$6&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1073"><code>dollar_sign_in_text</code></a> / <a href="tests/basic_tests.rs#L1075">input 2, Pure</a> <code>"&lt;p&gt;$5,$6&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1080"><code>document_whitespace</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1098"><code>multibyte_ordered_list_escape_half</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1104"><code>multibyte_ordered_list_escape_accented</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1111"><code>multibyte_ordered_list_escape_trademark</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1118"><code>ascii_ordered_list_escape</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1124"><code>multibyte_no_dot</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1131"><code>cjk_before_ordered_list</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1138"><code>multibyte_atx_heading_escape</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1144"><code>multibyte_atx_heading_escape_umlaut</code></a>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1178"><code>a_paragraph_of_leaf_block_syntax_stays_a_paragraph</code></a> / <a href="tests/basic_tests.rs#L1179">input 1, Faithful</a> <code>"&lt;p&gt;-&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1178"><code>a_paragraph_of_leaf_block_syntax_stays_a_paragraph</code></a> / <a href="tests/basic_tests.rs#L1180">input 2, Faithful</a> <code>"&lt;p&gt;*&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1178"><code>a_paragraph_of_leaf_block_syntax_stays_a_paragraph</code></a> / <a href="tests/basic_tests.rs#L1181">input 3, Faithful</a> <code>"&lt;p&gt;+&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1178"><code>a_paragraph_of_leaf_block_syntax_stays_a_paragraph</code></a> / <a href="tests/basic_tests.rs#L1182">input 4, Faithful</a> <code>"&lt;p&gt;---&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1178"><code>a_paragraph_of_leaf_block_syntax_stays_a_paragraph</code></a> / <a href="tests/basic_tests.rs#L1183">input 5, Faithful</a> <code>"&lt;p&gt;===&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1178"><code>a_paragraph_of_leaf_block_syntax_stays_a_paragraph</code></a> / <a href="tests/basic_tests.rs#L1184">input 6, Faithful</a> <code>"&lt;p&gt;1.&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1178"><code>a_paragraph_of_leaf_block_syntax_stays_a_paragraph</code></a> / <a href="tests/basic_tests.rs#L1185">input 7, Faithful</a> <code>"&lt;p&gt;1)&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1178"><code>a_paragraph_of_leaf_block_syntax_stays_a_paragraph</code></a> / <a href="tests/basic_tests.rs#L1186">input 8, Faithful</a> <code>"&lt;p&gt;- - -&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1178"><code>a_paragraph_of_leaf_block_syntax_stays_a_paragraph</code></a> / <a href="tests/basic_tests.rs#L1190">input 9, Faithful</a> <code>"&lt;p&gt;--foo&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1196"><code>an_atx_marker_alone_in_a_paragraph_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1197">input 1, Faithful</a> <code>"&lt;p&gt;#&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1196"><code>an_atx_marker_alone_in_a_paragraph_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1198">input 2, Faithful</a> <code>"&lt;p&gt;######&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1196"><code>an_atx_marker_alone_in_a_paragraph_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1202">input 3, Faithful</a> <code>"&lt;p&gt;#######&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1196"><code>an_atx_marker_alone_in_a_paragraph_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1206">input 4, Faithful</a> <code>"&lt;p&gt;#x&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1219"><code>a_bullet_marker_closed_by_a_line_ending_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1220">input 1, Faithful</a> <code>"&lt;p&gt;-\nfoo&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1219"><code>a_bullet_marker_closed_by_a_line_ending_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1221">input 2, Faithful</a> <code>"&lt;p&gt;+\nfoo&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1219"><code>a_bullet_marker_closed_by_a_line_ending_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1222">input 3, Faithful</a> <code>"&lt;p&gt;-\tfoo&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1228"><code>an_atx_marker_closed_by_a_line_ending_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1229">input 1, Faithful</a> <code>"&lt;p&gt;#\nfoo&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1228"><code>an_atx_marker_closed_by_a_line_ending_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1230">input 2, Faithful</a> <code>"&lt;p&gt;###\nfoo&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1228"><code>an_atx_marker_closed_by_a_line_ending_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1231">input 3, Faithful</a> <code>"&lt;p&gt;#\tfoo&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1237"><code>an_ordered_item_delimiter_closed_by_a_line_ending_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1238">input 1, Faithful</a> <code>"&lt;p&gt;1.\nfoo&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1237"><code>an_ordered_item_delimiter_closed_by_a_line_ending_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1239">input 2, Faithful</a> <code>"&lt;p&gt;1)\nfoo&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1247"><code>a_marker_behind_leading_whitespace_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1248">input 1, Faithful</a> <code>"&lt;p&gt; 1. foo&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1247"><code>a_marker_behind_leading_whitespace_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1249">input 2, Faithful</a> <code>"&lt;p&gt; - foo&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1247"><code>a_marker_behind_leading_whitespace_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1250">input 3, Faithful</a> <code>"&lt;p&gt;\n# foo&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1247"><code>a_marker_behind_leading_whitespace_is_escaped</code></a> / <a href="tests/basic_tests.rs#L1251">input 4, Faithful</a> <code>"&lt;p&gt;\n 1.\n Item numbering\n&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1261"><code>a_marker_which_starts_no_line_is_not_escaped</code></a> / <a href="tests/basic_tests.rs#L1262">input 1, Faithful</a> <code>"&lt;p&gt;a &lt;em&gt;b&lt;/em&gt; - c&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1261"><code>a_marker_which_starts_no_line_is_not_escaped</code></a> / <a href="tests/basic_tests.rs#L1263">input 2, Faithful</a> <code>"&lt;p&gt;a &lt;em&gt;b&lt;/em&gt; 1. c&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1274"><code>a_run_of_ordered_item_delimiters_opens_no_list</code></a> / <a href="tests/basic_tests.rs#L1275">input 1, Faithful</a> <code>"&lt;p&gt;1)))&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1274"><code>a_run_of_ordered_item_delimiters_opens_no_list</code></a> / <a href="tests/basic_tests.rs#L1276">input 2, Faithful</a> <code>"&lt;p&gt;1.)&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1285"><code>a_paragraph_of_unicode_numerics_needs_no_escape</code></a> / <a href="tests/basic_tests.rs#L1286">input 1, Faithful</a> <code>"&lt;p&gt;2½. text&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 37.2px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1285"><code>a_paragraph_of_unicode_numerics_needs_no_escape</code></a> / <a href="tests/basic_tests.rs#L1287">input 2, Faithful</a> <code>"&lt;p&gt;1١. text&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1301"><code>a_literal_cdata_section_is_lost_unescaped</code></a>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1332"><code>round_trip_in_a_block_context</code></a> / <a href="tests/basic_tests.rs#L1338">input 1, Faithful</a> <code>"&lt;body&gt;&lt;script&gt;a*b\n\nc&lt;/script&gt;&lt;/body&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1332"><code>round_trip_in_a_block_context</code></a> / <a href="tests/basic_tests.rs#L1342">input 2, Faithful</a> <code>"&lt;body&gt;&lt;style&gt;a*b\n\nc&lt;/style&gt;&lt;/body&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1332"><code>round_trip_in_a_block_context</code></a> / <a href="tests/basic_tests.rs#L1347">input 3, Faithful</a> <code>"&lt;div&gt;a*b\n\nc&lt;/div&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1332"><code>round_trip_in_a_block_context</code></a> / <a href="tests/basic_tests.rs#L1356">input 4, Faithful</a> <code>"&lt;del&gt;a*b\n\nc&lt;/del&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1332"><code>round_trip_in_a_block_context</code></a> / <a href="tests/basic_tests.rs#L1360">input 5, Faithful</a> <code>"&lt;br&gt;&lt;br&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1332"><code>round_trip_in_a_block_context</code></a> / <a href="tests/basic_tests.rs#L1363">input 6, Faithful</a> <code>"&lt;br&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1371"><code>round_trip_of_a_leaf_block_an_html_block_would_dissolve</code></a> / <a href="tests/basic_tests.rs#L1373">input 1, Faithful</a> <code>"&lt;p&gt;&lt;br&gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1371"><code>round_trip_of_a_leaf_block_an_html_block_would_dissolve</code></a> / <a href="tests/basic_tests.rs#L1375">input 2, Faithful</a> <code>"&lt;p&gt;&lt;!--c--&gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1371"><code>round_trip_of_a_leaf_block_an_html_block_would_dissolve</code></a> / <a href="tests/basic_tests.rs#L1376">input 3, Faithful</a> <code>"&lt;p&gt;&lt;!--c--&gt;a&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1371"><code>round_trip_of_a_leaf_block_an_html_block_would_dissolve</code></a> / <a href="tests/basic_tests.rs#L1379">input 4, Faithful</a> <code>r#"&lt;p&gt;&lt;iframe src="u"&gt;a&lt;/iframe&gt;&lt;/p&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1371"><code>round_trip_of_a_leaf_block_an_html_block_would_dissolve</code></a> / <a href="tests/basic_tests.rs#L1385">input 5, Faithful</a> <code>"&lt;blockquote&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;/blockquote&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1371"><code>round_trip_of_a_leaf_block_an_html_block_would_dissolve</code></a> / <a href="tests/basic_tests.rs#L1390">input 6, Faithful</a> <code>"&lt;p&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1371"><code>round_trip_of_a_leaf_block_an_html_block_would_dissolve</code></a> / <a href="tests/basic_tests.rs#L1391">input 7, Faithful</a> <code>"&lt;p&gt;&lt;br&gt;a&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1371"><code>round_trip_of_a_leaf_block_an_html_block_would_dissolve</code></a> / <a href="tests/basic_tests.rs#L1392">input 8, Faithful</a> <code>"&lt;p&gt;&lt;del&gt;&lt;br&gt;&lt;/del&gt;&lt;/p&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1371"><code>round_trip_of_a_leaf_block_an_html_block_would_dissolve</code></a> / <a href="tests/basic_tests.rs#L1396">input 9, Faithful, setext</a> <code>"&lt;h1&gt;&lt;br&gt;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1371"><code>round_trip_of_a_leaf_block_an_html_block_would_dissolve</code></a> / <a href="tests/basic_tests.rs#L1399">input 10, Faithful, setext</a> <code>"&lt;h1&gt;&lt;div&gt;a&lt;/div&gt;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1371"><code>round_trip_of_a_leaf_block_an_html_block_would_dissolve</code></a> / <a href="tests/basic_tests.rs#L1404">input 11, Faithful, setext</a> <code>"&lt;h1&gt;&lt;br&gt;&lt;br&gt;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1422"><code>round_trip_of_a_setext_heading_of_leaf_block_syntax</code></a> / <a href="tests/basic_tests.rs#L1423">input 1, Faithful, setext</a> <code>"&lt;h1&gt;-&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1422"><code>round_trip_of_a_setext_heading_of_leaf_block_syntax</code></a> / <a href="tests/basic_tests.rs#L1424">input 2, Faithful, setext</a> <code>"&lt;h2&gt;-&lt;/h2&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1422"><code>round_trip_of_a_setext_heading_of_leaf_block_syntax</code></a> / <a href="tests/basic_tests.rs#L1425">input 3, Faithful, setext</a> <code>"&lt;h1&gt;---&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1422"><code>round_trip_of_a_setext_heading_of_leaf_block_syntax</code></a> / <a href="tests/basic_tests.rs#L1426">input 4, Faithful, setext</a> <code>"&lt;h1&gt;1.&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Configured</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1433"><code>round_trip_of_an_atx_heading_ending_in_a_hash_run</code></a> / <a href="tests/basic_tests.rs#L1434">input 1, Faithful</a> <code>"&lt;h1&gt;a #&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1433"><code>round_trip_of_an_atx_heading_ending_in_a_hash_run</code></a> / <a href="tests/basic_tests.rs#L1435">input 2, Faithful</a> <code>"&lt;h1&gt;a ##&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1433"><code>round_trip_of_an_atx_heading_ending_in_a_hash_run</code></a> / <a href="tests/basic_tests.rs#L1436">input 3, Faithful</a> <code>"&lt;h1&gt;&lt;em&gt;a&lt;/em&gt; #&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1433"><code>round_trip_of_an_atx_heading_ending_in_a_hash_run</code></a> / <a href="tests/basic_tests.rs#L1437">input 4, Faithful</a> <code>"&lt;h3&gt;#&lt;/h3&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1433"><code>round_trip_of_an_atx_heading_ending_in_a_hash_run</code></a> / <a href="tests/basic_tests.rs#L1439">input 5, Faithful</a> <code>"&lt;h1&gt;a\t#&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1433"><code>round_trip_of_an_atx_heading_ending_in_a_hash_run</code></a> / <a href="tests/basic_tests.rs#L1440">input 6, Faithful</a> <code>r"&lt;h1&gt;a \#&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1433"><code>round_trip_of_an_atx_heading_ending_in_a_hash_run</code></a> / <a href="tests/basic_tests.rs#L1443">input 7, Faithful</a> <code>"&lt;h1&gt;a#&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1433"><code>round_trip_of_an_atx_heading_ending_in_a_hash_run</code></a> / <a href="tests/basic_tests.rs#L1444">input 8, Faithful</a> <code>"&lt;h1&gt;a&amp;nbsp;#&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1452"><code>atx_heading_of_a_hash_run_from_a_handler</code></a> / <a href="tests/basic_tests.rs#L1463">input 1, Faithful, custom handler</a> <code>"&lt;h1&gt;&lt;x-hash&gt;&lt;/x-hash&gt;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1452"><code>atx_heading_of_a_hash_run_from_a_handler</code></a> / <a href="tests/basic_tests.rs#L1472">input 2, Faithful, custom handler</a> <code>"&lt;h1&gt;&lt;x-hash&gt;&lt;/x-hash&gt;&lt;x-hash&gt;&lt;/x-hash&gt;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1484"><code>round_trip_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L1488">input 1, Faithful</a> <code>"&lt;h1&gt;x&lt;script&gt;a*b\nc&lt;/script&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1484"><code>round_trip_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L1492">input 2, Faithful</a> <code>"&lt;h1&gt;x&lt;style&gt;a*b\nc&lt;/style&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1484"><code>round_trip_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L1494">input 3, Faithful</a> <code>"&lt;h1&gt;x&lt;script&gt;a*b*c&lt;/script&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1484"><code>round_trip_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L1495">input 4, Faithful</a> <code>"&lt;h1&gt;x&lt;style&gt;a*b*c&lt;/style&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1484"><code>round_trip_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L1496">input 5, Faithful</a> <code>"&lt;h1&gt;x&lt;script&gt;[a](b)&lt;/script&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1484"><code>round_trip_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L1503">input 6, Faithful</a> <code>"&lt;h1&gt;x&lt;textarea&gt;a*b\nc&lt;/textarea&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1484"><code>round_trip_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L1507">input 7, Faithful</a> <code>"&lt;h1&gt;x&lt;pre&gt;a*b\nc&lt;/pre&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1484"><code>round_trip_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L1510">input 8, Faithful</a> <code>"&lt;h1&gt;x&lt;div&gt;a*b*c&lt;/div&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1484"><code>round_trip_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L1513">input 9, Faithful</a> <code>"&lt;h1&gt;x&lt;div&gt;a*b\nc&lt;/div&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1484"><code>round_trip_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L1517">input 10, Faithful</a> <code>"&lt;h1&gt;x&lt;del&gt;a*b\nc&lt;/del&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1484"><code>round_trip_in_an_inline_context</code></a> / <a href="tests/basic_tests.rs#L1523">input 11, Faithful</a> <code>"&lt;h1&gt;x&lt;!--a\nb--&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1544">input 1, Faithful</a> <code>"&lt;h1&gt;x&lt;div&gt;a&lt;em&gt;b&lt;/em&gt;c&lt;/div&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1545">input 2, Faithful</a> <code>"&lt;h1&gt;x&lt;del&gt;a&lt;em&gt;b&lt;/em&gt;c&lt;/del&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1546">input 3, Faithful</a> <code>"&lt;h1&gt;x&lt;pre&gt;a&lt;em&gt;b&lt;/em&gt;c&lt;/pre&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1549">input 4, Faithful</a> <code>"&lt;h1&gt;x&lt;div&gt;a&amp;lt;b&amp;gt;c&lt;/div&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1550">input 5, Faithful</a> <code>"&lt;h1&gt;x&lt;del&gt;a&amp;lt;b&amp;gt;c&lt;/del&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1551">input 6, Faithful</a> <code>"&lt;h1&gt;x&lt;pre&gt;a&amp;lt;b&amp;gt;c&lt;/pre&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1552">input 7, Faithful</a> <code>"&lt;h1&gt;x&lt;textarea&gt;a&amp;lt;b&amp;gt;c&lt;/textarea&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1555">input 8, Faithful</a> <code>"&lt;h1&gt;x&lt;div&gt;a&amp;amp;b&lt;/div&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1556">input 9, Faithful</a> <code>"&lt;h1&gt;x&lt;pre&gt;a&amp;amp;b&lt;/pre&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1559">input 10, Faithful</a> <code>"&lt;h1&gt;x&lt;div&gt;a*b_c[d]&lt;/div&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1560">input 11, Faithful</a> <code>"&lt;h1&gt;x&lt;pre&gt;a*b_c[d]&lt;/pre&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1561">input 12, Faithful</a> <code>"&lt;h1&gt;x&lt;script&gt;a*b_c[d]&lt;/script&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1562">input 13, Faithful</a> <code>"&lt;h1&gt;x&lt;style&gt;a*b_c[d]&lt;/style&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1566">input 14, Faithful</a> <code>"&lt;h1&gt;x&lt;div&gt;a&lt;code&gt;c*d&lt;/code&gt;b&lt;/div&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1567">input 15, Faithful</a> <code>"&lt;h1&gt;x&lt;pre&gt;a&lt;code&gt;c*d&lt;/code&gt;b&lt;/pre&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1568">input 16, Faithful</a> <code>"&lt;h1&gt;&lt;pre&gt;&lt;code&gt;a&lt;/code&gt;&lt;/pre&gt;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1569">input 17, Faithful</a> <code>r#"&lt;h1&gt;x&lt;div&gt;a&lt;code class="q"&gt;c*d&lt;/code&gt;b&lt;/div&gt;y&lt;/h1&gt;"#</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1542"><code>round_trip_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1573">input 18, Faithful</a> <code>"&lt;pre&gt;a*b\n\nc&lt;/pre&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Yes</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1579"><code>round_trip_losses_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1629">input 1, Faithful</a> <code>"&lt;h1&gt;x&lt;div&gt;a\nb&lt;/div&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1579"><code>round_trip_losses_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1630">input 2, Faithful</a> <code>"&lt;h1&gt;x&lt;pre&gt;a\nb&lt;/pre&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1579"><code>round_trip_losses_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1631">input 3, Faithful</a> <code>"&lt;h1&gt;x&lt;script&gt;a\nb&lt;/script&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1579"><code>round_trip_losses_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1635">input 4, Faithful</a> <code>"&lt;h1&gt;x&lt;textarea&gt;a\nb&lt;/textarea&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1579"><code>round_trip_losses_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1639">input 5, Faithful</a> <code>"&lt;h1&gt;&lt;pre&gt;&lt;code&gt;a*b\nc&lt;/code&gt;&lt;/pre&gt;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1579"><code>round_trip_losses_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1587">input 6, Faithful</a> <code>"&lt;h1&gt;x&lt;script&gt;if(a&lt;b){}&lt;/script&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1579"><code>round_trip_losses_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1591">input 7, Faithful</a> <code>"&lt;h1&gt;x&lt;script&gt;a&lt;em&gt;b&lt;/em&gt;c&lt;/script&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1579"><code>round_trip_losses_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1598">input 8, Faithful</a> <code>"&lt;h1&gt;x&lt;script&gt;a&amp;amp;b&lt;/script&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1579"><code>round_trip_losses_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1602">input 9, Faithful</a> <code>"&lt;h1&gt;x&lt;script&gt;a&amp;lt;b&amp;gt;c&lt;/script&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1579"><code>round_trip_losses_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1609">input 10, Faithful</a> <code>"&lt;h1&gt;&lt;pre&gt;&lt;b&gt;a&lt;/b&gt;&lt;/pre&gt;&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1579"><code>round_trip_losses_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1615">input 11, Faithful</a> <code>"&lt;h1&gt;x&lt;textarea&gt;a&lt;em&gt;b&lt;/em&gt;c&lt;/textarea&gt;y&lt;/h1&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 36.4px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1579"><code>round_trip_losses_of_a_walked_raw_inline</code></a> / <a href="tests/basic_tests.rs#L1621">input 12, Faithful</a> <code>"&lt;pre&gt;&lt;code&gt;a*b\nc&lt;/code&gt;&lt;/pre&gt;"</code>
+      </td>
+      <td style="width: 11.2716%;">Expected</td>
+      <td style="width: 11.8525%;">No</td>
+      <td style="width: 10.12%;">Faithful</td>
+    </tr>
+    <tr style="height: 19.6px;">
+      <td style="width: 66.6613%;">
+        <a href="tests/basic_tests.rs#L1649"><code>append_content_when_the_body_is_empty</code></a>
+      </td>
+      <td style="width: 11.2716%;">No</td>
+      <td style="width: 11.8525%;">Yes</td>
+      <td style="width: 10.12%;">No</td>
+    </tr>
+  </tbody>
+</table>
 
 ### [tests/code\_tests.rs](tests/code_tests.rs) (20)
 
@@ -368,8 +2044,8 @@ Integration tests
 | [`a_raw_text_element_escapes_the_markdown_it_holds`](tests/context_tests.rs#L260) / [input 3, Faithful](tests/context_tests.rs#L275) `"<p>x<script>a*b</script>y</p>"`                                                              | Expected              | Yes           | No                  |
 | [`a_raw_text_element_escapes_the_markdown_it_holds`](tests/context_tests.rs#L260) / [input 4, Faithful](tests/context_tests.rs#L282) `"<body><script>a*b\nc</script></body>"`                                                       | Expected              | Yes           | No                  |
 | [`a_raw_text_element_escapes_the_markdown_it_holds`](tests/context_tests.rs#L260) / [input 5, Faithful](tests/context_tests.rs#L287) `"<h1><script>a\nb</script></h1>"`                                                             | Expected              | Yes           | No                  |
-| [`an_rcdata_element_is_translated`](tests/context_tests.rs#L295) / [input 1, Faithful](tests/context_tests.rs#L298) `"<h1><textarea>a*b*c</textarea></h1>"`                                                          | Expected              | Yes           | No                  |
-| [`an_rcdata_element_is_translated`](tests/context_tests.rs#L295) / [input 2, Faithful](tests/context_tests.rs#L302) `"<h1><title>a*b*c</title></h1>"`                                                                | Expected              | Yes           | No                  |
+| [`an_rcdata_element_is_translated`](tests/context_tests.rs#L295) / [input 1, Faithful](tests/context_tests.rs#L298) `"<h1><textarea>a*b*c</textarea></h1>"`                                                                         | Expected              | Yes           | No                  |
+| [`an_rcdata_element_is_translated`](tests/context_tests.rs#L295) / [input 2, Faithful](tests/context_tests.rs#L302) `"<h1><title>a*b*c</title></h1>"`                                                                               | Expected              | Yes           | No                  |
 | [`an_rcdata_element_is_translated`](tests/context_tests.rs#L295) / [input 3, Faithful](tests/context_tests.rs#L306) `"<h1><textarea>a\nb</textarea></h1>"`                                                                          | Expected              | Yes           | No                  |
 | [`an_rcdata_element_is_translated`](tests/context_tests.rs#L295) / [input 4, Faithful](tests/context_tests.rs#L310) `"<textarea>a*b\nc</textarea>"`                                                                                 | Expected              | Yes           | No                  |
 | [`a_raw_inline_collapses_the_whitespace_of_its_content`](tests/context_tests.rs#L320) / [input 1, Faithful](tests/context_tests.rs#L324) `"<h1>x<div>a\nb</div>y</h1>"`                                                             | Expected              | Yes           | No                  |
@@ -443,80 +2119,80 @@ Integration tests
 
 ### [tests/link\_tests.rs](tests/link_tests.rs) (26)
 
-| Test                                                                                                                                                                                                                                | Faithful round trip   | Keep Markdown | Existing round trip |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | ------------- | ------------------- |
-| [`links`](tests/link_tests.rs#L12)                                                                                                                                                                                                  | Expected              | Yes           | No                  |
-| [`links_with_spaces_in_destination_and_title`](tests/link_tests.rs#L24)                                                                                                                                                             | Expected              | Yes           | No                  |
-| [`links_with_spaces_around_text`](tests/link_tests.rs#L33) / [input 1, Faithful](tests/link_tests.rs#L36) `r#"<a href="/"> bla </a>"#`                                                                                              | Expected              | Yes           | No                  |
-| [`links_with_spaces_around_text`](tests/link_tests.rs#L33) / [input 2, Faithful](tests/link_tests.rs#L40) `r#"Some <a href="/"> random </a> text"#`                                                                                 | Expected              | Yes           | No                  |
-| [`links_inlined_prefer_autolinks`](tests/link_tests.rs#L45) / [input 1, Faithful, autolinks](tests/link_tests.rs#L55) `r#"<a href="https://example.com">https://example.com</a>"#`                                                  | Configured + expected | Yes           | No                  |
-| [`links_inlined_prefer_autolinks`](tests/link_tests.rs#L45) / [input 2, Faithful, autolinks](tests/link_tests.rs#L60) `r#"<a href="https://example.com">Link</a>"#`                                                                 | Configured + expected | Yes           | No                  |
-| [`links_inlined_prefer_autolinks`](tests/link_tests.rs#L45) / [input 3, Faithful, autolinks](tests/link_tests.rs#L66) `r#"<a href="https://example.com" title="https://example.com">Link</a>"#`                                     | Configured + expected | Yes           | No                  |
-| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 1, Faithful](tests/link_tests.rs#L77) `"<p>a<a href="u\nv">t</a>b</p>"`                                                                           | Expected              | Yes           | No                  |
-| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 2, Faithful](tests/link_tests.rs#L81) `"<p>a<a href="u\n\nv">t</a>b</p>"`                                                                         | Expected              | Yes           | No                  |
-| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 3, Faithful](tests/link_tests.rs#L85) `"<h1>a<a href="u\nv">t</a>b</h1>"`                                                                         | Expected              | Yes           | No                  |
-| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 4, Faithful](tests/link_tests.rs#L91) `"<p>a<a href="u&#13;v">t</a>b</p>"`                                                                        | Expected              | Yes           | No                  |
-| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 5, Faithful](tests/link_tests.rs#L96) `"<p>a<img src="i\nj" alt="">b</p>"`                                                                        | Expected              | Yes           | No                  |
-| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 6, Faithful](tests/link_tests.rs#L100) `r#"<p><a href="u">t</a></p>"#`                                                                            | Expected              | Yes           | No                  |
-| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 7, Faithful](tests/link_tests.rs#L104) `r#"<p><a href="u(v)">t</a></p>"#`                                                                         | Expected              | Yes           | No                  |
-| [`nested_convert_with_referenced_links`](tests/link_tests.rs#L109) / [input 1, Pure](tests/link_tests.rs#L129) `r#"<a href="https://inner.com">Inner</a>"#`                                                                         | No                    | Yes           | No                  |
-| [`nested_convert_with_referenced_links`](tests/link_tests.rs#L109) / [input 2, Pure](tests/link_tests.rs#L143) `indoc!( r#" <p><a href="https://outer1.com">Outer 1</a></p> <widget></widget> <p><a h…`                             | No                    | Yes           | No                  |
-| [`discard_links_in_table_falling_back_to_raw_html`](tests/link_tests.rs#L164)                                                                                                                                                       | Configured + expected | Yes           | No                  |
-| [`a_link_destination_escapes_its_backslashes`](tests/link_tests.rs#L212) / [input 1, Faithful](tests/link_tests.rs#L215) `r#"<a href="a">x</a>"#`                                                                                   | Expected              | Yes           | Faithful            |
-| [`a_link_destination_escapes_its_backslashes`](tests/link_tests.rs#L212) / [input 2, Faithful](tests/link_tests.rs#L219) `r#"<img src="i" alt="q">"#`                                                                               | Expected              | Yes           | No                  |
-| [`a_link_destination_escapes_its_backslashes`](tests/link_tests.rs#L212) / [input 3, Faithful](tests/link_tests.rs#L225) `r#"<a href="a b">x</a>"#`                                                                                 | Expected              | Yes           | No                  |
-| [`a_link_destination_escapes_its_backslashes`](tests/link_tests.rs#L212) / [input 4, Faithful](tests/link_tests.rs#L231) `r#"<a href="a(b">x</a>"#`                                                                                 | Expected              | Yes           | No                  |
-| [`a_link_title_escapes_its_backslashes`](tests/link_tests.rs#L243) / [input 1, Faithful](tests/link_tests.rs#L246) `r#"<a href="x" title="a">t</a>"#`                                                                               | Expected              | Yes           | No                  |
-| [`a_link_title_escapes_its_backslashes`](tests/link_tests.rs#L243) / [input 2, Faithful](tests/link_tests.rs#L253) `r#"<a href="x" title="a*b">t</a>"#`                                                                             | Expected              | Yes           | No                  |
-| [`a_link_title_escapes_its_backslashes`](tests/link_tests.rs#L243) / [input 3, Faithful](tests/link_tests.rs#L257) `r#"<img src="i" alt="q" title="a">"#`                                                                           | Expected              | Yes           | No                  |
-| [`an_image_alt_escapes_its_markdown_specials`](tests/link_tests.rs#L268) / [input 1, Faithful](tests/link_tests.rs#L271) `r#"<img src="x" alt="a](y)b">"#`                                                                          | Expected              | Yes           | Faithful            |
-| [`an_image_alt_escapes_its_markdown_specials`](tests/link_tests.rs#L268) / [input 2, Faithful](tests/link_tests.rs#L280) `r#"<img src="x" alt="a[b">"#`                                                                             | Expected              | Yes           | No                  |
-| [`an_image_alt_escapes_its_markdown_specials`](tests/link_tests.rs#L268) / [input 3, Faithful](tests/link_tests.rs#L284) ``r#"<img src="x" alt="a\b*c_d`e$f">"#``                                                                   | Expected              | Yes           | No                  |
-| [`an_image_alt_escapes_its_raw_html`](tests/link_tests.rs#L296) / [input 1, Faithful](tests/link_tests.rs#L299) `r#"<img src="x" alt='a<b c="*">d'>"#`                                                                              | Expected              | Yes           | Faithful            |
-| [`an_image_alt_escapes_its_raw_html`](tests/link_tests.rs#L296) / [input 2, Faithful](tests/link_tests.rs#L310) `r#"<img src="x" alt="a < b">"#`                                                                                    | Expected              | Yes           | No                  |
-| [`a_bracketed_link_destination_escapes_its_angle_brackets`](tests/link_tests.rs#L320) / [input 1, Faithful](tests/link_tests.rs#L323) `r#"<img src="a b>c" alt="q">"#`                                                              | Expected              | Yes           | Faithful            |
-| [`a_bracketed_link_destination_escapes_its_angle_brackets`](tests/link_tests.rs#L320) / [input 2, Faithful](tests/link_tests.rs#L327) `r#"<img src="a b<c" alt="q">"#`                                                              | Expected              | Yes           | No                  |
-| [`an_autolink_spells_its_destination_without_escapes`](tests/link_tests.rs#L342) / [input 1, Faithful, autolinks](tests/link_tests.rs#L345) `r#"<a href="https://example.com/a\b">https://example.com/a\b</a>"#`                    | Configured + expected | Yes           | No                  |
+| Test                                                                                                                                                                                                                 | Faithful round trip   | Keep Markdown | Existing round trip |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | ------------- | ------------------- |
+| [`links`](tests/link_tests.rs#L12)                                                                                                                                                                                   | Expected              | Yes           | No                  |
+| [`links_with_spaces_in_destination_and_title`](tests/link_tests.rs#L24)                                                                                                                                              | Expected              | Yes           | No                  |
+| [`links_with_spaces_around_text`](tests/link_tests.rs#L33) / [input 1, Faithful](tests/link_tests.rs#L36) `r#"<a href="/"> bla </a>"#`                                                                               | Expected              | Yes           | No                  |
+| [`links_with_spaces_around_text`](tests/link_tests.rs#L33) / [input 2, Faithful](tests/link_tests.rs#L40) `r#"Some <a href="/"> random </a> text"#`                                                                  | Expected              | Yes           | No                  |
+| [`links_inlined_prefer_autolinks`](tests/link_tests.rs#L45) / [input 1, Faithful, autolinks](tests/link_tests.rs#L55) `r#"<a href="https://example.com">https://example.com</a>"#`                                   | Configured + expected | Yes           | No                  |
+| [`links_inlined_prefer_autolinks`](tests/link_tests.rs#L45) / [input 2, Faithful, autolinks](tests/link_tests.rs#L60) `r#"<a href="https://example.com">Link</a>"#`                                                  | Configured + expected | Yes           | No                  |
+| [`links_inlined_prefer_autolinks`](tests/link_tests.rs#L45) / [input 3, Faithful, autolinks](tests/link_tests.rs#L66) `r#"<a href="https://example.com" title="https://example.com">Link</a>"#`                      | Configured + expected | Yes           | No                  |
+| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 1, Faithful](tests/link_tests.rs#L77) `"<p>a<a href="u\nv">t</a>b</p>"`                                                            | Expected              | Yes           | No                  |
+| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 2, Faithful](tests/link_tests.rs#L81) `"<p>a<a href="u\n\nv">t</a>b</p>"`                                                          | Expected              | Yes           | No                  |
+| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 3, Faithful](tests/link_tests.rs#L85) `"<h1>a<a href="u\nv">t</a>b</h1>"`                                                          | Expected              | Yes           | No                  |
+| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 4, Faithful](tests/link_tests.rs#L91) `"<p>a<a href="u&#13;v">t</a>b</p>"`                                                         | Expected              | Yes           | No                  |
+| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 5, Faithful](tests/link_tests.rs#L96) `"<p>a<img src="i\nj" alt="">b</p>"`                                                         | Expected              | Yes           | No                  |
+| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 6, Faithful](tests/link_tests.rs#L100) `r#"<p><a href="u">t</a></p>"#`                                                             | Expected              | Yes           | No                  |
+| [`a_link_destination_escapes_its_line_endings`](tests/link_tests.rs#L74) / [input 7, Faithful](tests/link_tests.rs#L104) `r#"<p><a href="u(v)">t</a></p>"#`                                                          | Expected              | Yes           | No                  |
+| [`nested_convert_with_referenced_links`](tests/link_tests.rs#L109) / [input 1, Pure](tests/link_tests.rs#L129) `r#"<a href="https://inner.com">Inner</a>"#`                                                          | No                    | Yes           | No                  |
+| [`nested_convert_with_referenced_links`](tests/link_tests.rs#L109) / [input 2, Pure](tests/link_tests.rs#L143) `indoc!( r#" <p><a href="https://outer1.com">Outer 1</a></p> <widget></widget> <p><a h…`              | No                    | Yes           | No                  |
+| [`discard_links_in_table_falling_back_to_raw_html`](tests/link_tests.rs#L164)                                                                                                                                        | Configured + expected | Yes           | No                  |
+| [`a_link_destination_escapes_its_backslashes`](tests/link_tests.rs#L212) / [input 1, Faithful](tests/link_tests.rs#L215) `r#"<a href="a">x</a>"#`                                                                    | Expected              | Yes           | Faithful            |
+| [`a_link_destination_escapes_its_backslashes`](tests/link_tests.rs#L212) / [input 2, Faithful](tests/link_tests.rs#L219) `r#"<img src="i" alt="q">"#`                                                                | Expected              | Yes           | No                  |
+| [`a_link_destination_escapes_its_backslashes`](tests/link_tests.rs#L212) / [input 3, Faithful](tests/link_tests.rs#L225) `r#"<a href="a b">x</a>"#`                                                                  | Expected              | Yes           | No                  |
+| [`a_link_destination_escapes_its_backslashes`](tests/link_tests.rs#L212) / [input 4, Faithful](tests/link_tests.rs#L231) `r#"<a href="a(b">x</a>"#`                                                                  | Expected              | Yes           | No                  |
+| [`a_link_title_escapes_its_backslashes`](tests/link_tests.rs#L243) / [input 1, Faithful](tests/link_tests.rs#L246) `r#"<a href="x" title="a">t</a>"#`                                                                | Expected              | Yes           | No                  |
+| [`a_link_title_escapes_its_backslashes`](tests/link_tests.rs#L243) / [input 2, Faithful](tests/link_tests.rs#L253) `r#"<a href="x" title="a*b">t</a>"#`                                                              | Expected              | Yes           | No                  |
+| [`a_link_title_escapes_its_backslashes`](tests/link_tests.rs#L243) / [input 3, Faithful](tests/link_tests.rs#L257) `r#"<img src="i" alt="q" title="a">"#`                                                            | Expected              | Yes           | No                  |
+| [`an_image_alt_escapes_its_markdown_specials`](tests/link_tests.rs#L268) / [input 1, Faithful](tests/link_tests.rs#L271) `r#"<img src="x" alt="a](y)b">"#`                                                           | Expected              | Yes           | Faithful            |
+| [`an_image_alt_escapes_its_markdown_specials`](tests/link_tests.rs#L268) / [input 2, Faithful](tests/link_tests.rs#L280) `r#"<img src="x" alt="a[b">"#`                                                              | Expected              | Yes           | No                  |
+| [`an_image_alt_escapes_its_markdown_specials`](tests/link_tests.rs#L268) / [input 3, Faithful](tests/link_tests.rs#L284) ``r#"<img src="x" alt="a\b*c_d`e$f">"#``                                                    | Expected              | Yes           | No                  |
+| [`an_image_alt_escapes_its_raw_html`](tests/link_tests.rs#L296) / [input 1, Faithful](tests/link_tests.rs#L299) `r#"<img src="x" alt='a<b c="*">d'>"#`                                                               | Expected              | Yes           | Faithful            |
+| [`an_image_alt_escapes_its_raw_html`](tests/link_tests.rs#L296) / [input 2, Faithful](tests/link_tests.rs#L310) `r#"<img src="x" alt="a < b">"#`                                                                     | Expected              | Yes           | No                  |
+| [`a_bracketed_link_destination_escapes_its_angle_brackets`](tests/link_tests.rs#L320) / [input 1, Faithful](tests/link_tests.rs#L323) `r#"<img src="a b>c" alt="q">"#`                                               | Expected              | Yes           | Faithful            |
+| [`a_bracketed_link_destination_escapes_its_angle_brackets`](tests/link_tests.rs#L320) / [input 2, Faithful](tests/link_tests.rs#L327) `r#"<img src="a b<c" alt="q">"#`                                               | Expected              | Yes           | No                  |
+| [`an_autolink_spells_its_destination_without_escapes`](tests/link_tests.rs#L342) / [input 1, Faithful, autolinks](tests/link_tests.rs#L345) `r#"<a href="https://example.com/a\b">https://example.com/a\b</a>"#`     | Configured + expected | Yes           | No                  |
 | [`an_autolink_spells_its_destination_without_escapes`](tests/link_tests.rs#L342) / [input 2, Faithful, autolinks](tests/link_tests.rs#L350) `r#"<a href="https://example.com/a_b*c">https://example.com/a_b*c</a>"#` | Configured + expected | Yes           | Faithful            |
-| [`an_autolink_needs_every_condition`](tests/link_tests.rs#L366) / [input 1, Faithful, autolinks](tests/link_tests.rs#L370) `r#"<a href="https://example.com/a<b">https://example.com/a&lt;b</a>"#`                                  | Configured + expected | Yes           | No                  |
-| [`an_autolink_needs_every_condition`](tests/link_tests.rs#L366) / [input 2, Faithful, autolinks](tests/link_tests.rs#L375) `r#"<a href="https://example.com/?a&amp;b">https://example.com/?a&amp;b</a>"#`                           | Configured + expected | Yes           | No                  |
-| [`an_autolink_needs_every_condition`](tests/link_tests.rs#L366) / [input 3, Faithful, autolinks](tests/link_tests.rs#L382) `r#"<a href="https://example.com" title="t">https://example.com</a>"#`                                   | Configured + expected | Yes           | No                  |
-| [`an_autolink_needs_every_condition`](tests/link_tests.rs#L366) / [input 4, Faithful, autolinks](tests/link_tests.rs#L387) `r#"<a href="https://example.com"><em>https://example.com</em></a>"#`                                    | Configured + expected | Yes           | No                  |
-| [`an_autolink_needs_every_condition`](tests/link_tests.rs#L366) / [input 5, Faithful, autolinks](tests/link_tests.rs#L391) `r#"<a href="a/b">a/b</a>"#`                                                                             | Configured + expected | Yes           | No                  |
-| [`an_autolink_needs_every_condition`](tests/link_tests.rs#L366) / [input 6, Faithful, autolinks](tests/link_tests.rs#L393) `r#"<a href="a:b">a:b</a>"#`                                                                             | Configured + expected | Yes           | No                  |
-| [`a_referenced_link_destination_brackets_its_spaces`](tests/link_tests.rs#L404)                                                                                                                                                     | Configured + expected | Yes           | No                  |
-| [`a_bang_before_a_link_is_escaped`](tests/link_tests.rs#L413) / [input 1, Faithful](tests/link_tests.rs#L416) `r#"<p>Hi!<a href="x">t</a></p>"#`                                                                                    | Configured            | Yes           | Faithful            |
-| [`a_bang_before_a_link_is_escaped`](tests/link_tests.rs#L413) / [input 2, Faithful, referenced links](tests/link_tests.rs#L424) `r#"<p>Hi!<a href="x">t</a></p>"#`                                                                  | Configured            | Yes           | No                  |
-| [`a_bang_before_a_link_is_escaped`](tests/link_tests.rs#L413) / [input 3, Pure](tests/link_tests.rs#L432) `r#"<p>Hi!<span><a href="x">t</a></span></p>"#`                                                                           | No                    | Yes           | No                  |
-| [`a_bang_before_a_link_is_escaped`](tests/link_tests.rs#L413) / [input 4, Faithful](tests/link_tests.rs#L437) `r#"<p>!<a href="x">t</a></p>"#`                                                                                      | Configured            | Yes           | No                  |
-| [`a_bang_before_a_link_is_escaped`](tests/link_tests.rs#L413) / [input 5, Faithful](tests/link_tests.rs#L442) `r#"<p>Hi! <a href="x">t</a></p>"#`                                                                                   | Configured            | Yes           | No                  |
-| [`a_bang_before_a_link_is_escaped`](tests/link_tests.rs#L413) / [input 6, Faithful](tests/link_tests.rs#L446) `r#"<p><img src="i" alt="a"><img src="j" alt="b"></p>"#`                                                              | Configured            | Yes           | No                  |
-| [`a_link_escapes_its_ampersands`](tests/link_tests.rs#L454) / [input 1, Faithful](tests/link_tests.rs#L457) `r#"<a href="a&amp;copy;b" title="t&amp;copy;">x&amp;copy;</a>"#`                                                       | Configured + expected | Yes           | Faithful            |
-| [`a_link_escapes_its_ampersands`](tests/link_tests.rs#L454) / [input 2, Faithful](tests/link_tests.rs#L465) `r#"<img src="i&amp;copy;" alt="a&amp;copy;" title="t&amp;copy;">"#`                                                    | Configured + expected | Yes           | Faithful            |
-| [`a_link_escapes_its_ampersands`](tests/link_tests.rs#L454) / [input 3, Faithful, referenced links](tests/link_tests.rs#L476) `r#"<a href="a&amp;b">t</a>"#`                                                                        | Configured + expected | Yes           | No                  |
+| [`an_autolink_needs_every_condition`](tests/link_tests.rs#L366) / [input 1, Faithful, autolinks](tests/link_tests.rs#L370) `r#"<a href="https://example.com/a<b">https://example.com/a&lt;b</a>"#`                   | Configured + expected | Yes           | No                  |
+| [`an_autolink_needs_every_condition`](tests/link_tests.rs#L366) / [input 2, Faithful, autolinks](tests/link_tests.rs#L375) `r#"<a href="https://example.com/?a&amp;b">https://example.com/?a&amp;b</a>"#`            | Configured + expected | Yes           | No                  |
+| [`an_autolink_needs_every_condition`](tests/link_tests.rs#L366) / [input 3, Faithful, autolinks](tests/link_tests.rs#L382) `r#"<a href="https://example.com" title="t">https://example.com</a>"#`                    | Configured + expected | Yes           | No                  |
+| [`an_autolink_needs_every_condition`](tests/link_tests.rs#L366) / [input 4, Faithful, autolinks](tests/link_tests.rs#L387) `r#"<a href="https://example.com"><em>https://example.com</em></a>"#`                     | Configured + expected | Yes           | No                  |
+| [`an_autolink_needs_every_condition`](tests/link_tests.rs#L366) / [input 5, Faithful, autolinks](tests/link_tests.rs#L391) `r#"<a href="a/b">a/b</a>"#`                                                              | Configured + expected | Yes           | No                  |
+| [`an_autolink_needs_every_condition`](tests/link_tests.rs#L366) / [input 6, Faithful, autolinks](tests/link_tests.rs#L393) `r#"<a href="a:b">a:b</a>"#`                                                              | Configured + expected | Yes           | No                  |
+| [`a_referenced_link_destination_brackets_its_spaces`](tests/link_tests.rs#L404)                                                                                                                                      | Configured + expected | Yes           | No                  |
+| [`a_bang_before_a_link_is_escaped`](tests/link_tests.rs#L413) / [input 1, Faithful](tests/link_tests.rs#L416) `r#"<p>Hi!<a href="x">t</a></p>"#`                                                                     | Configured            | Yes           | Faithful            |
+| [`a_bang_before_a_link_is_escaped`](tests/link_tests.rs#L413) / [input 2, Faithful, referenced links](tests/link_tests.rs#L424) `r#"<p>Hi!<a href="x">t</a></p>"#`                                                   | Configured            | Yes           | No                  |
+| [`a_bang_before_a_link_is_escaped`](tests/link_tests.rs#L413) / [input 3, Pure](tests/link_tests.rs#L432) `r#"<p>Hi!<span><a href="x">t</a></span></p>"#`                                                            | No                    | Yes           | No                  |
+| [`a_bang_before_a_link_is_escaped`](tests/link_tests.rs#L413) / [input 4, Faithful](tests/link_tests.rs#L437) `r#"<p>!<a href="x">t</a></p>"#`                                                                       | Configured            | Yes           | No                  |
+| [`a_bang_before_a_link_is_escaped`](tests/link_tests.rs#L413) / [input 5, Faithful](tests/link_tests.rs#L442) `r#"<p>Hi! <a href="x">t</a></p>"#`                                                                    | Configured            | Yes           | No                  |
+| [`a_bang_before_a_link_is_escaped`](tests/link_tests.rs#L413) / [input 6, Faithful](tests/link_tests.rs#L446) `r#"<p><img src="i" alt="a"><img src="j" alt="b"></p>"#`                                               | Configured            | Yes           | No                  |
+| [`a_link_escapes_its_ampersands`](tests/link_tests.rs#L454) / [input 1, Faithful](tests/link_tests.rs#L457) `r#"<a href="a&amp;copy;b" title="t&amp;copy;">x&amp;copy;</a>"#`                                        | Configured + expected | Yes           | Faithful            |
+| [`a_link_escapes_its_ampersands`](tests/link_tests.rs#L454) / [input 2, Faithful](tests/link_tests.rs#L465) `r#"<img src="i&amp;copy;" alt="a&amp;copy;" title="t&amp;copy;">"#`                                     | Configured + expected | Yes           | Faithful            |
+| [`a_link_escapes_its_ampersands`](tests/link_tests.rs#L454) / [input 3, Faithful, referenced links](tests/link_tests.rs#L476) `r#"<a href="a&amp;b">t</a>"#`                                                         | Configured + expected | Yes           | No                  |
 | [`link_text_escapes_its_math_delimiters`](tests/link_tests.rs#L483) / [input 1, Faithful](tests/link_tests.rs#L486) `r#"<p><a href="u">$a](v)$</a></p>"#`                                                            | Configured            | Yes           | Faithful            |
-| [`link_text_escapes_its_math_delimiters`](tests/link_tests.rs#L483) / [input 2, Faithful](tests/link_tests.rs#L492) `r#"<p><a href="u"><span class="math math-inline">a](v)</span></a></p>"#`                                       | Configured            | Yes           | Faithful            |
-| [`a_link_destination_takes_pointy_brackets_where_needed`](tests/link_tests.rs#L503) / [input 1, Faithful](tests/link_tests.rs#L504) `r#"<a href="">t</a>"#`                                                                         | Expected              | Yes           | Faithful            |
-| [`a_link_destination_takes_pointy_brackets_where_needed`](tests/link_tests.rs#L503) / [input 2, Faithful, referenced links](tests/link_tests.rs#L512) `r#"<a href="">t</a>"#`                                                       | Expected              | Yes           | No                  |
-| [`a_link_destination_takes_pointy_brackets_where_needed`](tests/link_tests.rs#L503) / [input 3, Faithful](tests/link_tests.rs#L516) `r#"<a href="&lt;a">t</a>"#`                                                                    | Expected              | Yes           | Faithful            |
-| [`a_link_destination_takes_pointy_brackets_where_needed`](tests/link_tests.rs#L503) / [input 4, Faithful](tests/link_tests.rs#L524) `"<a href="a\tb">t</a>"`                                                                        | Expected              | Yes           | Faithful            |
-| [`a_link_destination_takes_pointy_brackets_where_needed`](tests/link_tests.rs#L503) / [input 5, Faithful](tests/link_tests.rs#L532) `r#"<a href="a&lt;b&gt;c">t</a>"#`                                                              | Expected              | Yes           | Faithful            |
-| [`a_link_destination_takes_pointy_brackets_where_needed`](tests/link_tests.rs#L503) / [input 6, Faithful](tests/link_tests.rs#L540) `r#"<img src="" alt="q">"#`                                                                     | Expected              | Yes           | No                  |
-| [`link_text_encodes_its_line_endings`](tests/link_tests.rs#L547) / [input 1, Pure](tests/link_tests.rs#L551) `r#"<a href="x"><p>a</p><p>b</p></a>"#`                                                                                | No                    | Yes           | No                  |
-| [`link_text_encodes_its_line_endings`](tests/link_tests.rs#L547) / [input 2, Faithful](tests/link_tests.rs#L557) `r#"<a href="x"><p>a</p><p>b</p></a>"#`                                                                            | Expected              | Yes           | Faithful            |
-| [`link_text_encodes_its_line_endings`](tests/link_tests.rs#L547) / [input 3, Faithful, referenced links](tests/link_tests.rs#L565) `r#"<a href="x"><p>a</p><p>b</p></a>"#`                                                          | Expected              | Yes           | No                  |
-| [`link_text_encodes_its_line_endings`](tests/link_tests.rs#L547) / [input 4, Pure](tests/link_tests.rs#L570) `r#"<h1><a href="x">a<br>b</a></h1>"#`                                                                                 | No                    | Yes           | No                  |
-| [`an_image_is_inline_in_the_referenced_style`](tests/link_tests.rs#L576)                                                                                                                                                            | Configured + expected | Yes           | No                  |
-| [`a_link_keeps_the_whitespace_around_its_text`](tests/link_tests.rs#L586) / [input 1, Faithful](tests/link_tests.rs#L589) `r#"<p>Hi!<a href="x"> t</a></p>"#`                                                                       | Expected              | Yes           | Faithful            |
-| [`a_link_keeps_the_whitespace_around_its_text`](tests/link_tests.rs#L586) / [input 2, Faithful, referenced links](tests/link_tests.rs#L597) `r#"<p>Hi!<a href="x"> t</a></p>"#`                                                     | Expected              | Yes           | No                  |
-| [`a_link_keeps_the_whitespace_around_its_text`](tests/link_tests.rs#L586) / [input 3, Faithful](tests/link_tests.rs#L605) `r#"<p>Hi! <a href="x"> t</a></p>"#`                                                                      | Expected              | Yes           | No                  |
-| [`a_link_keeps_the_whitespace_around_its_text`](tests/link_tests.rs#L586) / [input 4, Faithful](tests/link_tests.rs#L609) `r#"<p><a href="x">t </a>now</p>"#`                                                                       | Expected              | Yes           | No                  |
-| [`an_image_without_a_source_is_written_as_html`](tests/link_tests.rs#L617)                                                                                                                                                          | Yes                   | Yes           | Faithful            |
-| [`an_image_without_alt_text_is_written_as_html`](tests/link_tests.rs#L633) / [input 1, Faithful](tests/link_tests.rs#L636) `r#"<p>a<img src="i">b</p>"#`                                                                            | Expected              | Yes           | Faithful            |
-| [`an_image_without_alt_text_is_written_as_html`](tests/link_tests.rs#L633) / [input 2, Faithful](tests/link_tests.rs#L645) `r#"<img src="i" alt="">"#`                                                                              | Expected              | Yes           | Faithful            |
-| [`an_image_with_an_empty_title_is_written_as_html`](tests/link_tests.rs#L659)                                                                                                                                                       | Yes                   | Yes           | Faithful            |
-| [`a_link_escapes_an_email_autolink`](tests/link_tests.rs#L675) / [input 1, Faithful](tests/link_tests.rs#L678) `r#"<a href="x">&lt;1foo@bar.com&gt;</a>"#`                                                                          | Expected              | Yes           | Faithful            |
-| [`a_link_escapes_an_email_autolink`](tests/link_tests.rs#L675) / [input 2, Faithful](tests/link_tests.rs#L686) `r#"<img src="i" alt="<+a@b.co>">"#`                                                                                 | Expected              | Yes           | Faithful            |
+| [`link_text_escapes_its_math_delimiters`](tests/link_tests.rs#L483) / [input 2, Faithful](tests/link_tests.rs#L492) `r#"<p><a href="u"><span class="math math-inline">a](v)</span></a></p>"#`                        | Configured            | Yes           | Faithful            |
+| [`a_link_destination_takes_pointy_brackets_where_needed`](tests/link_tests.rs#L503) / [input 1, Faithful](tests/link_tests.rs#L504) `r#"<a href="">t</a>"#`                                                          | Expected              | Yes           | Faithful            |
+| [`a_link_destination_takes_pointy_brackets_where_needed`](tests/link_tests.rs#L503) / [input 2, Faithful, referenced links](tests/link_tests.rs#L512) `r#"<a href="">t</a>"#`                                        | Expected              | Yes           | No                  |
+| [`a_link_destination_takes_pointy_brackets_where_needed`](tests/link_tests.rs#L503) / [input 3, Faithful](tests/link_tests.rs#L516) `r#"<a href="&lt;a">t</a>"#`                                                     | Expected              | Yes           | Faithful            |
+| [`a_link_destination_takes_pointy_brackets_where_needed`](tests/link_tests.rs#L503) / [input 4, Faithful](tests/link_tests.rs#L524) `"<a href="a\tb">t</a>"`                                                         | Expected              | Yes           | Faithful            |
+| [`a_link_destination_takes_pointy_brackets_where_needed`](tests/link_tests.rs#L503) / [input 5, Faithful](tests/link_tests.rs#L532) `r#"<a href="a&lt;b&gt;c">t</a>"#`                                               | Expected              | Yes           | Faithful            |
+| [`a_link_destination_takes_pointy_brackets_where_needed`](tests/link_tests.rs#L503) / [input 6, Faithful](tests/link_tests.rs#L540) `r#"<img src="" alt="q">"#`                                                      | Expected              | Yes           | No                  |
+| [`link_text_encodes_its_line_endings`](tests/link_tests.rs#L547) / [input 1, Pure](tests/link_tests.rs#L551) `r#"<a href="x"><p>a</p><p>b</p></a>"#`                                                                 | No                    | Yes           | No                  |
+| [`link_text_encodes_its_line_endings`](tests/link_tests.rs#L547) / [input 2, Faithful](tests/link_tests.rs#L557) `r#"<a href="x"><p>a</p><p>b</p></a>"#`                                                             | Expected              | Yes           | Faithful            |
+| [`link_text_encodes_its_line_endings`](tests/link_tests.rs#L547) / [input 3, Faithful, referenced links](tests/link_tests.rs#L565) `r#"<a href="x"><p>a</p><p>b</p></a>"#`                                           | Expected              | Yes           | No                  |
+| [`link_text_encodes_its_line_endings`](tests/link_tests.rs#L547) / [input 4, Pure](tests/link_tests.rs#L570) `r#"<h1><a href="x">a<br>b</a></h1>"#`                                                                  | No                    | Yes           | No                  |
+| [`an_image_is_inline_in_the_referenced_style`](tests/link_tests.rs#L576)                                                                                                                                             | Configured + expected | Yes           | No                  |
+| [`a_link_keeps_the_whitespace_around_its_text`](tests/link_tests.rs#L586) / [input 1, Faithful](tests/link_tests.rs#L589) `r#"<p>Hi!<a href="x"> t</a></p>"#`                                                        | Expected              | Yes           | Faithful            |
+| [`a_link_keeps_the_whitespace_around_its_text`](tests/link_tests.rs#L586) / [input 2, Faithful, referenced links](tests/link_tests.rs#L597) `r#"<p>Hi!<a href="x"> t</a></p>"#`                                      | Expected              | Yes           | No                  |
+| [`a_link_keeps_the_whitespace_around_its_text`](tests/link_tests.rs#L586) / [input 3, Faithful](tests/link_tests.rs#L605) `r#"<p>Hi! <a href="x"> t</a></p>"#`                                                       | Expected              | Yes           | No                  |
+| [`a_link_keeps_the_whitespace_around_its_text`](tests/link_tests.rs#L586) / [input 4, Faithful](tests/link_tests.rs#L609) `r#"<p><a href="x">t </a>now</p>"#`                                                        | Expected              | Yes           | No                  |
+| [`an_image_without_a_source_is_written_as_html`](tests/link_tests.rs#L617)                                                                                                                                           | Yes                   | Yes           | Faithful            |
+| [`an_image_without_alt_text_is_written_as_html`](tests/link_tests.rs#L633) / [input 1, Faithful](tests/link_tests.rs#L636) `r#"<p>a<img src="i">b</p>"#`                                                             | Expected              | Yes           | Faithful            |
+| [`an_image_without_alt_text_is_written_as_html`](tests/link_tests.rs#L633) / [input 2, Faithful](tests/link_tests.rs#L645) `r#"<img src="i" alt="">"#`                                                               | Expected              | Yes           | Faithful            |
+| [`an_image_with_an_empty_title_is_written_as_html`](tests/link_tests.rs#L659)                                                                                                                                        | Yes                   | Yes           | Faithful            |
+| [`a_link_escapes_an_email_autolink`](tests/link_tests.rs#L675) / [input 1, Faithful](tests/link_tests.rs#L678) `r#"<a href="x">&lt;1foo@bar.com&gt;</a>"#`                                                           | Expected              | Yes           | Faithful            |
+| [`a_link_escapes_an_email_autolink`](tests/link_tests.rs#L675) / [input 2, Faithful](tests/link_tests.rs#L686) `r#"<img src="i" alt="<+a@b.co>">"#`                                                                  | Expected              | Yes           | Faithful            |
 
 ### [tests/list\_tests.rs](tests/list_tests.rs) (8)
 

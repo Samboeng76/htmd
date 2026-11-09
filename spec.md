@@ -174,10 +174,12 @@ Then review simple lists in `list_tests.rs`, paragraph-wrapped links in
 `basic_tests.rs`. The main link input in `a_bang_before_a_link_is_escaped`
 already has a round trip; its other Faithful inputs remain partial candidates.
 
-After the base cases, review full documents with `<head>` content and then
-tables and math. Use the case's exact htmd options and matching pulldown-cmark
-extensions. For a selected intentional transformation, record its approved rule
-and expected HTML rather than treating the current output as the expectation.
+After the base cases, keep the existing `with_head` full-document test as a
+Pure-mode test. Adding a new Faithful full-document case is outside this
+migration. Then review tables and math. Use the case's exact htmd options and
+matching pulldown-cmark extensions. For a selected intentional transformation,
+record its approved rule and expected HTML rather than treating the current
+output as the expectation.
 For example, flow text `<p>a\nb</p>` becoming `<p>a b</p>\n` changes text, so
 it requires an approved `DocumentedDifference` of kind `Loss`.
 
