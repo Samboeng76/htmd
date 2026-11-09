@@ -1,12 +1,13 @@
 # Round-trip testing strategy
 
-This is a team draft for the testing-standardization project. The ownership
-below is proposed; sections 1, 2, and 4 need their proposed owners' review.
-Conversion behavior remains governed by [translation_approach.md](translation_approach.md).
+This specification defines the team's strategy for standardizing htmd tests
+around Faithful-mode HTML → Markdown → HTML round trips.
+Conversion behavior remains governed by
+[translation_approach.md](https://github.com/bjones1/htmd/blob/2e7bf3a8dc0eb9348a3a15d8f04783c3669116da/translation_approach.md).
 Sam's [initial note](https://github.com/Samboeng76/htmd/blob/main/testing_standardization_ideas.md)
 provides the starting goal: test Faithful conversion through HTML → Markdown → HTML.
 
-| Section | Proposed owner | Responsibility |
+| Section | Section lead | Responsibility |
 | --- | --- | --- |
 | 1 | Yuriy | Scope and common test-case format |
 | 2 | Sam | Migration of existing tests |
@@ -44,7 +45,7 @@ purpose of each migrated test.
 Review each input and mode case for the behavior it checks, including cases
 grouped inside one test function. Classify it as preservation, a documented
 representation difference or loss, or a test of another contract. The
-[per-test inventory](testing_standardization_test_inventory.md) records proposed
+[per-test inventory](https://github.com/Samboeng76/htmd/blob/9f27b8196213fad9516b0b4dba6e683d27e01583/testing_standardization_test_inventory.md) records proposed
 Faithful treatment, Markdown assertions to retain, and existing round-trip
 coverage. Its `Partial` entries identify cases still lacking a round trip.
 Keep the inventory in its own file, and inventory the individual cases in
