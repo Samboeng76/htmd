@@ -69,6 +69,7 @@ expects and why, and a reader can tell a documented difference from a bug.
 | In              | Faithful cases with non-default options (`HeadingStyle::Setex`, link styles, ...)                         | Exact Markdown and stability; a round trip only where the case also claims preservation | Options change the Markdown spelling, not the HTML it means.                                                                                                         |
 | Kept            | Pure mode                                                                                                 | Existing assertions                                                                     | Pure mode drops HTML by design, so most round trips would be documented losses. Checking the stability of Pure-mode Markdown is follow-up work.                      |
 | Kept            | Extension API tests: handlers registered with `add_handler`, and element events (`event_tests.rs`)        | Existing assertions                                                                     | The handler or listener decides the output; `translation_approach.md` only constrains it ([Translating HTML nodes](translation_approach.md#translating-html-nodes)). |
+| Kept            | Shared-converter concurrency (`multithreading` in `basic_tests.rs`)                                       | Existing assertions                                                                     | It checks simultaneous use of one converter, which the common case runner does not exercise.                                                                         |
 | Kept            | Turndown cases (`turndown_cases_tests.rs`, `turndown_online_demo_tests.rs`)                               | Existing assertions                                                                     | They compare htmd's Markdown with the Markdown each Turndown case expects.                                                                                           |
 | Out             | Unit tests in `src/`                                                                                      | —                                                                                       | They test private helpers, not translations.                                                                                                                         |
 | Out             | Output of a custom handler which breaks the rules of "Translating HTML nodes", e.g. a bare inline newline | —                                                                                       | `translation_approach.md` leaves it unspecified.                                                                                                                     |
@@ -140,19 +141,24 @@ representation difference or loss, or a test of another contract. The
 [per-test inventory](testing_standardization_test_inventory.md) lists all 227
 integration tests on the instructor's current `main` and records proposed
 Faithful treatment, Markdown assertions to retain, and existing round-trip
-coverage. Its `Partial` entries identify cases still lacking a round trip. Keep
-the inventory in its own file.
+coverage. For selected Faithful cases, `No` in the `Existing round trip` column
+identifies those still lacking a round trip. Keep the inventory in its own file.
 
-Select Faithful-mode cases whose claim concerns preserved HTML or an approved
-documented difference. A test function may also contain Pure-mode assertions;
-leave those assertions in place. Do not add a duplicate round trip for an input
-already checked, though an existing check may still need the case format and
-correctness criteria in sections 1 and 3.
+Migrate every in-scope Faithful-mode case to the common runner, including cases
+whose only claim is exact Markdown output. Assign an HTML expectation only when
+a case claims preservation or an approved documented difference. A test
+function may also contain Pure-mode assertions; leave those assertions in
+place. Do not add a duplicate round trip for an input already checked, though
+an existing check may still need the case format and correctness criteria in
+sections 1 and 3.
+
+Keep `multithreading` in `basic_tests.rs` unchanged as a kept test (1.2):
+it checks concurrent use of one converter.
 
 | Case purpose                                               | Selection                                                                                                               |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Preserve ordinary HTML structure                           | Add a `Preserved` round trip, using a compact input when formatting whitespace would change the claim.                  |
-| Check Markdown syntax, escaping, or style options          | Keep the exact Markdown assertion; add a round trip only when the case also checks preservation.                        |
+| Check Markdown syntax, escaping, or style options          | Keep exact Markdown and check stability; add an HTML expectation only for preservation or an approved difference.       |
 | Check raw-HTML fallback or an intentional transformation   | Keep the Markdown assertion and select `Preserved` or `DocumentedDifference` according to the approved conversion rule. |
 | Check Pure mode, handler events, or Turndown compatibility | Keep the existing assertion; these are kept tests (1.2), not Faithful round-trip candidates.                            |
 
