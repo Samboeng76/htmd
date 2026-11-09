@@ -24,7 +24,7 @@ The recorded reviews focused on Section 4 and its consistency with Sections 1–
 
 **Provenance note:** Rounds 1–3 summarize reviews discussed in the team's working exchange, including a GPT-6 review. Round 4 is a final textual consistency review performed with OpenAI GPT-6 on the updated attached `spec.md`. Exact prompts and outputs from other team members' review sessions were not supplied; attach them if the team has them.
 
-## 3. Final LLM review
+## 3. Final LLM review — Section 4
 
 **Model:** OpenAI GPT-6.
 
@@ -35,8 +35,6 @@ The recorded reviews focused on Section 4 and its consistency with Sections 1–
 **Final review output:**
 
 > No additional relevant findings in the supplied specification. Section 4 now distinguishes the stage-specific converter options; preserves the intermediate Markdown; specifies `Stable` and approved `DocumentedInstability` comparisons; allows exact-Markdown cases without an HTML expectation; and reports failures according to which assertion failed. Section 3 now states the documented-instability exception explicitly. This is a consistency review of the written strategy, not a source-code execution or validation of the unimplemented generalized runner.
-
-**Scope and limits:** The reviewer checked the supplied `spec.md` text; it did not independently inspect the latest remote GitHub branch in this review. Other team members' final model outputs and their exact prompts have not been provided here and should be appended before the team submits its combined review evidence, if required.
 
 ## 4. Project compilation and run verification
 
@@ -50,7 +48,7 @@ The recorded reviews focused on Section 4 and its consistency with Sections 1–
 
 > I’m re-running the repo verification in the actual project root with the Rust toolchain available so I can give you a final yes/no status based on fresh build and run output.
 >
-> Ran terminal command: `$env:PATH = "$env:USERPROFILE\.cargo\bin;$env:PATH"; Set-Location "c:\Users\kaba0625\Documents\KBTU\Data mining\advanced\New folder\htmd"; cargo build; cargo clippy -- --deny warnings; cargo test; cargo run --example simple`
+> Ran terminal command: `$env:PATH = "$env:USERPROFILE\.cargo\bin;$env:PATH"; Set-Location "c:\Users\Documents\KBTU\Data mining\advanced\New folder\htmd"; cargo build; cargo clippy -- --deny warnings; cargo test; cargo run --example simple`
 >
 > Read [](file:///c%3A/Users/AppData/Roaming/Code/User/workspaceStorage/85bbe8ed1e7a15c7c5aad0216f8c0faa/GitHub.copilot-chat/chat-session-resources/6379a0aa-2159-4942-9666-4dc444547949/call_En95w4LXJJBKApVGZA6tasmd__vscode-1794233934546/content.txt#1-1), lines 1 to 260
 >
