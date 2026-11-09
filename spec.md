@@ -1,6 +1,6 @@
 # Round-trip testing strategy
 
-This specification describes how htmd's integration tests are standardized around two properties: the HTML → Markdown → HTML round trip, and the stability of htmd's Markdown across a second trip. Conversion behavior remains governed by [translation_approach.md](https://github.com/Samboeng76/htmd/blob/spec/scope/translation_approach.md); every documented difference points back to a rule in it. Sam's [initial note](https://github.com/Samboeng76/htmd/blob/main/testing_standardization_ideas.md) provides the starting goal: test Faithful conversion through HTML → Markdown → HTML.
+This specification describes how htmd's integration tests are standardized around two properties: the HTML → Markdown → HTML round trip, and the stability of htmd's Markdown across a second trip. Conversion behavior remains governed by [translation_approach.md](https://github.com/Samboeng76/htmd/blob/spec/scope/translation_approach.md); conversion differences cite its rules; parser-only representation changes cite the HTML rules in section 3. Sam's [initial note](https://github.com/Samboeng76/htmd/blob/main/testing_standardization_ideas.md) provides the starting goal: test Faithful conversion through HTML → Markdown → HTML.
 
 | **Section** | **Owner** | **Responsibility**                            |
 | ----------- | --------- | --------------------------------------------- |
@@ -138,35 +138,76 @@ Once no test calls a local helper which the runner replaces (`assert_round_trips
 
 ## 3. HTML comparison and correctness criteria
 
-`H`, `M(H)` and `R(H)` are as defined in Terms, always under the case's fixed conversion options.
+`H`, `M(H)` and `R(H)` are defined in Terms, under the case's fixed options.
 
-For `Preserved`, require exactly `R(H) == H + renderer_suffix`, where the suffix is either `""` or one LF (`"\n"`). The nonempty suffix is permitted only when `H` ends with a completed top-level paragraph, heading, list, blockquote, `pre`, table, or `hr`, optionally followed by LF characters. The added LF must be outside that element and all other open constructs. It never removes or replaces existing whitespace. Other inputs use the empty suffix.
+For `Preserved`, require exactly `R(H) == H + renderer_suffix`, where the suffix
+is `""` or one LF (`"\n"`). The nonempty suffix is allowed only after a completed
+top-level paragraph, heading, list, blockquote, `pre`, table, or `hr`, possibly
+followed by LF characters, and outside all other open constructs. It adds one
+character; it never trims or replaces existing whitespace. If `H` already has
+the renderer's final LF, select the empty suffix.
 
-Compare UTF-8 strings exactly. Do not trim strings, collapse whitespace, decode entities, reorder attributes, normalize Unicode, or remove elements before comparison. Whitespace inside `pre`, `code`, `textarea`, attribute values, and ordinary text remains part of the assertion.
+Compare UTF-8 strings exactly: no trimming, whitespace collapsing, entity
+unescaping, attribute sorting, Unicode normalization, or element removal.
+Spaces, tabs and line endings in text, code and attribute values remain part of
+the assertion. A non-breaking space (`U+00A0`) is not an ordinary space.
+This is source fidelity, not CSS rendering equivalence.
 
-The source comparison is intentionally stricter than rendered or DOM equality. `DocumentedDifference` with `kind = Representation` is restricted to attribute quote style or order, the optional slash of HTML void elements, a character written as itself or as any character reference to it (`A`, `&#65;` and `&#x41;` are equivalent), and the same final-LF convention above. Each change must preserve parsed node names and namespaces, child order, attribute names and values, and text and comment contents, apart from that explicit final LF, under the converter's HTML parsing options. For example, entity spellings in raw-text elements and comments are not interchangeable. A structural or value change uses `kind = Loss`; other unapproved differences fail.
+The suffix permits no internal separator change. Compact `<p>a</p><p>b</p>`
+does not preserve source as `<p>a</p>\n<p>b</p>\n`: a text node was added between
+the paragraphs. A separately named renderer-layout fixture
+`<p>a</p>\n<p>b</p>` can use suffix `"\n"`; keep the original fixture and its
+coverage. Do not strip indentation or internal newlines to make a test pass.
 
-Both kinds require literal `expected_html`, a short explanation of every allowed difference, and a reference to an approved conversion rule or a limitation explicitly documented in `translation_approach.md`. Specify and review the expected result independently of actual converter output; a failing case cannot become accepted merely by copying its output into the fixture. Require exactly `R(H) == expected_html`, with no additional suffix or normalization. Report Representation and Loss separately from preservation; a Loss result passing its regression assertion is not a preservation success.
+`DocumentedDifference` of kind `Representation` covers different source
+spellings that preserve parsed node kinds, names/namespaces, child order,
+attribute expanded names/values, text/comment values and other node data
+under the same HTML parser and options, apart from the explicitly recorded final-LF convention.
+Examples are attribute quoting/order, HTML void-element slash spelling,
+equivalent character references, and HTML-parser normalization. Literal CRLF
+or CR is normalized to LF [before HTML tokenization](https://html.spec.whatwg.org/multipage/parsing.html#preprocessing-the-input-stream);
+that is different from a CR produced later by `&#13;`. The parser also ignores
+one initial LF in [`pre` and `textarea`](https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inbody).
+These rules justify specific expectations, not global replacement in the
+comparison. References in raw-text elements and comments are not decoded like
+ordinary HTML text. A changed parsed structure or value is kind `Loss`, even
+when a browser would display the same spacing.
 
-For `Stable` cases, require exactly `M(R(H)) == M(H)`: Markdown → HTML → Markdown returns the same Markdown, under the same htmd and pulldown-cmark options and with the same strictness as above. A case which is not stable needs an approved `DocumentedInstability` with literal `second_markdown`, a reason, and a reference, specified and reviewed like a documented difference; for such a case, require exactly `M(R(H)) == second_markdown` instead. Because pulldown-cmark renders equal Markdown to equal HTML, a stable case also returns the same HTML on a second round trip: `R(R(H)) == R(H)`. Stability is an additional assertion: a stable result may already have lost content on its first trip, so stability does not establish preservation.
+Both kinds require literal `expected_html`, an explanation of each difference,
+and an approved conversion rule/limitation in `translation_approach.md`, or a
+cited normative HTML parsing rule for a representation-only change. Specify
+and review the expected result independently of actual converter output;
+copying a failed result into a fixture does not approve it. Require exactly
+`R(H) == expected_html`, with no extra suffix or normalization. Report both
+kinds separately from preservation; passing a Loss regression is not a
+preservation success.
 
-The following pairs illustrate the comparator; they do not promise that the converter currently produces each right-hand value. `\n` means one LF.
+For `Stable`, require exactly `M(R(H)) == M(H)`. An approved
+`DocumentedInstability` instead requires exactly
+`M(R(H)) == second_markdown`, with that literal, a reason and a reference
+specified independently like a documented difference. Equal Markdown renders
+to equal HTML, so Markdown stability implies `R(R(H)) == R(H)`; the converse
+is false. Neither stability property proves preservation on the first trip.
 
-| **Input `H`**     | **Candidate result** | **Decision**                                                                                                    |
-| ----------------- | -------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `<p>Hello</p>`    | `<p>Hello</p>\n`     | Preserved when the selected suffix is `"\n"`                                                                    |
-| `<div>a</div>`    | `<div>a</div>`       | Preserved with an empty suffix                                                                                  |
-| `<p>a b</p>`      | `<p>ab</p>\n`        | Fails preservation: a text space was lost                                                                       |
-| `<pre>a\nb</pre>` | `<pre>a b</pre>`     | Fails preservation: an internal LF changed                                                                      |
-| `<p>&#65;</p>`    | `<p>A</p>\n`         | Fails preservation; passes only as a documented Representation difference, since `&#65;` is the character `A`   |
-| `<br><br>`        | `<p><br><br></p>\n`  | Documented Loss: an extra paragraph, as described under "At the document root" in the translation specification |
+Comparator examples (`\n`, `\r` and `\t` denote actual characters):
 
-And for stability, with the converter's current output:
+| Input `H` | Candidate result | Decision |
+| --- | --- | --- |
+| `<p>Hello</p>` | `<p>Hello</p>\n` | Preserved with suffix `"\n"`. |
+| `<p>Hello</p>\n` | `<p>Hello</p>\n` | Preserved with the empty suffix. |
+| `<p>Hello</p>\r\n` | `<p>Hello</p>\n` | Documented Representation under HTML input preprocessing. |
+| `<p>a b</p>` | `<p>ab</p>\n` | Fails preservation: text space lost. |
+| `<pre><code>a\nb\n</code></pre>` | `<pre><code>a b\n</code></pre>\n` | Fails preservation: an internal code LF changed. |
+| `<p>&#65;</p>` | `<p>A</p>\n` | Requires documented Representation, including the final LF. |
+| `<br><br>` | `<p><br><br></p>\n` | Documented Loss: extra paragraph; see "At the document root". |
 
-| **Input `H`**   | **`M(H)`** | **`R(H)`**          | **`M(R(H))`** | **Decision**                                       |
-| --------------- | ---------- | ------------------- | ------------- | -------------------------------------------------- |
-| `<br><br>`      | `<br><br>` | `<p><br><br></p>\n` | `<br><br>`    | Stable, though the round trip is a documented Loss |
-| `<h1>a\t#</h1>` | `# a \#`   | `<h1>a #</h1>\n`    | `# a \#`      | Stable, though the tab was lost on the first trip  |
+Measured stability examples from the current default Faithful profile:
+
+| Input `H` | `M(H)` | `M(R(H))` | Decision |
+| --- | --- | --- | --- |
+| `<br><br>` | `<br><br>` | `<br><br>` | Stable, despite documented HTML loss. |
+| `<h1>a\t#</h1>` | `# a \#` | `# a \#` | Stable, despite loss of the original tab. |
+| `<p><code>a\nb</code></p>` | `<code>a b</code>` | `` `a b` `` | Fails Stable even though its HTML is stable; investigate or justify an approved instability. |
 
 ## 4. Round-trip execution and project verification
 
