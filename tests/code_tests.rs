@@ -5,12 +5,11 @@ use htmd::{
     element_handler::Handlers,
     options::{CodeBlockFence, Options},
 };
-use indoc::indoc;
 use markup5ever_rcdom::NodeData;
 use pretty_assertions::assert_eq;
 
 mod common;
-use common::convert_faithful;
+use common::{Case, HtmlExpectation, check_cases};
 
 fn find_element(node: &Rc<Node>, tag: &str) -> Option<Rc<Node>> {
     if let NodeData::Element { name, .. } = &node.data
@@ -25,43 +24,61 @@ fn find_element(node: &Rc<Node>, tag: &str) -> Option<Rc<Node>> {
         .find_map(|child| find_element(child, tag))
 }
 
+/// [Code blocks and code spans](../translation_approach.md#code-blocks-and-code-spans).
 #[test]
 fn code_blocks() {
     let html = r#"
         <pre><code>println!("Hello");</code></pre>
         "#;
-    assert_eq!(
-        "```\nprintln!(\"Hello\");\n```",
-        convert_faithful(html).unwrap()
-    );
+    check_cases(&[Case {
+        id: "code_blocks",
+        html,
+        expected_markdown: Some("```\nprintln!(\"Hello\");\n```"),
+        ..Case::default()
+    }]);
 }
 
+/// [Code blocks and code spans](../translation_approach.md#code-blocks-and-code-spans).
 #[test]
 fn code_blocks_with_lang_class() {
     let html = r#"
         <pre><code class="language-rust">println!("Hello");</code></pre>
         "#;
-    assert_eq!(
-        "```rust\nprintln!(\"Hello\");\n```",
-        convert_faithful(html).unwrap()
-    );
+    check_cases(&[Case {
+        id: "code_blocks_with_lang_class",
+        html,
+        expected_markdown: Some("```rust\nprintln!(\"Hello\");\n```"),
+        ..Case::default()
+    }]);
 }
 
+/// [Code blocks and code spans](../translation_approach.md#code-blocks-and-code-spans).
 #[test]
 fn faithful_mode_preserves_an_empty_language_class() {
     let html = r#"<pre><code class="language-">Test</code></pre>"#;
 
-    assert_eq!(html, convert_faithful(html).unwrap());
+    check_cases(&[Case {
+        id: "faithful_mode_preserves_an_empty_language_class",
+        html,
+        expected_markdown: Some(html),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
 }
 
+/// [Code blocks and code spans](../translation_approach.md#code-blocks-and-code-spans).
 #[test]
 fn code_blocks_decode_html_entities() {
     let html = r#"<pre><code>let x = 5 &amp;&amp; y &lt; 10;</code></pre>"#;
 
-    assert_eq!(
-        "```\nlet x = 5 && y < 10;\n```",
-        convert_faithful(html).unwrap()
-    );
+    check_cases(&[Case {
+        id: "code_blocks_decode_html_entities",
+        html,
+        expected_markdown: Some("```\nlet x = 5 && y < 10;\n```"),
+        ..Case::default()
+    }]);
 }
 
 // See https://github.com/letmutex/htmd/issues/14 for background on this test --
@@ -109,31 +126,46 @@ fn delegated_unhandled_subtree_preserves_ancestor_preformatted_context() {
     );
 }
 
+/// [Code blocks and code spans](../translation_approach.md#code-blocks-and-code-spans).
 #[test]
 fn faithful_mode_pre() {
-    assert_eq!(
-        convert_faithful(indoc!(r#"<pre>Test</pre>"#)).unwrap(),
-        indoc!(r#"<pre>Test</pre>"#)
-    );
+    check_cases(&[Case {
+        id: "faithful_mode_pre",
+        html: "<pre>Test</pre>",
+        expected_markdown: Some("<pre>Test</pre>"),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
 }
 
+/// [Code blocks and code spans](../translation_approach.md#code-blocks-and-code-spans).
 #[test]
 fn faithful_mode_code_block1() {
-    assert_eq!(
-        convert_faithful(indoc!(r#"<pre><code accesskey="f">Test</code></pre>"#)).unwrap(),
-        indoc!(r#"<pre><code accesskey="f">Test</code></pre>"#)
-    );
+    check_cases(&[Case {
+        id: "faithful_mode_code_block1",
+        html: "<pre><code accesskey=\"f\">Test</code></pre>",
+        expected_markdown: Some("<pre><code accesskey=\"f\">Test</code></pre>"),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
 }
 
+/// [Code blocks and code spans](../translation_approach.md#code-blocks-and-code-spans).
 #[test]
 fn faithful_mode_code_block2() {
-    assert_eq!(
-        convert_faithful(indoc!(
-            r#"<pre><code class="language-ruby"><i>Test</i></code></pre>"#
-        ))
-        .unwrap(),
-        indoc!(r#"<pre><code class="language-ruby"><i>Test</i></code></pre>"#)
-    );
+    check_cases(&[Case {
+        id: "faithful_mode_code_block2",
+        html: "<pre><code class=\"language-ruby\"><i>Test</i></code></pre>",
+        expected_markdown: Some("<pre><code class=\"language-ruby\"><i>Test</i></code></pre>"),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
 }
 
 #[test]

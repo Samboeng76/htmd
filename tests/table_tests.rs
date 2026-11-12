@@ -1,31 +1,29 @@
 mod common;
-use common::convert_faithful;
+use common::{Case, HtmlExpectation, check_cases, convert_faithful};
+use indoc::indoc;
+use pretty_assertions::assert_eq;
+use pulldown_cmark::Options as CommonMarkOptions;
 
-#[cfg(test)]
-mod table_tests_1 {
-    use super::convert_faithful;
-    use indoc::indoc;
-    use pretty_assertions::assert_eq;
+fn longest_space_run(text: &str) -> usize {
+    let mut longest = 0;
+    let mut current = 0;
 
-    fn longest_space_run(text: &str) -> usize {
-        let mut longest = 0;
-        let mut current = 0;
-
-        for ch in text.chars() {
-            if ch == ' ' {
-                current += 1;
-                longest = longest.max(current);
-            } else {
-                current = 0;
-            }
+    for ch in text.chars() {
+        if ch == ' ' {
+            current += 1;
+            longest = longest.max(current);
+        } else {
+            current = 0;
         }
-
-        longest
     }
 
-    #[test]
-    fn test_simple_table() {
-        let html = r#"
+    longest
+}
+
+/// [Tables](../translation_approach.md#tables).
+#[test]
+fn simple_table() {
+    let html = r#"
         <table>
             <tr>
                 <th>Header 1</th>
@@ -42,23 +40,30 @@ mod table_tests_1 {
         </table>
         "#;
 
-        let expected = r#"
+    let expected = r#"
 | Header 1 | Header 2 |
 | -------- | -------- |
 | Cell 1   | Cell 2   |
 | Cell 3   | Cell 4   |
 "#
-        .trim();
+    .trim();
 
-        let markdown = convert_faithful(html).unwrap();
-        let result = markdown.trim();
-        assert_eq!(expected, result);
-    }
+    let markdown = convert_faithful(html).unwrap();
+    let result = markdown.trim();
+    assert_eq!(expected, result);
+    check_cases(&[Case {
+        id: "simple_table_original",
+        html,
+        expected_markdown: Some(expected),
+        markdown_options: CommonMarkOptions::ENABLE_TABLES,
+        ..Case::default()
+    }]);
+}
 
-    #[test]
-    fn table_rows_do_not_drop_cells_beyond_the_header_width() {
-        let markdown = htmd::convert(
-            r#"
+#[test]
+fn table_rows_do_not_drop_cells_beyond_the_header_width() {
+    let markdown = htmd::convert(
+        r#"
             <table>
                 <thead>
                     <tr><th>First</th><th>Second</th></tr>
@@ -68,44 +73,44 @@ mod table_tests_1 {
                 </tbody>
             </table>
             "#,
-        )
-        .unwrap();
+    )
+    .unwrap();
 
-        assert_eq!(
-            indoc!(
-                r#"
+    assert_eq!(
+        indoc!(
+            r#"
                 | First | Second |              |
                 | ----- | ------ | ------------ |
                 | Alpha | Beta   | Must survive |
                 "#
-            )
-            .trim(),
-            markdown
-        );
-    }
+        )
+        .trim(),
+        markdown
+    );
+}
 
-    #[test]
-    fn malformed_table_foster_parenting_does_not_lose_visible_text() {
-        let markdown =
-            htmd::convert("<table>before<tr><th>heading</th></tr>after</table>").unwrap();
+#[test]
+fn malformed_table_foster_parenting_does_not_lose_visible_text() {
+    let markdown = htmd::convert("<table>before<tr><th>heading</th></tr>after</table>").unwrap();
 
-        assert_eq!(
-            indoc!(
-                r#"
+    assert_eq!(
+        indoc!(
+            r#"
                 beforeafter
 
                 | heading |
                 | ------- |
                 "#
-            )
-            .trim(),
-            markdown
-        );
-    }
+        )
+        .trim(),
+        markdown
+    );
+}
 
-    #[test]
-    fn test_table_with_thead_tbody() {
-        let html = r#"
+/// [Tables](../translation_approach.md#tables).
+#[test]
+fn table_with_thead_tbody() {
+    let html = r#"
         <table>
             <thead>
                 <tr>
@@ -129,22 +134,29 @@ mod table_tests_1 {
         </table>
         "#;
 
-        let expected = r#"
+    let expected = r#"
 | Name | Age | Location      |
 | ---- | --- | ------------- |
 | John | 35  | New York      |
 | Jane | 28  | San Francisco |
 "#
-        .trim();
+    .trim();
 
-        let markdown = convert_faithful(html).unwrap();
-        let result = markdown.trim();
-        assert_eq!(expected, result);
-    }
+    let markdown = convert_faithful(html).unwrap();
+    let result = markdown.trim();
+    assert_eq!(expected, result);
+    check_cases(&[Case {
+        id: "table_with_thead_tbody_original",
+        html,
+        expected_markdown: Some(expected),
+        markdown_options: CommonMarkOptions::ENABLE_TABLES,
+        ..Case::default()
+    }]);
+}
 
-    #[test]
-    fn test_table_with_thead_td_headers() {
-        let html = r#"
+#[test]
+fn table_with_thead_td_headers() {
+    let html = r#"
         <table>
             <thead>
                 <tr>
@@ -165,22 +177,23 @@ mod table_tests_1 {
         </table>
         "#;
 
-        let expected = r#"
+    let expected = r#"
 | Name | Age |
 | ---- | --- |
 | John | 35  |
 | Jane | 28  |
 "#
-        .trim();
+    .trim();
 
-        let markdown = htmd::HtmlToMarkdown::new().convert(html).unwrap();
-        let result = markdown.trim();
-        assert_eq!(expected, result);
-    }
+    let markdown = htmd::HtmlToMarkdown::new().convert(html).unwrap();
+    let result = markdown.trim();
+    assert_eq!(expected, result);
+}
 
-    #[test]
-    fn test_table_with_caption() {
-        let html = r#"
+/// [Tables](../translation_approach.md#tables).
+#[test]
+fn table_with_caption() {
+    let html = r#"
         <table>
             <caption>Sample Table</caption>
             <tbody>
@@ -198,386 +211,711 @@ mod table_tests_1 {
         </table>
         "#;
 
-        // A `<caption>` has no CommonMark spelling and is invalid outside a
-        // `<table>`, so faithful mode serializes the whole table.
-        let expected = html.trim();
+    // A `<caption>` has no CommonMark spelling and is invalid outside a
+    // `<table>`, so faithful mode serializes the whole table.
+    let expected = html.trim();
 
-        let markdown = convert_faithful(html).unwrap();
-        let result = markdown.trim();
-        assert_eq!(expected, result);
-    }
+    let markdown = convert_faithful(html).unwrap();
+    let result = markdown.trim();
+    assert_eq!(expected, result);
+    check_cases(&[Case {
+        id: "table_with_caption_original",
+        html,
+        expected_markdown: Some(expected),
+        ..Case::default()
+    }]);
+}
 
-    /// CommonMark has no caption: writing the content as a paragraph above the
-    /// table reads as one but is not one, so only pure mode does it.
-    #[test]
-    fn test_table_caption_is_commonmark_only_in_pure_mode() {
-        let html = concat!(
-            "<table><caption>Sample Table</caption>",
-            "<thead><tr><th>h</th></tr></thead>",
-            "<tbody><tr><td>John</td></tr></tbody></table>"
-        );
+/// [Tables](../translation_approach.md#tables).
+/// CommonMark has no caption: writing the content as a paragraph above the
+/// table reads as one but is not one, so only pure mode does it.
+#[test]
+fn table_caption_is_commonmark_only_in_pure_mode() {
+    let html = concat!(
+        "<table><caption>Sample Table</caption>",
+        "<thead><tr><th>h</th></tr></thead>",
+        "<tbody><tr><td>John</td></tr></tbody></table>"
+    );
 
-        assert_eq!(
-            "Sample Table\n\n| h    |\n| ---- |\n| John |",
-            htmd::HtmlToMarkdown::new().convert(html).unwrap()
-        );
-        // A `<caption>` is only valid inside a `<table>`, so the whole table is
-        // serialized around it rather than the caption written on its own.
-        assert_eq!(html, convert_faithful(html).unwrap());
-    }
+    assert_eq!(
+        "Sample Table\n\n| h    |\n| ---- |\n| John |",
+        htmd::HtmlToMarkdown::new().convert(html).unwrap()
+    );
+    // A `<caption>` is only valid inside a `<table>`, so the whole table is
+    // serialized around it rather than the caption written on its own.
 
-    /// A GFM table has no headerless form: the delimiter row which makes the
-    /// block a table has to follow a header row.
-    #[test]
-    fn a_table_with_no_header_row_is_written_as_html() {
-        let html = concat!(
-            "<table><tbody><tr><td>a</td><td>b</td></tr>",
-            "<tr><td>c</td><td>d</td></tr></tbody></table>"
-        );
-        assert_eq!(html, convert_faithful(html).unwrap());
+    check_cases(&[Case {
+        id: "table_caption_is_commonmark_only_in_pure_mode_case_1",
+        html,
+        expected_markdown: Some(html),
+        ..Case::default()
+    }]);
+}
 
-        // A block element in a cell is a raw HTML inline and no reason to
-        // serialize; the missing header row is the reason here.
-        let block_cell = "<table><tbody><tr><td><p>a</p></td></tr></tbody></table>";
-        assert_eq!(block_cell, convert_faithful(block_cell).unwrap());
-    }
+/// [Tables](../translation_approach.md#tables).
+/// A GFM table has no headerless form: the delimiter row which makes the
+/// block a table has to follow a header row.
+#[test]
+fn a_table_with_no_header_row_is_written_as_html() {
+    let mut faithful_cases = Vec::new();
+    let html = concat!(
+        "<table><tbody><tr><td>a</td><td>b</td></tr>",
+        "<tr><td>c</td><td>d</td></tr></tbody></table>"
+    );
 
-    /// Pure mode has no HTML to fall back on, so it writes an empty header row.
-    /// A table is only built where the markup holds a `th` or a `thead`, hence
-    /// the empty `<thead>` needed to reach this.
-    #[test]
-    fn pure_mode_writes_an_empty_header_row_for_a_headerless_table() {
-        let html = "<table><thead></thead><tbody><tr><td>a</td></tr></tbody></table>";
+    faithful_cases.extend([Case {
+        id: "a_table_with_no_header_row_is_written_as_html_case_2",
+        html,
+        expected_markdown: Some(html),
+        ..Case::default()
+    }]);
 
-        assert_eq!(
-            "|   |\n| - |\n| a |",
-            htmd::HtmlToMarkdown::new().convert(html).unwrap()
-        );
-        assert_eq!(html, convert_faithful(html).unwrap());
-    }
+    // A block element in a cell is a raw HTML inline and no reason to
+    // serialize; the missing header row is the reason here.
+    let block_cell = "<table><tbody><tr><td><p>a</p></td></tr></tbody></table>";
 
-    /// Asserts that faithful mode writes `html` back as it stands — the
-    /// fallback for a table holding what a Markdown one cannot — and that pure
-    /// mode, which has no fallback, writes `pure_markdown` instead.
-    fn assert_html_fallback(html: &str, pure_markdown: &str) {
-        assert_eq!(html, convert_faithful(html).unwrap());
-        assert_eq!(
-            pure_markdown,
-            htmd::HtmlToMarkdown::new().convert(html).unwrap()
-        );
-    }
+    faithful_cases.extend([Case {
+        id: "a_table_with_no_header_row_is_written_as_html_case_3",
+        html: block_cell,
+        expected_markdown: Some(block_cell),
+        ..Case::default()
+    }]);
+    check_cases(&faithful_cases);
+}
 
-    /// A GFM table has one header row, so only the first `<tr>` of a `<thead>`
-    /// reaches the Markdown; the rest would be dropped. Pure mode drops the
-    /// second header row.
-    #[test]
-    fn extra_header_rows_are_written_as_html() {
-        assert_html_fallback(
-            concat!(
+/// [Tables](../translation_approach.md#tables).
+/// Pure mode has no HTML to fall back on, so it writes an empty header row.
+/// A table is only built where the markup holds a `th` or a `thead`, hence
+/// the empty `<thead>` needed to reach this.
+#[test]
+fn pure_mode_writes_an_empty_header_row_for_a_headerless_table() {
+    let html = "<table><thead></thead><tbody><tr><td>a</td></tr></tbody></table>";
+
+    assert_eq!(
+        "|   |\n| - |\n| a |",
+        htmd::HtmlToMarkdown::new().convert(html).unwrap()
+    );
+
+    check_cases(&[Case {
+        id: "pure_mode_writes_an_empty_header_row_for_a_headerless_table_case_4",
+        html,
+        expected_markdown: Some(html),
+        ..Case::default()
+    }]);
+}
+
+/// [Tables](../translation_approach.md#tables).
+/// A GFM table has one header row, so only the first `<tr>` of a `<thead>`
+/// reaches the Markdown; the rest would be dropped. Pure mode drops the
+/// second header row.
+#[test]
+fn extra_header_rows_are_written_as_html() {
+    check_cases(&[Case {
+        id: "extra_header_rows_are_written_as_html_html_fallback_1",
+        html: concat!(
+            "<table><thead><tr><th>A</th></tr><tr><th>B</th></tr></thead>",
+            "<tbody><tr><td>c</td></tr></tbody></table>"
+        ),
+        expected_markdown: Some(concat!(
+            "<table><thead><tr><th>A</th></tr><tr><th>B</th></tr></thead>",
+            "<tbody><tr><td>c</td></tr></tbody></table>"
+        )),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "| A |\n| - |\n| c |",
+        htmd::HtmlToMarkdown::new()
+            .convert(concat!(
                 "<table><thead><tr><th>A</th></tr><tr><th>B</th></tr></thead>",
                 "<tbody><tr><td>c</td></tr></tbody></table>"
-            ),
-            "| A |\n| - |\n| c |",
-        );
-    }
+            ))
+            .unwrap()
+    );
+}
 
-    /// A GFM row is all header cells or all body cells, so a `<th>` among a body
-    /// row's `<td>`s would be dropped. Pure mode drops it, which leaves the
-    /// row's `<td>` in the first column.
-    #[test]
-    fn a_header_cell_in_a_body_row_is_written_as_html() {
-        assert_html_fallback(
-            concat!(
+/// [Tables](../translation_approach.md#tables).
+/// A GFM row is all header cells or all body cells, so a `<th>` among a body
+/// row's `<td>`s would be dropped. Pure mode drops it, which leaves the
+/// row's `<td>` in the first column.
+#[test]
+fn a_header_cell_in_a_body_row_is_written_as_html() {
+    check_cases(&[Case {
+        id: "a_header_cell_in_a_body_row_is_written_as_html_html_fallback_1",
+        html: concat!(
+            "<table><tbody><tr><th>A</th><th>B</th></tr>",
+            "<tr><th>r</th><td>c</td></tr></tbody></table>"
+        ),
+        expected_markdown: Some(concat!(
+            "<table><tbody><tr><th>A</th><th>B</th></tr>",
+            "<tr><th>r</th><td>c</td></tr></tbody></table>"
+        )),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "| A | B |\n| - | - |\n| c |   |",
+        htmd::HtmlToMarkdown::new()
+            .convert(concat!(
                 "<table><tbody><tr><th>A</th><th>B</th></tr>",
                 "<tr><th>r</th><td>c</td></tr></tbody></table>"
-            ),
-            "| A | B |\n| - | - |\n| c |   |",
+            ))
+            .unwrap()
+    );
+}
+
+/// [Tables](../translation_approach.md#tables).
+/// A `<colgroup>`, a `<script>` between rows, and a row holding no cell all
+/// reach the Markdown table as nothing at all.
+#[test]
+fn table_content_a_markdown_row_cannot_hold_is_written_as_html() {
+    for html in [
+        concat!(
+            "<table><colgroup><col></colgroup><thead><tr><th>A</th></tr></thead>",
+            "<tbody><tr><td>c</td></tr></tbody></table>"
+        ),
+        concat!(
+            "<table><thead><tr><th>A</th></tr></thead>",
+            "<tbody><script>x</script><tr><td>c</td></tr></tbody></table>"
+        ),
+        concat!(
+            "<table><thead><tr><th>A</th></tr></thead>",
+            "<tbody><tr><td>c</td></tr><tr></tr></tbody></table>"
+        ),
+    ] {
+        check_cases(&[Case {
+            id: "table_content_a_markdown_row_cannot_hold_is_written_as_html_html_fallback_1",
+            html,
+            expected_markdown: Some(html),
+            expectation: Some(HtmlExpectation::Preserved {
+                renderer_suffix: "",
+            }),
+            ..Case::default()
+        }]);
+        assert_eq!(
+            "| A |\n| - |\n| c |",
+            htmd::HtmlToMarkdown::new().convert(html).unwrap()
         );
     }
+}
 
-    /// A `<colgroup>`, a `<script>` between rows, and a row holding no cell all
-    /// reach the Markdown table as nothing at all.
-    #[test]
-    fn table_content_a_markdown_row_cannot_hold_is_written_as_html() {
-        for html in [
-            concat!(
-                "<table><colgroup><col></colgroup><thead><tr><th>A</th></tr></thead>",
-                "<tbody><tr><td>c</td></tr></tbody></table>"
-            ),
-            concat!(
-                "<table><thead><tr><th>A</th></tr></thead>",
-                "<tbody><script>x</script><tr><td>c</td></tr></tbody></table>"
-            ),
-            concat!(
-                "<table><thead><tr><th>A</th></tr></thead>",
-                "<tbody><tr><td>c</td></tr><tr></tr></tbody></table>"
-            ),
-        ] {
-            assert_html_fallback(html, "| A |\n| - |\n| c |");
-        }
-    }
-
-    /// The cells of a GFM header row are header cells, so a `<thead>` of `<td>`
-    /// reaches the Markdown promoted to `<th>`. Pure mode takes the promotion.
-    #[test]
-    fn a_thead_of_data_cells_is_written_as_html() {
-        assert_html_fallback(
-            concat!(
+/// [Tables](../translation_approach.md#tables).
+/// The cells of a GFM header row are header cells, so a `<thead>` of `<td>`
+/// reaches the Markdown promoted to `<th>`. Pure mode takes the promotion.
+#[test]
+fn a_thead_of_data_cells_is_written_as_html() {
+    check_cases(&[Case {
+        id: "a_thead_of_data_cells_is_written_as_html_html_fallback_1",
+        html: concat!(
+            "<table><thead><tr><td>A</td><td>B</td></tr></thead>",
+            "<tbody><tr><td>c</td><td>d</td></tr></tbody></table>"
+        ),
+        expected_markdown: Some(concat!(
+            "<table><thead><tr><td>A</td><td>B</td></tr></thead>",
+            "<tbody><tr><td>c</td><td>d</td></tr></tbody></table>"
+        )),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "| A | B |\n| - | - |\n| c | d |",
+        htmd::HtmlToMarkdown::new()
+            .convert(concat!(
                 "<table><thead><tr><td>A</td><td>B</td></tr></thead>",
                 "<tbody><tr><td>c</td><td>d</td></tr></tbody></table>"
-            ),
-            "| A | B |\n| - | - |\n| c | d |",
-        );
-    }
+            ))
+            .unwrap()
+    );
+}
 
-    /// A GFM table has one body, so a second `<tbody>`'s rows join the first and
-    /// the split between them is lost. Pure mode takes the join.
-    #[test]
-    fn a_second_tbody_is_written_as_html() {
-        assert_html_fallback(
-            concat!(
+/// [Tables](../translation_approach.md#tables).
+/// A GFM table has one body, so a second `<tbody>`'s rows join the first and
+/// the split between them is lost. Pure mode takes the join.
+#[test]
+fn a_second_tbody_is_written_as_html() {
+    check_cases(&[Case {
+        id: "a_second_tbody_is_written_as_html_html_fallback_1",
+        html: concat!(
+            "<table><thead><tr><th>h</th></tr></thead>",
+            "<tbody><tr><td>a</td></tr></tbody>",
+            "<tbody><tr><td>b</td></tr></tbody></table>"
+        ),
+        expected_markdown: Some(concat!(
+            "<table><thead><tr><th>h</th></tr></thead>",
+            "<tbody><tr><td>a</td></tr></tbody>",
+            "<tbody><tr><td>b</td></tr></tbody></table>"
+        )),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "| h |\n| - |\n| a |\n| b |",
+        htmd::HtmlToMarkdown::new()
+            .convert(concat!(
                 "<table><thead><tr><th>h</th></tr></thead>",
                 "<tbody><tr><td>a</td></tr></tbody>",
                 "<tbody><tr><td>b</td></tr></tbody></table>"
-            ),
-            "| h |\n| - |\n| a |\n| b |",
-        );
-    }
+            ))
+            .unwrap()
+    );
+}
 
-    /// A GFM table has one header row, so a second `<thead>` overwrites the
-    /// header the first one gave and that header is lost. Pure mode takes the
-    /// overwrite.
-    #[test]
-    fn a_second_thead_is_written_as_html() {
-        assert_html_fallback(
-            concat!(
+/// [Tables](../translation_approach.md#tables).
+/// A GFM table has one header row, so a second `<thead>` overwrites the
+/// header the first one gave and that header is lost. Pure mode takes the
+/// overwrite.
+#[test]
+fn a_second_thead_is_written_as_html() {
+    check_cases(&[Case {
+        id: "a_second_thead_is_written_as_html_html_fallback_1",
+        html: concat!(
+            "<table><thead><tr><th>A</th></tr></thead>",
+            "<thead><tr><th>B</th></tr></thead>",
+            "<tbody><tr><td>c</td></tr></tbody></table>"
+        ),
+        expected_markdown: Some(concat!(
+            "<table><thead><tr><th>A</th></tr></thead>",
+            "<thead><tr><th>B</th></tr></thead>",
+            "<tbody><tr><td>c</td></tr></tbody></table>"
+        )),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "| B |\n| - |\n| c |",
+        htmd::HtmlToMarkdown::new()
+            .convert(concat!(
                 "<table><thead><tr><th>A</th></tr></thead>",
                 "<thead><tr><th>B</th></tr></thead>",
                 "<tbody><tr><td>c</td></tr></tbody></table>"
-            ),
+            ))
+            .unwrap()
+    );
+}
+
+/// [Tables](../translation_approach.md#tables).
+/// A GFM table's header row comes first, so a `<thead>` following body rows
+/// can only become one by moving ahead of the rows it followed. A `<tbody>`
+/// opening with a `<th>` row supplies the header just as a `<thead>` does,
+/// which leaves the `<thead>` after it the second of two. Pure mode takes
+/// the reordering.
+#[test]
+fn a_thead_after_a_body_row_is_written_as_html() {
+    for html in [
+        concat!(
+            "<table><tbody><tr><td>c</td></tr></tbody>",
+            "<thead><tr><th>B</th></tr></thead></table>"
+        ),
+        concat!(
+            "<table><tbody><tr><th>A</th></tr><tr><td>c</td></tr></tbody>",
+            "<thead><tr><th>B</th></tr></thead></table>"
+        ),
+    ] {
+        check_cases(&[Case {
+            id: "a_thead_after_a_body_row_is_written_as_html_html_fallback_1",
+            html,
+            expected_markdown: Some(html),
+            expectation: Some(HtmlExpectation::Preserved {
+                renderer_suffix: "",
+            }),
+            ..Case::default()
+        }]);
+        assert_eq!(
             "| B |\n| - |\n| c |",
+            htmd::HtmlToMarkdown::new().convert(html).unwrap()
         );
     }
+}
 
-    /// A GFM table's header row comes first, so a `<thead>` following body rows
-    /// can only become one by moving ahead of the rows it followed. A `<tbody>`
-    /// opening with a `<th>` row supplies the header just as a `<thead>` does,
-    /// which leaves the `<thead>` after it the second of two. Pure mode takes
-    /// the reordering.
-    #[test]
-    fn a_thead_after_a_body_row_is_written_as_html() {
-        for html in [
-            concat!(
-                "<table><tbody><tr><td>c</td></tr></tbody>",
-                "<thead><tr><th>B</th></tr></thead></table>"
-            ),
-            concat!(
-                "<table><tbody><tr><th>A</th></tr><tr><td>c</td></tr></tbody>",
-                "<thead><tr><th>B</th></tr></thead></table>"
-            ),
-        ] {
-            assert_html_fallback(html, "| B |\n| - |\n| c |");
-        }
-    }
-
-    /// A `<tbody>` holding no row reaches the Markdown as nothing at all, so the
-    /// `<thead>` after it would move ahead of a body section the table no longer
-    /// has. Pure mode takes the reordering, which leaves a table of a header
-    /// alone.
-    #[test]
-    fn a_thead_after_an_empty_tbody_is_written_as_html() {
-        assert_html_fallback(
-            concat!(
+/// [Tables](../translation_approach.md#tables).
+/// A `<tbody>` holding no row reaches the Markdown as nothing at all, so the
+/// `<thead>` after it would move ahead of a body section the table no longer
+/// has. Pure mode takes the reordering, which leaves a table of a header
+/// alone.
+#[test]
+fn a_thead_after_an_empty_tbody_is_written_as_html() {
+    check_cases(&[Case {
+        id: "a_thead_after_an_empty_tbody_is_written_as_html_html_fallback_1",
+        html: concat!(
+            "<table><tbody></tbody>",
+            "<thead><tr><th>B</th></tr></thead></table>"
+        ),
+        expected_markdown: Some(concat!(
+            "<table><tbody></tbody>",
+            "<thead><tr><th>B</th></tr></thead></table>"
+        )),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "| B |\n| - |",
+        htmd::HtmlToMarkdown::new()
+            .convert(concat!(
                 "<table><tbody></tbody>",
                 "<thead><tr><th>B</th></tr></thead></table>"
-            ),
-            "| B |\n| - |",
-        );
-    }
+            ))
+            .unwrap()
+    );
+}
 
-    /// A GFM table's header row comes first, so a row of `<th>` following a body
-    /// row can only become one by moving ahead of the rows it followed. Pure
-    /// mode drops the row, as it drops a `<th>` among a body row's `<td>`s; the
-    /// header it leaves empty is the one
-    /// `pure_mode_writes_an_empty_header_row_for_a_headerless_table` covers.
-    #[test]
-    fn a_header_row_after_a_body_row_is_written_as_html() {
-        assert_html_fallback(
+/// [Tables](../translation_approach.md#tables).
+/// A GFM table's header row comes first, so a row of `<th>` following a body
+/// row can only become one by moving ahead of the rows it followed. Pure
+/// mode drops the row, as it drops a `<th>` among a body row's `<td>`s; the
+/// header it leaves empty is the one
+/// `pure_mode_writes_an_empty_header_row_for_a_headerless_table` covers.
+#[test]
+fn a_header_row_after_a_body_row_is_written_as_html() {
+    check_cases(&[Case {
+        id: "a_header_row_after_a_body_row_is_written_as_html_html_fallback_1",
+        html: "<table><tbody><tr><td>1</td></tr><tr><th>H</th></tr></tbody></table>",
+        expected_markdown: Some(
             "<table><tbody><tr><td>1</td></tr><tr><th>H</th></tr></tbody></table>",
-            "|   |\n| - |\n| 1 |",
-        );
-    }
+        ),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "|   |\n| - |\n| 1 |",
+        htmd::HtmlToMarkdown::new()
+            .convert("<table><tbody><tr><td>1</td></tr><tr><th>H</th></tr></tbody></table>")
+            .unwrap()
+    );
+}
 
-    /// Every row of a GFM table holds the columns its header declares, so a row
-    /// of a different width gains cells the HTML never held, or gives the table
-    /// a header column the HTML never declared.
-    #[test]
-    fn a_row_wider_or_narrower_than_the_header_is_written_as_html() {
-        assert_html_fallback(
-            concat!(
+/// [Tables](../translation_approach.md#tables).
+/// Every row of a GFM table holds the columns its header declares, so a row
+/// of a different width gains cells the HTML never held, or gives the table
+/// a header column the HTML never declared.
+#[test]
+fn a_row_wider_or_narrower_than_the_header_is_written_as_html() {
+    let mut faithful_cases = Vec::new();
+    faithful_cases.extend([Case {
+        id: "a_row_wider_or_narrower_than_the_header_is_written_as_html_html_fallback_1",
+        html: concat!(
+            "<table><thead><tr><th>A</th></tr></thead>",
+            "<tbody><tr><td>c</td><td>d</td></tr></tbody></table>"
+        ),
+        expected_markdown: Some(concat!(
+            "<table><thead><tr><th>A</th></tr></thead>",
+            "<tbody><tr><td>c</td><td>d</td></tr></tbody></table>"
+        )),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "| A |   |\n| - | - |\n| c | d |",
+        htmd::HtmlToMarkdown::new()
+            .convert(concat!(
                 "<table><thead><tr><th>A</th></tr></thead>",
                 "<tbody><tr><td>c</td><td>d</td></tr></tbody></table>"
-            ),
-            "| A |   |\n| - | - |\n| c | d |",
-        );
-        assert_html_fallback(
-            concat!(
+            ))
+            .unwrap()
+    );
+    faithful_cases.extend([Case {
+        id: "a_row_wider_or_narrower_than_the_header_is_written_as_html_html_fallback_2",
+        html: concat!(
+            "<table><thead><tr><th>A</th><th>B</th></tr></thead>",
+            "<tbody><tr><td>c</td></tr></tbody></table>"
+        ),
+        expected_markdown: Some(concat!(
+            "<table><thead><tr><th>A</th><th>B</th></tr></thead>",
+            "<tbody><tr><td>c</td></tr></tbody></table>"
+        )),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "| A | B |\n| - | - |\n| c |   |",
+        htmd::HtmlToMarkdown::new()
+            .convert(concat!(
                 "<table><thead><tr><th>A</th><th>B</th></tr></thead>",
                 "<tbody><tr><td>c</td></tr></tbody></table>"
-            ),
-            "| A | B |\n| - | - |\n| c |   |",
-        );
-    }
+            ))
+            .unwrap()
+    );
+    check_cases(&faithful_cases);
+}
 
-    /// A Markdown table is built from its cells' content, which leaves a comment
-    /// between them nowhere to go. Stray text is not the same case: the parser
-    /// foster-parents it out of the table, ahead of the table's own output.
-    #[test]
-    fn a_comment_in_a_table_is_written_as_html() {
-        for html in [
-            concat!(
-                "<table><!-- c --><thead><tr><th>A</th></tr></thead>",
-                "<tbody><tr><td>c</td></tr></tbody></table>"
-            ),
-            concat!(
-                "<table><thead><tr><th>A</th></tr></thead>",
-                "<tbody><!-- c --><tr><td>c</td></tr></tbody></table>"
-            ),
-            concat!(
-                "<table><thead><tr><th>A</th></tr></thead>",
-                "<tbody><tr><!-- c --><td>c</td></tr></tbody></table>"
-            ),
-        ] {
-            assert_html_fallback(html, "| A |\n| - |\n| c |");
-        }
-
-        let with_stray_text = concat!(
-            "<table><thead><tr><th>A</th></tr></thead>",
-            "<tbody>stray<tr><td>c</td></tr></tbody></table>"
-        );
-        assert_eq!(
-            "stray\n\n| A |\n| - |\n| c |",
-            convert_faithful(with_stray_text).unwrap()
-        );
-    }
-
-    /// A `|` in a cell is escaped as `\|`, but a backslash escape written
-    /// inside a tag stays the two characters it is. A `|` in a raw HTML
-    /// inline's open tag is encoded as the character reference the HTML parser
-    /// reading the result decodes back.
-    #[test]
-    fn a_pipe_in_an_open_tag_is_encoded() {
-        let in_a_body_cell = concat!(
-            "<table><thead><tr><th>A</th></tr></thead>",
-            "<tbody><tr><td><span title=\"a|b\">c</span></td></tr></tbody></table>"
-        );
-        assert_eq!(
-            concat!(
-                "| A                               |\n",
-                "| ------------------------------- |\n",
-                "| <span title=\"a&#124;b\">c</span> |"
-            ),
-            convert_faithful(in_a_body_cell).unwrap()
-        );
-
-        let in_a_header_cell = concat!(
-            "<table><thead><tr><th><span title=\"a|b\">c</span></th></tr></thead>",
+/// [Tables](../translation_approach.md#tables).
+/// A Markdown table is built from its cells' content, which leaves a comment
+/// between them nowhere to go. Stray text is not the same case: the parser
+/// foster-parents it out of the table, ahead of the table's own output.
+#[test]
+fn a_comment_in_a_table_is_written_as_html() {
+    for html in [
+        concat!(
+            "<table><!-- c --><thead><tr><th>A</th></tr></thead>",
             "<tbody><tr><td>c</td></tr></tbody></table>"
-        );
-        assert_eq!(
-            concat!(
-                "| <span title=\"a&#124;b\">c</span> |\n",
-                "| ------------------------------- |\n",
-                "| c                               |"
-            ),
-            convert_faithful(in_a_header_cell).unwrap()
-        );
-
-        // Pure mode drops the `<span>`, and the attribute with it.
+        ),
+        concat!(
+            "<table><thead><tr><th>A</th></tr></thead>",
+            "<tbody><!-- c --><tr><td>c</td></tr></tbody></table>"
+        ),
+        concat!(
+            "<table><thead><tr><th>A</th></tr></thead>",
+            "<tbody><tr><!-- c --><td>c</td></tr></tbody></table>"
+        ),
+    ] {
+        check_cases(&[Case {
+            id: "a_comment_in_a_table_is_written_as_html_html_fallback_1",
+            html,
+            expected_markdown: Some(html),
+            expectation: Some(HtmlExpectation::Preserved {
+                renderer_suffix: "",
+            }),
+            ..Case::default()
+        }]);
         assert_eq!(
             "| A |\n| - |\n| c |",
-            htmd::HtmlToMarkdown::new().convert(in_a_body_cell).unwrap()
+            htmd::HtmlToMarkdown::new().convert(html).unwrap()
         );
     }
 
-    /// Neither escape for a `|` reaches inside a comment, so a comment holding
-    /// one takes the whole table to HTML. A nested table's comment is written
-    /// into the outer row too, so it takes the outer table with it.
-    #[test]
-    fn a_comment_holding_a_pipe_is_written_as_html() {
-        // Pure mode drops every comment, so none of these reaches a row.
-        assert_html_fallback(
-            concat!(
+    let with_stray_text = concat!(
+        "<table><thead><tr><th>A</th></tr></thead>",
+        "<tbody>stray<tr><td>c</td></tr></tbody></table>"
+    );
+
+    check_cases(&[Case {
+        id: "a_comment_in_a_table_is_written_as_html_case_6",
+        html: with_stray_text,
+        expected_markdown: Some("stray\n\n| A |\n| - |\n| c |"),
+        markdown_options: CommonMarkOptions::ENABLE_TABLES,
+        ..Case::default()
+    }]);
+}
+
+/// [Tables](../translation_approach.md#tables).
+/// A `|` in a cell is escaped as `\|`, but a backslash escape written
+/// inside a tag stays the two characters it is. A `|` in a raw HTML
+/// inline's open tag is encoded as the character reference the HTML parser
+/// reading the result decodes back.
+#[test]
+fn a_pipe_in_an_open_tag_is_encoded() {
+    let mut faithful_cases = Vec::new();
+    let in_a_body_cell = concat!(
+        "<table><thead><tr><th>A</th></tr></thead>",
+        "<tbody><tr><td><span title=\"a|b\">c</span></td></tr></tbody></table>"
+    );
+
+    faithful_cases.extend([Case {
+        id: "a_pipe_in_an_open_tag_is_encoded_case_7",
+        html: in_a_body_cell,
+        expected_markdown: Some(concat!(
+            "| A                               |\n",
+            "| ------------------------------- |\n",
+            "| <span title=\"a&#124;b\">c</span> |"
+        )),
+        markdown_options: CommonMarkOptions::ENABLE_TABLES,
+        ..Case::default()
+    }]);
+
+    let in_a_header_cell = concat!(
+        "<table><thead><tr><th><span title=\"a|b\">c</span></th></tr></thead>",
+        "<tbody><tr><td>c</td></tr></tbody></table>"
+    );
+
+    faithful_cases.extend([Case {
+        id: "a_pipe_in_an_open_tag_is_encoded_case_8",
+        html: in_a_header_cell,
+        expected_markdown: Some(concat!(
+            "| <span title=\"a&#124;b\">c</span> |\n",
+            "| ------------------------------- |\n",
+            "| c                               |"
+        )),
+        markdown_options: CommonMarkOptions::ENABLE_TABLES,
+        ..Case::default()
+    }]);
+
+    // Pure mode drops the `<span>`, and the attribute with it.
+    assert_eq!(
+        "| A |\n| - |\n| c |",
+        htmd::HtmlToMarkdown::new().convert(in_a_body_cell).unwrap()
+    );
+    check_cases(&faithful_cases);
+}
+
+/// [Tables](../translation_approach.md#tables).
+/// Neither escape for a `|` reaches inside a comment, so a comment holding
+/// one takes the whole table to HTML. A nested table's comment is written
+/// into the outer row too, so it takes the outer table with it.
+#[test]
+fn a_comment_holding_a_pipe_is_written_as_html() {
+    // Pure mode drops every comment, so none of these reaches a row.
+    check_cases(&[Case {
+        id: "a_comment_holding_a_pipe_is_written_as_html_html_fallback_1",
+        html: concat!(
+            "<table><tbody><tr><th>A</th></tr>",
+            "<tr><td><!-- a|b --></td></tr></tbody></table>"
+        ),
+        expected_markdown: Some(concat!(
+            "<table><tbody><tr><th>A</th></tr>",
+            "<tr><td><!-- a|b --></td></tr></tbody></table>"
+        )),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "| A |\n| - |\n|   |",
+        htmd::HtmlToMarkdown::new()
+            .convert(concat!(
                 "<table><tbody><tr><th>A</th></tr>",
                 "<tr><td><!-- a|b --></td></tr></tbody></table>"
-            ),
-            "| A |\n| - |\n|   |",
-        );
-        for html in [
-            concat!(
-                "<table><tbody><tr><th><!-- a|b --></th></tr>",
-                "<tr><td>c</td></tr></tbody></table>"
-            ),
-            concat!(
-                "<table><tbody><tr><th>A</th></tr><tr><td>",
-                "<table><tbody><tr><td><!-- a|b --></td></tr></tbody></table>",
-                "</td></tr></tbody></table>"
-            ),
-        ] {
-            assert_eq!(html, convert_faithful(html).unwrap());
-        }
-
-        // A comment holding no `|` still translates, as
-        // `a_comment_in_a_table_is_written_as_html` shows for one outside a
-        // cell.
-        let without_a_pipe = concat!(
-            "<table><thead><tr><th>A</th></tr></thead>",
-            "<tbody><tr><td>a<!-- c -->b</td></tr></tbody></table>"
-        );
-        assert_eq!(
-            "| A            |\n| ------------ |\n| a<!-- c -->b |",
-            convert_faithful(without_a_pipe).unwrap()
-        );
+            ))
+            .unwrap()
+    );
+    for html in [
+        concat!(
+            "<table><tbody><tr><th><!-- a|b --></th></tr>",
+            "<tr><td>c</td></tr></tbody></table>"
+        ),
+        concat!(
+            "<table><tbody><tr><th>A</th></tr><tr><td>",
+            "<table><tbody><tr><td><!-- a|b --></td></tr></tbody></table>",
+            "</td></tr></tbody></table>"
+        ),
+    ] {
+        check_cases(&[Case {
+            id: "a_comment_holding_a_pipe_is_written_as_html_case_9",
+            html,
+            expected_markdown: Some(html),
+            ..Case::default()
+        }]);
     }
 
-    /// A column whose every cell is empty measures zero, but a delimiter cell
-    /// holding no `-` stops the row being a delimiter row. Every column is at
-    /// least one wide so that the delimiter row stays aligned with the rows
-    /// around it.
-    #[test]
-    fn an_empty_column_is_one_wide() {
-        let only_column = concat!(
-            "<table><thead><tr><th></th></tr></thead>",
-            "<tbody><tr><td></td></tr></tbody></table>"
-        );
-        assert_eq!(
-            "|   |\n| - |\n|   |",
-            convert_faithful(only_column).unwrap()
-        );
+    // A comment holding no `|` still translates, as
+    // `a_comment_in_a_table_is_written_as_html` shows for one outside a
+    // cell.
+    let without_a_pipe = concat!(
+        "<table><thead><tr><th>A</th></tr></thead>",
+        "<tbody><tr><td>a<!-- c -->b</td></tr></tbody></table>"
+    );
 
-        let among_others = concat!(
-            "<table><thead><tr><th></th><th>B</th></tr></thead>",
-            "<tbody><tr><td></td><td>d</td></tr></tbody></table>"
-        );
-        assert_eq!(
-            "|   | B |\n| - | - |\n|   | d |",
-            convert_faithful(among_others).unwrap()
-        );
-    }
+    check_cases(&[Case {
+        id: "a_comment_holding_a_pipe_is_written_as_html_case_10",
+        html: without_a_pipe,
+        expected_markdown: Some("| A            |\n| ------------ |\n| a<!-- c -->b |"),
+        markdown_options: CommonMarkOptions::ENABLE_TABLES,
+        ..Case::default()
+    }]);
+}
 
-    /// A GFM table is a header row and the rows under it, so a table holding no
-    /// row at all is not one. Pure mode, with no fallback, drops it.
-    #[test]
-    fn an_empty_table_is_written_as_html() {
-        assert_html_fallback("<table></table>", "");
-        assert_html_fallback("<table><tbody></tbody></table>", "");
-        assert_html_fallback("<table><thead></thead></table>", "");
-    }
+/// [Tables](../translation_approach.md#tables).
+/// A column whose every cell is empty measures zero, but a delimiter cell
+/// holding no `-` stops the row being a delimiter row. Every column is at
+/// least one wide so that the delimiter row stays aligned with the rows
+/// around it.
+#[test]
+fn an_empty_column_is_one_wide() {
+    let mut faithful_cases = Vec::new();
+    let only_column = concat!(
+        "<table><thead><tr><th></th></tr></thead>",
+        "<tbody><tr><td></td></tr></tbody></table>"
+    );
 
-    // Should allow inline markup inside tables. These come from https://github.github.com/gfm/.
-    #[test]
-    fn test_table_with_inlines() {
-        let html = r#"
+    faithful_cases.extend([Case {
+        id: "an_empty_column_is_one_wide_case_11",
+        html: only_column,
+        expected_markdown: Some("|   |\n| - |\n|   |"),
+        markdown_options: CommonMarkOptions::ENABLE_TABLES,
+        ..Case::default()
+    }]);
+
+    let among_others = concat!(
+        "<table><thead><tr><th></th><th>B</th></tr></thead>",
+        "<tbody><tr><td></td><td>d</td></tr></tbody></table>"
+    );
+
+    faithful_cases.extend([Case {
+        id: "an_empty_column_is_one_wide_case_12",
+        html: among_others,
+        expected_markdown: Some("|   | B |\n| - | - |\n|   | d |"),
+        markdown_options: CommonMarkOptions::ENABLE_TABLES,
+        ..Case::default()
+    }]);
+    check_cases(&faithful_cases);
+}
+
+/// [Tables](../translation_approach.md#tables).
+/// A GFM table is a header row and the rows under it, so a table holding no
+/// row at all is not one. Pure mode, with no fallback, drops it.
+#[test]
+fn an_empty_table_is_written_as_html() {
+    let mut faithful_cases = Vec::new();
+    faithful_cases.extend([Case {
+        id: "an_empty_table_is_written_as_html_html_fallback_1",
+        html: "<table></table>",
+        expected_markdown: Some("<table></table>"),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "",
+        htmd::HtmlToMarkdown::new()
+            .convert("<table></table>")
+            .unwrap()
+    );
+    faithful_cases.extend([Case {
+        id: "an_empty_table_is_written_as_html_html_fallback_2",
+        html: "<table><tbody></tbody></table>",
+        expected_markdown: Some("<table><tbody></tbody></table>"),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "",
+        htmd::HtmlToMarkdown::new()
+            .convert("<table><tbody></tbody></table>")
+            .unwrap()
+    );
+    faithful_cases.extend([Case {
+        id: "an_empty_table_is_written_as_html_html_fallback_3",
+        html: "<table><thead></thead></table>",
+        expected_markdown: Some("<table><thead></thead></table>"),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
+        ..Case::default()
+    }]);
+    assert_eq!(
+        "",
+        htmd::HtmlToMarkdown::new()
+            .convert("<table><thead></thead></table>")
+            .unwrap()
+    );
+    check_cases(&faithful_cases);
+}
+
+// Should allow inline markup inside tables. These come from https://github.github.com/gfm/.
+/// [Tables](../translation_approach.md#tables).
+#[test]
+fn table_with_inlines() {
+    let html = r#"
         <table>
             <thead>
                 <tr>
@@ -618,7 +956,7 @@ mod table_tests_1 {
         </table>
         "#;
 
-        let expected = r#"
+    let expected = r#"
 | `Type`                                  | *Example*             |
 | --------------------------------------- | --------------------- |
 | Backslash escapes                       | \*not emphasized\*    |
@@ -629,28 +967,36 @@ mod table_tests_1 {
 | Images                                  | ![foo](/url "title")  |
 | Raw HTML                                | <foo></foo>           |
 "#
-        .trim();
+    .trim();
 
-        let markdown = convert_faithful(html).unwrap();
-        let result = markdown.trim();
-        assert_eq!(expected, result);
-    }
+    let markdown = convert_faithful(html).unwrap();
+    let result = markdown.trim();
+    assert_eq!(expected, result);
+    check_cases(&[Case {
+        id: "table_with_inlines_original",
+        html,
+        expected_markdown: Some(expected),
+        markdown_options: CommonMarkOptions::ENABLE_TABLES,
+        ..Case::default()
+    }]);
+}
 
-    /// A cell's contents are parsed as inline content, so a block element in a
-    /// cell is written as a raw HTML inline and the table stays a table. See
-    /// the "Translating HTML nodes" section of `translation_approach.md`.
-    #[test]
-    fn test_table_block_cells() {
-        assert_eq!(
-            indoc!(
-                r#"
+/// [Tables](../translation_approach.md#tables).
+/// A cell's contents are parsed as inline content, so a block element in a
+/// cell is written as a raw HTML inline and the table stays a table. See
+/// the "Translating HTML nodes" section of `translation_approach.md`.
+#[test]
+fn table_block_cells() {
+    assert_eq!(
+        indoc!(
+            r#"
                 | a | <p>b</p> |
                 | - | -------- |
                 | c | d        |"#
-            ),
-            // This has a block (a paragraph) in the table headings.
-            convert_faithful(indoc!(
-                r#"
+        ),
+        // This has a block (a paragraph) in the table headings.
+        convert_faithful(indoc!(
+            r#"
                 <table>
                     <thead>
                         <tr>
@@ -666,36 +1012,60 @@ mod table_tests_1 {
                     </tbody>
                 </table>
                 "#
-            ))
-            .unwrap()
-        );
-    }
+        ))
+        .unwrap()
+    );
+    check_cases(&[Case {
+        id: "table_block_cells_case_13",
+        html: indoc!(
+            r#"
+                <table>
+                    <thead>
+                        <tr>
+                            <th>a</th>
+                            <th><p>b</p></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>c</td>
+                            <td>d</td>
+                        </tr>
+                    </tbody>
+                </table>
+                "#
+        ),
+        expected_markdown: Some("| a | <p>b</p> |\n| - | -------- |\n| c | d        |"),
+        markdown_options: CommonMarkOptions::ENABLE_TABLES,
+        ..Case::default()
+    }]);
+}
 
-    #[test]
-    fn test_hacker_news_layout_table_does_not_turn_into_giant_padded_rows() {
-        let html = include_str!("../examples/page-to-markdown/html/Hacker News.html");
+#[test]
+fn hacker_news_layout_table_does_not_turn_into_giant_padded_rows() {
+    let html = include_str!("../examples/page-to-markdown/html/Hacker News.html");
 
-        let markdown = htmd::HtmlToMarkdown::new().convert(html).unwrap();
+    let markdown = htmd::HtmlToMarkdown::new().convert(html).unwrap();
 
-        assert!(
-            markdown.contains("Apollo 8 astronaut William Anders ID'd in WA plane crash"),
-            "expected converted output to retain visible story text"
-        );
-        assert!(
-            markdown.lines().count() > 20,
-            "expected Hacker News content to span many lines, got {} lines",
-            markdown.lines().count()
-        );
-        assert!(
-            longest_space_run(&markdown) < 200,
-            "expected no pathological whitespace padding, got a run of {} spaces",
-            longest_space_run(&markdown)
-        );
-    }
+    assert!(
+        markdown.contains("Apollo 8 astronaut William Anders ID'd in WA plane crash"),
+        "expected converted output to retain visible story text"
+    );
+    assert!(
+        markdown.lines().count() > 20,
+        "expected Hacker News content to span many lines, got {} lines",
+        markdown.lines().count()
+    );
+    assert!(
+        longest_space_run(&markdown) < 200,
+        "expected no pathological whitespace padding, got a run of {} spaces",
+        longest_space_run(&markdown)
+    );
+}
 
-    #[test]
-    fn test_headerless_table() {
-        let html = r#"
+#[test]
+fn headerless_table() {
+    let html = r#"
         <table>
             <tr>
                 <td>Alpha</td>
@@ -708,15 +1078,15 @@ mod table_tests_1 {
         </table>
         "#;
 
-        let expected = "Alpha\n\nBeta\n\nGamma\n\nDelta";
-        let markdown = htmd::HtmlToMarkdown::new().convert(html).unwrap();
+    let expected = "Alpha\n\nBeta\n\nGamma\n\nDelta";
+    let markdown = htmd::HtmlToMarkdown::new().convert(html).unwrap();
 
-        assert_eq!(expected, markdown);
-    }
+    assert_eq!(expected, markdown);
+}
 
-    #[test]
-    fn test_headered_with_inner_headerless() {
-        let html = r#"
+#[test]
+fn headered_with_inner_headerless() {
+    let html = r#"
         <table>
             <thead>
                 <tr>
@@ -740,22 +1110,22 @@ mod table_tests_1 {
         </table>
         "#;
 
-        let expected = indoc!(
-            r#"
+    let expected = indoc!(
+        r#"
             | Section | Details  |
             | ------- | -------- |
             | Alpha   | One  Two |
             "#
-        )
-        .trim();
-        let markdown = htmd::HtmlToMarkdown::new().convert(html).unwrap();
+    )
+    .trim();
+    let markdown = htmd::HtmlToMarkdown::new().convert(html).unwrap();
 
-        assert_eq!(expected, markdown);
-    }
+    assert_eq!(expected, markdown);
+}
 
-    #[test]
-    fn test_headerless_with_inner_headered() {
-        let html = r#"
+#[test]
+fn headerless_with_inner_headered() {
+    let html = r#"
         <table>
             <tr>
                 <td>Outer</td>
@@ -777,91 +1147,91 @@ mod table_tests_1 {
         </table>
         "#;
 
-        let expected = indoc!(
-            r#"
+    let expected = indoc!(
+        r#"
             Outer
 
             Inner H
 
             Inner V
             "#
-        )
-        .trim();
-        let markdown = htmd::HtmlToMarkdown::new().convert(html).unwrap();
+    )
+    .trim();
+    let markdown = htmd::HtmlToMarkdown::new().convert(html).unwrap();
 
-        assert_eq!(expected, markdown);
+    assert_eq!(expected, markdown);
+}
+
+/// The parser wraps a stray `<tr>` in a `<tbody>`, so a `<table>` holds one
+/// as a direct child only in a tree built elsewhere and handed to the public
+/// `HtmlToMarkdown::tree_to_markdown`. Reading such a row as the body row
+/// the parser would have made of it keeps that entry point from panicking on
+/// a tree it did not parse itself.
+#[test]
+fn a_row_directly_under_a_table_is_read_as_a_body_row() {
+    use htmd::{
+        Node,
+        options::{Options, TranslationMode},
+    };
+    use html5ever::{LocalName, QualName, ns};
+    use markup5ever_rcdom::NodeData;
+    use std::{cell::RefCell, rc::Rc};
+
+    fn append(parent: &Rc<Node>, child: Rc<Node>) {
+        child.parent.set(Some(Rc::downgrade(parent)));
+        parent.children.borrow_mut().push(child);
     }
 
-    /// The parser wraps a stray `<tr>` in a `<tbody>`, so a `<table>` holds one
-    /// as a direct child only in a tree built elsewhere and handed to the public
-    /// `HtmlToMarkdown::tree_to_markdown`. Reading such a row as the body row
-    /// the parser would have made of it keeps that entry point from panicking on
-    /// a tree it did not parse itself.
-    #[test]
-    fn a_row_directly_under_a_table_is_read_as_a_body_row() {
-        use htmd::{
-            Node,
-            options::{Options, TranslationMode},
-        };
-        use html5ever::{LocalName, QualName, ns};
-        use markup5ever_rcdom::NodeData;
-        use std::{cell::RefCell, rc::Rc};
-
-        fn append(parent: &Rc<Node>, child: Rc<Node>) {
-            child.parent.set(Some(Rc::downgrade(parent)));
-            parent.children.borrow_mut().push(child);
+    fn element(tag: &str, children: Vec<Rc<Node>>) -> Rc<Node> {
+        let node = Node::new(NodeData::Element {
+            name: QualName::new(None, ns!(html), LocalName::from(tag)),
+            attrs: RefCell::new(Vec::new()),
+            template_contents: RefCell::new(None),
+            mathml_annotation_xml_integration_point: false,
+        });
+        for child in children {
+            append(&node, child);
         }
+        node
+    }
 
-        fn element(tag: &str, children: Vec<Rc<Node>>) -> Rc<Node> {
-            let node = Node::new(NodeData::Element {
-                name: QualName::new(None, ns!(html), LocalName::from(tag)),
-                attrs: RefCell::new(Vec::new()),
-                template_contents: RefCell::new(None),
-                mathml_annotation_xml_integration_point: false,
-            });
-            for child in children {
-                append(&node, child);
-            }
-            node
-        }
+    fn text(contents: &str) -> Rc<Node> {
+        Node::new(NodeData::Text {
+            contents: RefCell::new(contents.into()),
+        })
+    }
 
-        fn text(contents: &str) -> Rc<Node> {
-            Node::new(NodeData::Text {
-                contents: RefCell::new(contents.into()),
-            })
-        }
+    let tree = Node::new(NodeData::Document);
+    append(
+        &tree,
+        element(
+            "table",
+            vec![
+                element("tr", vec![element("th", vec![text("A")])]),
+                element("tr", vec![element("td", vec![text("c")])]),
+            ],
+        ),
+    );
 
-        let tree = Node::new(NodeData::Document);
-        append(
-            &tree,
-            element(
-                "table",
-                vec![
-                    element("tr", vec![element("th", vec![text("A")])]),
-                    element("tr", vec![element("td", vec![text("c")])]),
-                ],
-            ),
-        );
+    let markdown = htmd::HtmlToMarkdown::builder()
+        .options(Options {
+            translation_mode: TranslationMode::Faithful,
+            ..Default::default()
+        })
+        .build()
+        .tree_to_markdown(&tree);
 
-        let markdown = htmd::HtmlToMarkdown::builder()
-            .options(Options {
-                translation_mode: TranslationMode::Faithful,
-                ..Default::default()
-            })
-            .build()
-            .tree_to_markdown(&tree);
-
-        assert_eq!(
-            "| A |
+    assert_eq!(
+        "| A |
 | - |
 | c |",
-            markdown
-        );
-    }
+        markdown
+    );
+}
 
-    #[test]
-    fn test_headered_with_inner_headered() {
-        let html = r#"
+#[test]
+fn headered_with_inner_headered() {
+    let html = r#"
         <table>
             <thead>
                 <tr>
@@ -891,16 +1261,15 @@ mod table_tests_1 {
         </table>
         "#;
 
-        let expected = indoc!(
-            r#"
+    let expected = indoc!(
+        r#"
             | Outer H1 | Outer H2         |
             | -------- | ---------------- |
             | Outer V1 | Inner H  Inner V |
             "#
-        )
-        .trim();
-        let markdown = htmd::HtmlToMarkdown::new().convert(html).unwrap();
+    )
+    .trim();
+    let markdown = htmd::HtmlToMarkdown::new().convert(html).unwrap();
 
-        assert_eq!(expected, markdown);
-    }
+    assert_eq!(expected, markdown);
 }

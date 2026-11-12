@@ -2,6 +2,9 @@ Test migration inventory
 ========================
 
 This is a planning table for all 227 named integration tests in `tests/`.
+Its original source line anchors refer to the pre-migration revision. The
+[implemented Faithful case ledger](#implemented-faithful-case-ledger) below links
+to current case locations and records the final classification and options.
 Section headings count test functions. A function with multiple input-and-mode
 cases has one row per case. Labels show a short input expression or fixture
 name. Links point to the source assertion or fixture; generated combinations
@@ -2733,3 +2736,471 @@ the normal test run because it generates a table.
 | `src/lib.rs: HtmlToMarkdown`                     | No                  | Yes           | N/A                 |
 | `src/lib.rs: HtmlToMarkdownBuilder::add_handler` | No                  | N/A           | N/A                 |
 | `src/element_handler/mod.rs: EventTypes`         | No                  | N/A           | N/A                 |
+
+## Implemented Faithful case ledger
+
+The original inventory above records the input and original assertion for each named test. The table below records each literal `Case` added by this migration. Follow its source link for the exact input HTML, Markdown, expected HTML and second Markdown. `H + renderer_suffix` identifies the exact source comparison for preservation. A Markdown-only case still renders HTML for the stability check; it makes no HTML preservation claim. Faithful mode is the default in the runner.
+
+| Case and destination | Classification | Mode | Options | Reference HTML |
+| --- | --- | --- | --- | --- |
+| [`compact_heading`](tests/basic_tests.rs#L23) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`paragraphs_with_renderer_layout`](tests/basic_tests.rs#L32) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`consecutive_paragraphs_with_renderer_layout`](tests/basic_tests.rs#L41) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`paragraph_crlf_after_closing_tag`](tests/basic_tests.rs#L57) | Representation | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L57) |
+| [`paragraph_numeric_character_reference`](tests/basic_tests.rs#L68) | Representation | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L68) |
+| [`paragraph_with_dir_attribute`](tests/basic_tests.rs#L85) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`links_with_spaces_case_1`](tests/basic_tests.rs#L106) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`referenced_links_with_title`](tests/basic_tests.rs#L138) | Markdown only | Faithful | LinkStyle::Referenced | rendered for stability; no HTML assertion |
+| [`consecutive_referenced_links_with_title`](tests/basic_tests.rs#L175) | Markdown only | Faithful | LinkStyle::Referenced | rendered for stability; no HTML assertion |
+| [`images_case_2`](tests/basic_tests.rs#L205) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`images_with_spaces_in_url_case_3`](tests/basic_tests.rs#L226) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`headings_case_4`](tests/basic_tests.rs#L264) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`heading_content_trims_only_document_whitespace_case_5`](tests/basic_tests.rs#L303) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`heading_content_trims_only_document_whitespace_case_6`](tests/basic_tests.rs#L310) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`heading_content_trims_only_document_whitespace_case_7_setext`](tests/basic_tests.rs#L317) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`setext_underline_case_8_setext`](tests/basic_tests.rs#L337) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`setext_underline_case_9_setext`](tests/basic_tests.rs#L348) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`setext_underline_case_10_setext`](tests/basic_tests.rs#L359) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`setext_underline_case_11_setext`](tests/basic_tests.rs#L370) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`setext_underline_case_12_setext`](tests/basic_tests.rs#L381) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`setext_underline_case_13_setext`](tests/basic_tests.rs#L392) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`paragraphs_case_14`](tests/basic_tests.rs#L413) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`quotes_case_15`](tests/basic_tests.rs#L428) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`br_case_16`](tests/basic_tests.rs#L442) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`hr_case_17`](tests/basic_tests.rs#L455) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`strong_italic_case_18`](tests/basic_tests.rs#L468) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_keeps_adjacent_emphasis_apart_case_19`](tests/basic_tests.rs#L490) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_keeps_adjacent_emphasis_apart_case_20`](tests/basic_tests.rs#L497) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_keeps_adjacent_emphasis_apart_case_21`](tests/basic_tests.rs#L504) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_keeps_adjacent_code_spans_apart_case_22`](tests/basic_tests.rs#L519) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_keeps_adjacent_untranslated_elements_apart_case_23`](tests/basic_tests.rs#L533) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_keeps_adjacent_untranslated_elements_apart_case_24`](tests/basic_tests.rs#L540) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_keeps_adjacent_untranslated_elements_apart_case_25`](tests/basic_tests.rs#L547) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`adjacent_math_spans_stay_math_case_26`](tests/basic_tests.rs#L590) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`italic_inside_word_case_27`](tests/basic_tests.rs#L626) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`italic_with_br_case_28`](tests/basic_tests.rs#L639) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`inline_raw_html_escaping_case_29`](tests/basic_tests.rs#L652) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`multiline_raw_html_escaping_case_30`](tests/basic_tests.rs#L676) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`inline_email_autolink_escaping_case_31`](tests/basic_tests.rs#L694) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`html_escaping_case_32`](tests/basic_tests.rs#L761) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_inline_case_33`](tests/basic_tests.rs#L800) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_hr_case_34`](tests/basic_tests.rs#L822) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_blockquote_case_35`](tests/basic_tests.rs#L833) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_h1_case_36`](tests/basic_tests.rs#L855) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`heading_attributes_case_37`](tests/basic_tests.rs#L870) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`heading_attributes_case_38`](tests/basic_tests.rs#L877) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_p_case_39`](tests/basic_tests.rs#L890) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_ol1_case_40`](tests/basic_tests.rs#L901) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_ol2_case_41`](tests/basic_tests.rs#L924) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_comment_case_42`](tests/basic_tests.rs#L943) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_html`](tests/basic_tests.rs#L973) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_table_case_43`](tests/basic_tests.rs#L990) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`faithful_mode_serializes_a_table_with_a_caption_case_44`](tests/basic_tests.rs#L1047) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_serializes_a_table_with_a_caption_preserved_line_1150`](tests/basic_tests.rs#L1058) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`faithful_mode_nested_inline_html_case_45`](tests/basic_tests.rs#L1118) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`spaces_check_case_46`](tests/basic_tests.rs#L1131) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`consecutive_blocks_case_47`](tests/basic_tests.rs#L1144) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`raw_text_case_48`](tests/basic_tests.rs#L1157) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`upper_case_tags_case_49`](tests/basic_tests.rs#L1244) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_entities_case_50`](tests/basic_tests.rs#L1261) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_entities_case_51`](tests/basic_tests.rs#L1270) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_entities_preserved_1`](tests/basic_tests.rs#L1278) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`unterminated_html_case_52`](tests/basic_tests.rs#L1348) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`math_case_53`](tests/basic_tests.rs#L1367) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`math_case_54`](tests/basic_tests.rs#L1375) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`math_case_55`](tests/basic_tests.rs#L1385) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`empty_math_span_math_1`](tests/basic_tests.rs#L1401) | Preserved | Faithful | default Faithful; renderer ENABLE_MATH | `H + renderer_suffix` |
+| [`empty_math_span_math_2`](tests/basic_tests.rs#L1411) | Preserved | Faithful | default Faithful; renderer ENABLE_MATH | `H + renderer_suffix` |
+| [`math_span_whitespace_case_57`](tests/basic_tests.rs#L1434) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`math_span_whitespace_math_1`](tests/basic_tests.rs#L1441) | Preserved | Faithful | default Faithful; renderer ENABLE_MATH | `H + renderer_suffix` |
+| [`math_span_whitespace_math_2`](tests/basic_tests.rs#L1453) | Preserved | Faithful | default Faithful; renderer ENABLE_MATH | `H + renderer_suffix` |
+| [`math_span_whitespace_math_3`](tests/basic_tests.rs#L1463) | Preserved | Faithful | default Faithful; renderer ENABLE_MATH | `H + renderer_suffix` |
+| [`unwritable_math_span_math_1`](tests/basic_tests.rs#L1493) | Preserved | Faithful | default Faithful; renderer ENABLE_MATH | `H + renderer_suffix` |
+| [`unwritable_math_span_math_2`](tests/basic_tests.rs#L1507) | Preserved | Faithful | default Faithful; renderer ENABLE_MATH | `H + renderer_suffix` |
+| [`span_not_of_the_math_form_math_1`](tests/basic_tests.rs#L1528) | Preserved | Faithful | default Faithful; renderer ENABLE_MATH | `H + renderer_suffix` |
+| [`span_not_of_the_math_form_math_2`](tests/basic_tests.rs#L1540) | Preserved | Faithful | default Faithful; renderer ENABLE_MATH | `H + renderer_suffix` |
+| [`span_not_of_the_math_form_math_3`](tests/basic_tests.rs#L1552) | Preserved | Faithful | default Faithful; renderer ENABLE_MATH | `H + renderer_suffix` |
+| [`math_span_in_a_table_cell`](tests/basic_tests.rs#L1571) | Preserved | Faithful | default Faithful; renderer ENABLE_MATH+ENABLE_TABLES | `H + renderer_suffix` |
+| [`dollar_sign_in_text_math_1`](tests/basic_tests.rs#L1596) | Preserved | Faithful | default Faithful; renderer ENABLE_MATH | `H + renderer_suffix` |
+| [`document_whitespace_case_58`](tests/basic_tests.rs#L1613) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`multibyte_ordered_list_escape_half`](tests/basic_tests.rs#L1633) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`multibyte_ordered_list_escape_accented`](tests/basic_tests.rs#L1639) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`multibyte_ordered_list_escape_trademark`](tests/basic_tests.rs#L1645) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`ascii_ordered_list_escape`](tests/basic_tests.rs#L1651) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`multibyte_no_dot`](tests/basic_tests.rs#L1657) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`cjk_before_ordered_list`](tests/basic_tests.rs#L1663) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`multibyte_atx_heading_escape`](tests/basic_tests.rs#L1669) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`multibyte_atx_heading_escape_umlaut`](tests/basic_tests.rs#L1675) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_1`](tests/basic_tests.rs#L1694) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_2`](tests/basic_tests.rs#L1703) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_3`](tests/basic_tests.rs#L1712) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_4`](tests/basic_tests.rs#L1721) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_5`](tests/basic_tests.rs#L1730) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_6`](tests/basic_tests.rs#L1739) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_7`](tests/basic_tests.rs#L1748) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_8`](tests/basic_tests.rs#L1757) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_9`](tests/basic_tests.rs#L1769) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`an_atx_marker_alone_in_a_paragraph_is_escaped_paragraph_1`](tests/basic_tests.rs#L1787) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`an_atx_marker_alone_in_a_paragraph_is_escaped_paragraph_2`](tests/basic_tests.rs#L1796) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`an_atx_marker_alone_in_a_paragraph_is_escaped_paragraph_3`](tests/basic_tests.rs#L1808) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`an_atx_marker_alone_in_a_paragraph_is_escaped_paragraph_4`](tests/basic_tests.rs#L1820) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_bullet_marker_closed_by_a_line_ending_is_escaped_paragraph_1`](tests/basic_tests.rs#L1845) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L1845) |
+| [`a_bullet_marker_closed_by_a_line_ending_is_escaped_paragraph_2`](tests/basic_tests.rs#L1857) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L1857) |
+| [`a_bullet_marker_closed_by_a_line_ending_is_escaped_paragraph_3`](tests/basic_tests.rs#L1869) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L1869) |
+| [`an_atx_marker_closed_by_a_line_ending_is_escaped_paragraph_1`](tests/basic_tests.rs#L1890) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L1890) |
+| [`an_atx_marker_closed_by_a_line_ending_is_escaped_paragraph_2`](tests/basic_tests.rs#L1902) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L1902) |
+| [`an_atx_marker_closed_by_a_line_ending_is_escaped_paragraph_3`](tests/basic_tests.rs#L1914) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L1914) |
+| [`an_ordered_item_delimiter_closed_by_a_line_ending_is_escaped_paragraph_1`](tests/basic_tests.rs#L1935) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L1935) |
+| [`an_ordered_item_delimiter_closed_by_a_line_ending_is_escaped_paragraph_2`](tests/basic_tests.rs#L1947) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L1947) |
+| [`a_marker_behind_leading_whitespace_is_escaped_paragraph_1`](tests/basic_tests.rs#L1970) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L1970) |
+| [`a_marker_behind_leading_whitespace_is_escaped_paragraph_2`](tests/basic_tests.rs#L1982) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L1982) |
+| [`a_marker_behind_leading_whitespace_is_escaped_paragraph_3`](tests/basic_tests.rs#L1994) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L1994) |
+| [`a_marker_behind_leading_whitespace_is_escaped_paragraph_4`](tests/basic_tests.rs#L2006) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L2006) |
+| [`a_marker_which_starts_no_line_is_not_escaped_paragraph_1`](tests/basic_tests.rs#L2027) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_marker_which_starts_no_line_is_not_escaped_paragraph_2`](tests/basic_tests.rs#L2036) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_run_of_ordered_item_delimiters_opens_no_list_paragraph_1`](tests/basic_tests.rs#L2055) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_run_of_ordered_item_delimiters_opens_no_list_paragraph_2`](tests/basic_tests.rs#L2064) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_paragraph_of_unicode_numerics_needs_no_escape_paragraph_1`](tests/basic_tests.rs#L2085) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_paragraph_of_unicode_numerics_needs_no_escape_paragraph_2`](tests/basic_tests.rs#L2094) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_literal_cdata_section_is_lost_unescaped_preserved_line_1884`](tests/basic_tests.rs#L2119) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_in_a_block_context_preserved_line_1945`](tests/basic_tests.rs#L2224) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_line_1955`](tests/basic_tests.rs#L2245) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_line_1957`](tests/basic_tests.rs#L2255) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_line_1958`](tests/basic_tests.rs#L2264) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_line_1959`](tests/basic_tests.rs#L2273) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`blockquote_with_break_paragraph`](tests/basic_tests.rs#L2283) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L2283) |
+| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_1`](tests/basic_tests.rs#L2297) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_2`](tests/basic_tests.rs#L2305) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_3`](tests/basic_tests.rs#L2313) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_an_atx_heading_ending_in_a_hash_run_preserved_1`](tests/basic_tests.rs#L2380) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_an_atx_heading_ending_in_a_hash_run_preserved_2`](tests/basic_tests.rs#L2388) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_an_atx_heading_ending_in_a_hash_run_preserved_3`](tests/basic_tests.rs#L2396) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_an_atx_heading_ending_in_a_hash_run_preserved_4`](tests/basic_tests.rs#L2404) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`heading_tab_before_hash`](tests/basic_tests.rs#L2413) | Loss | Faithful | default Faithful | [`expected_html`](tests/basic_tests.rs#L2413) |
+| [`round_trip_of_an_atx_heading_ending_in_a_hash_run_case_60`](tests/basic_tests.rs#L2427) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`round_trip_of_an_atx_heading_ending_in_a_hash_run_case_61`](tests/basic_tests.rs#L2434) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`round_trip_of_an_atx_heading_ending_in_a_hash_run_case_62`](tests/basic_tests.rs#L2441) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_1`](tests/basic_tests.rs#L2577) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_2`](tests/basic_tests.rs#L2585) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_3`](tests/basic_tests.rs#L2593) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_4`](tests/basic_tests.rs#L2603) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_5`](tests/basic_tests.rs#L2611) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_6`](tests/basic_tests.rs#L2619) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_7`](tests/basic_tests.rs#L2627) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_8`](tests/basic_tests.rs#L2637) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_9`](tests/basic_tests.rs#L2645) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_10`](tests/basic_tests.rs#L2655) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_11`](tests/basic_tests.rs#L2663) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_12`](tests/basic_tests.rs#L2671) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_13`](tests/basic_tests.rs#L2679) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_14`](tests/basic_tests.rs#L2690) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_15`](tests/basic_tests.rs#L2698) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_16`](tests/basic_tests.rs#L2706) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_17`](tests/basic_tests.rs#L2714) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`round_trip_of_a_walked_raw_inline_preserved_line_2176`](tests/basic_tests.rs#L2726) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`code_blocks`](tests/code_tests.rs#L33) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_blocks_with_lang_class`](tests/code_tests.rs#L47) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_preserves_an_empty_language_class`](tests/code_tests.rs#L60) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`code_blocks_decode_html_entities`](tests/code_tests.rs#L76) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`faithful_mode_pre`](tests/code_tests.rs#L132) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`faithful_mode_code_block1`](tests/code_tests.rs#L146) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`faithful_mode_code_block2`](tests/code_tests.rs#L160) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`html_at_the_document_root_is_a_block_case_1`](tests/context_tests.rs#L17) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_at_the_document_root_is_a_block_case_2`](tests/context_tests.rs#L24) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_at_the_document_root_is_a_block_case_3`](tests/context_tests.rs#L31) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_4`](tests/context_tests.rs#L50) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_5`](tests/context_tests.rs#L57) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_6`](tests/context_tests.rs#L64) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_7`](tests/context_tests.rs#L71) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_8`](tests/context_tests.rs#L78) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_9`](tests/context_tests.rs#L87) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_10`](tests/context_tests.rs#L94) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_11`](tests/context_tests.rs#L107) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_12`](tests/context_tests.rs#L114) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_13`](tests/context_tests.rs#L121) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_14`](tests/context_tests.rs#L128) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_15`](tests/context_tests.rs#L135) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_16`](tests/context_tests.rs#L144) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_17`](tests/context_tests.rs#L151) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`raw_text_at_the_document_root_is_left_alone_case_18`](tests/context_tests.rs#L169) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_paragraph_is_a_raw_inline_case_19`](tests/context_tests.rs#L181) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_paragraph_is_a_raw_inline_case_20`](tests/context_tests.rs#L188) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_paragraph_is_a_raw_inline_case_21`](tests/context_tests.rs#L195) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_paragraph_is_a_raw_inline_case_22`](tests/context_tests.rs#L202) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_heading_is_a_raw_inline_case_23`](tests/context_tests.rs#L215) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_heading_is_a_raw_inline_case_24`](tests/context_tests.rs#L222) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_heading_is_a_raw_inline_case_25`](tests/context_tests.rs#L229) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_blockquote_is_a_block_case_26`](tests/context_tests.rs#L242) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_blockquote_is_a_block_case_27`](tests/context_tests.rs#L249) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_blockquote_is_a_block_case_28`](tests/context_tests.rs#L256) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_list_item_is_a_block_case_29`](tests/context_tests.rs#L269) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_list_item_is_a_block_case_30`](tests/context_tests.rs#L276) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_list_item_is_a_block_case_31`](tests/context_tests.rs#L285) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_a_table_cell_is_a_raw_inline_case_32`](tests/context_tests.rs#L300) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`html_in_a_table_cell_is_a_raw_inline_case_33`](tests/context_tests.rs#L310) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`html_in_a_table_cell_is_a_raw_inline_case_34`](tests/context_tests.rs#L319) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`a_cell_attribute_writes_the_whole_table_as_html_case_35`](tests/context_tests.rs#L344) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_cell_attribute_writes_the_whole_table_as_html_case_36`](tests/context_tests.rs#L353) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_an_inline_element_is_a_raw_inline_case_37`](tests/context_tests.rs#L366) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_an_inline_element_is_a_raw_inline_case_38`](tests/context_tests.rs#L373) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_an_inline_element_is_a_raw_inline_case_39`](tests/context_tests.rs#L380) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_code_is_a_raw_inline_case_40`](tests/context_tests.rs#L395) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_code_is_a_raw_inline_case_41`](tests/context_tests.rs#L402) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_code_is_a_raw_inline_case_42`](tests/context_tests.rs#L411) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_code_is_a_raw_inline_case_43`](tests/context_tests.rs#L418) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_code_is_a_raw_inline_case_44`](tests/context_tests.rs#L427) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`html_in_code_is_a_raw_inline_case_45`](tests/context_tests.rs#L436) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_text_element_escapes_the_markdown_it_holds_case_46`](tests/context_tests.rs#L453) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_text_element_escapes_the_markdown_it_holds_case_47`](tests/context_tests.rs#L464) | Loss | Faithful | default Faithful | [`expected_html`](tests/context_tests.rs#L464) |
+| [`a_raw_text_element_escapes_the_markdown_it_holds_case_48`](tests/context_tests.rs#L482) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_text_element_escapes_the_markdown_it_holds_case_49`](tests/context_tests.rs#L492) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_text_element_escapes_the_markdown_it_holds_case_50`](tests/context_tests.rs#L500) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`an_rcdata_element_is_translated_case_51`](tests/context_tests.rs#L516) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`an_rcdata_element_is_translated_case_52`](tests/context_tests.rs#L523) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`an_rcdata_element_is_translated_case_53`](tests/context_tests.rs#L530) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`an_rcdata_element_is_translated_case_54`](tests/context_tests.rs#L537) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_inline_collapses_the_whitespace_of_its_content_case_55`](tests/context_tests.rs#L557) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_inline_collapses_the_whitespace_of_its_content_case_56`](tests/context_tests.rs#L565) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_inline_collapses_the_whitespace_of_its_content_case_57`](tests/context_tests.rs#L574) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_inline_collapses_the_whitespace_of_its_content_case_58`](tests/context_tests.rs#L582) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_inline_collapses_the_whitespace_of_its_content_case_59`](tests/context_tests.rs#L589) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_inline_escapes_the_line_endings_of_its_attributes_case_60`](tests/context_tests.rs#L606) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_inline_escapes_the_line_endings_of_its_attributes_case_61`](tests/context_tests.rs#L614) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_inline_escapes_the_line_endings_of_its_attributes_case_62`](tests/context_tests.rs#L622) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_inline_escapes_the_line_endings_of_its_attributes_case_63`](tests/context_tests.rs#L629) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_inline_escapes_the_line_endings_of_its_attributes_case_64`](tests/context_tests.rs#L636) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`a_raw_inline_escapes_the_line_endings_of_its_attributes_case_65`](tests/context_tests.rs#L651) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_raw_inline_encodes_the_pipes_of_its_attributes_case_66`](tests/context_tests.rs#L668) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`a_raw_inline_encodes_the_pipes_of_its_attributes_case_67`](tests/context_tests.rs#L684) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_type_1_block_keeps_its_blank_lines_case_68`](tests/context_tests.rs#L703) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_type_1_block_keeps_its_blank_lines_case_69`](tests/context_tests.rs#L710) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_type_1_block_keeps_its_blank_lines_case_70`](tests/context_tests.rs#L717) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_type_1_block_keeps_its_blank_lines_case_71`](tests/context_tests.rs#L724) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_type_1_block_keeps_its_blank_lines_case_72`](tests/context_tests.rs#L733) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_title_escapes_its_line_endings_case_73`](tests/context_tests.rs#L751) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_title_escapes_its_line_endings_case_74`](tests/context_tests.rs#L758) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_title_escapes_its_line_endings_case_75`](tests/context_tests.rs#L766) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_title_escapes_its_line_endings_case_76`](tests/context_tests.rs#L776) | Loss | Faithful | default Faithful | [`expected_html`](tests/context_tests.rs#L776) |
+| [`a_title_escapes_its_line_endings_case_77`](tests/context_tests.rs#L794) | Loss | Faithful | default Faithful | [`expected_html`](tests/context_tests.rs#L794) |
+| [`a_title_escapes_its_line_endings_case_78`](tests/context_tests.rs#L812) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`a_comment_follows_its_context_case_79`](tests/context_tests.rs#L835) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_comment_follows_its_context_case_80`](tests/context_tests.rs#L842) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_comment_follows_its_context_case_81`](tests/context_tests.rs#L849) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_comment_follows_its_context_case_82`](tests/context_tests.rs#L856) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_comment_follows_its_context_case_83`](tests/context_tests.rs#L863) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_comment_follows_its_context_case_84`](tests/context_tests.rs#L870) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_comment_follows_its_context_case_85`](tests/context_tests.rs#L878) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_cdata_section_and_a_processing_instruction_are_comments_case_86`](tests/context_tests.rs#L894) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_cdata_section_and_a_processing_instruction_are_comments_case_87`](tests/context_tests.rs#L901) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_cdata_section_and_a_processing_instruction_are_comments_case_88`](tests/context_tests.rs#L908) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_inside_a_raw_inline_is_a_raw_inline_case_89`](tests/context_tests.rs#L924) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_inside_a_raw_inline_is_a_raw_inline_case_90`](tests/context_tests.rs#L931) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_inside_a_raw_inline_is_a_raw_inline_case_91`](tests/context_tests.rs#L938) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_inside_a_raw_inline_is_a_raw_inline_case_92`](tests/context_tests.rs#L945) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_inside_a_raw_inline_is_a_raw_inline_case_93`](tests/context_tests.rs#L953) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_commonmark_block_inside_a_raw_inline_is_a_raw_inline_case_94`](tests/context_tests.rs#L960) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_serialized_element_follows_its_context_case_95`](tests/context_tests.rs#L973) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_serialized_element_follows_its_context_case_96`](tests/context_tests.rs#L980) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_serialized_element_follows_its_context_case_97`](tests/context_tests.rs#L987) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_math_span_replaces_its_line_endings_with_spaces_case_98`](tests/context_tests.rs#L1003) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`a_math_span_replaces_its_line_endings_with_spaces_case_99`](tests/context_tests.rs#L1011) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`a_math_span_replaces_its_line_endings_with_spaces_case_100`](tests/context_tests.rs#L1022) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`a_math_span_replaces_its_line_endings_with_spaces_case_101`](tests/context_tests.rs#L1031) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`a_math_span_replaces_its_line_endings_with_spaces_case_102`](tests/context_tests.rs#L1041) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`a_math_span_strips_its_comments_case_103`](tests/context_tests.rs#L1059) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`a_math_span_strips_its_comments_case_104`](tests/context_tests.rs#L1068) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`a_math_span_strips_its_comments_case_105`](tests/context_tests.rs#L1078) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`a_math_span_strips_its_comments_case_106`](tests/context_tests.rs#L1088) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`a_math_span_strips_its_comments_case_107`](tests/context_tests.rs#L1097) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`a_math_span_strips_its_comments_case_108`](tests/context_tests.rs#L1106) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`a_math_span_strips_its_comments_case_109`](tests/context_tests.rs#L1117) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`an_unwritable_math_span_strips_its_comments_case_110`](tests/context_tests.rs#L1135) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`paragraph_wrapped_link`](tests/link_tests.rs#L15) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`links_case_1`](tests/link_tests.rs#L37) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`links_with_spaces_in_destination_and_title_case_2`](tests/link_tests.rs#L55) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`links_with_spaces_around_text_case_3`](tests/link_tests.rs#L72) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`links_with_spaces_around_text_case_4`](tests/link_tests.rs#L79) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`autolink_preferred_when_text_is_url`](tests/link_tests.rs#L118) | Markdown only | Faithful | configured in source | rendered for stability; no HTML assertion |
+| [`ordinary_link_with_autolink_preference`](tests/link_tests.rs#L125) | Markdown only | Faithful | configured in source | rendered for stability; no HTML assertion |
+| [`link_title_disables_autolink_preference`](tests/link_tests.rs#L132) | Markdown only | Faithful | configured in source | rendered for stability; no HTML assertion |
+| [`a_link_destination_escapes_its_line_endings_case_5`](tests/link_tests.rs#L149) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_destination_escapes_its_line_endings_case_6`](tests/link_tests.rs#L161) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_destination_escapes_its_line_endings_case_7`](tests/link_tests.rs#L173) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_destination_escapes_its_line_endings_case_8`](tests/link_tests.rs#L187) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_destination_escapes_its_line_endings_case_9`](tests/link_tests.rs#L200) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_destination_escapes_its_line_endings_case_10`](tests/link_tests.rs#L212) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_destination_escapes_its_line_endings_case_11`](tests/link_tests.rs#L219) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`discard_links_in_table_falling_back_to_raw_html`](tests/link_tests.rs#L325) | Markdown only | Faithful | LinkStyle::Referenced | rendered for stability; no HTML assertion |
+| [`a_link_destination_escapes_its_backslashes_case_12`](tests/link_tests.rs#L357) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L357) |
+| [`a_link_destination_escapes_its_backslashes_case_13`](tests/link_tests.rs#L376) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_destination_escapes_its_backslashes_case_14`](tests/link_tests.rs#L390) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_destination_escapes_its_backslashes_case_15`](tests/link_tests.rs#L404) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_title_escapes_its_backslashes_case_16`](tests/link_tests.rs#L425) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_title_escapes_its_backslashes_case_17`](tests/link_tests.rs#L435) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_title_escapes_its_backslashes_case_18`](tests/link_tests.rs#L442) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`an_image_alt_escapes_its_markdown_specials_case_19`](tests/link_tests.rs#L461) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L461) |
+| [`an_image_alt_escapes_its_markdown_specials_case_20`](tests/link_tests.rs#L477) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`an_image_alt_escapes_its_markdown_specials_case_21`](tests/link_tests.rs#L484) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`an_image_alt_escapes_its_raw_html_case_22`](tests/link_tests.rs#L504) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L504) |
+| [`an_image_alt_escapes_its_raw_html_case_23`](tests/link_tests.rs#L522) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_bracketed_link_destination_escapes_its_angle_brackets_case_24`](tests/link_tests.rs#L540) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L540) |
+| [`a_bracketed_link_destination_escapes_its_angle_brackets_case_25`](tests/link_tests.rs#L559) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`an_autolink_spells_its_destination_without_escapes_case_1_autolinks`](tests/link_tests.rs#L587) | Markdown only | Faithful | LinkStyle::InlinedPreferAutolinks | rendered for stability; no HTML assertion |
+| [`an_autolink_spells_its_destination_without_escapes_case_2_autolinks`](tests/link_tests.rs#L607) | Markdown only | Faithful | LinkStyle::InlinedPreferAutolinks | rendered for stability; no HTML assertion |
+| [`an_autolink_needs_every_condition_case_3_autolinks`](tests/link_tests.rs#L640) | Markdown only | Faithful | LinkStyle::InlinedPreferAutolinks | rendered for stability; no HTML assertion |
+| [`an_autolink_needs_every_condition_case_4_autolinks`](tests/link_tests.rs#L662) | Markdown only | Faithful | LinkStyle::InlinedPreferAutolinks | rendered for stability; no HTML assertion |
+| [`an_autolink_needs_every_condition_case_5_autolinks`](tests/link_tests.rs#L677) | Markdown only | Faithful | LinkStyle::InlinedPreferAutolinks | rendered for stability; no HTML assertion |
+| [`an_autolink_needs_every_condition_case_6_autolinks`](tests/link_tests.rs#L692) | Markdown only | Faithful | LinkStyle::InlinedPreferAutolinks | rendered for stability; no HTML assertion |
+| [`an_autolink_needs_every_condition_case_7_autolinks`](tests/link_tests.rs#L705) | Markdown only | Faithful | LinkStyle::InlinedPreferAutolinks | rendered for stability; no HTML assertion |
+| [`an_autolink_needs_every_condition_case_8_autolinks`](tests/link_tests.rs#L717) | Markdown only | Faithful | LinkStyle::InlinedPreferAutolinks | rendered for stability; no HTML assertion |
+| [`a_referenced_link_destination_brackets_its_spaces_case_9_referenced`](tests/link_tests.rs#L740) | Markdown only | Faithful | LinkStyle::Referenced | rendered for stability; no HTML assertion |
+| [`a_bang_before_a_link_is_escaped_case_26`](tests/link_tests.rs#L762) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_bang_before_a_link_is_escaped_case_27`](tests/link_tests.rs#L785) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_bang_before_a_link_is_escaped_case_28`](tests/link_tests.rs#L793) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_bang_before_a_link_is_escaped_case_29`](tests/link_tests.rs#L800) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_escapes_its_ampersands_case_30`](tests/link_tests.rs#L816) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L816) |
+| [`a_link_escapes_its_ampersands_case_31`](tests/link_tests.rs#L830) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L830) |
+| [`a_link_escapes_its_ampersands_case_10_referenced`](tests/link_tests.rs#L844) | Markdown only | Faithful | LinkStyle::Referenced | rendered for stability; no HTML assertion |
+| [`link_text_escapes_its_math_delimiters_case_32`](tests/link_tests.rs#L870) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`link_text_escapes_its_math_delimiters_case_33`](tests/link_tests.rs#L883) | Markdown only | Faithful | default Faithful; renderer ENABLE_MATH | rendered for stability; no HTML assertion |
+| [`a_link_destination_takes_pointy_brackets_where_needed_case_34`](tests/link_tests.rs#L904) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L904) |
+| [`a_link_destination_takes_pointy_brackets_where_needed_case_11_referenced`](tests/link_tests.rs#L920) | Markdown only | Faithful | LinkStyle::Referenced | rendered for stability; no HTML assertion |
+| [`a_link_destination_takes_pointy_brackets_where_needed_case_35`](tests/link_tests.rs#L931) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L931) |
+| [`a_link_destination_takes_pointy_brackets_where_needed_case_36`](tests/link_tests.rs#L950) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L950) |
+| [`a_link_destination_takes_pointy_brackets_where_needed_case_37`](tests/link_tests.rs#L969) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L969) |
+| [`a_link_destination_takes_pointy_brackets_where_needed_case_38`](tests/link_tests.rs#L988) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`link_text_encodes_its_line_endings_case_39`](tests/link_tests.rs#L1011) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L1011) |
+| [`link_text_encodes_its_line_endings_case_12_referenced`](tests/link_tests.rs#L1030) | Markdown only | Faithful | LinkStyle::Referenced | rendered for stability; no HTML assertion |
+| [`an_image_is_inline_in_the_referenced_style_case_13_referenced`](tests/link_tests.rs#L1057) | Markdown only | Faithful | LinkStyle::Referenced | rendered for stability; no HTML assertion |
+| [`a_link_keeps_the_whitespace_around_its_text_case_40`](tests/link_tests.rs#L1075) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_link_keeps_the_whitespace_around_its_text_case_41`](tests/link_tests.rs#L1093) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_link_keeps_the_whitespace_around_its_text_case_42`](tests/link_tests.rs#L1100) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`an_image_without_a_source_is_written_as_html_case_43`](tests/link_tests.rs#L1116) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`an_image_without_alt_text_is_written_as_html_case_44`](tests/link_tests.rs#L1136) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`an_image_without_alt_text_is_written_as_html_case_45`](tests/link_tests.rs#L1147) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L1147) |
+| [`an_image_with_an_empty_title_is_written_as_html_case_46`](tests/link_tests.rs#L1172) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_link_escapes_an_email_autolink_case_47`](tests/link_tests.rs#L1192) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L1192) |
+| [`a_link_escapes_an_email_autolink_case_48`](tests/link_tests.rs#L1206) | Loss | Faithful | default Faithful | [`expected_html`](tests/link_tests.rs#L1206) |
+| [`simple_unordered_list`](tests/list_tests.rs#L12) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`simple_ordered_list`](tests/list_tests.rs#L21) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`unordered_lists_original`](tests/list_tests.rs#L47) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`unordered_lists_custom_bullet_spacing`](tests/list_tests.rs#L71) | Markdown only | Faithful | 2 | rendered for stability; no HTML assertion |
+| [`ordered_lists_original`](tests/list_tests.rs#L97) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`ordered_lists_custom_bullet_spacing`](tests/list_tests.rs#L121) | Markdown only | Faithful | 1 | rendered for stability; no HTML assertion |
+| [`ordered_lists_start_with_zero_or_negative`](tests/list_tests.rs#L157) | Markdown only | Faithful | 1 | rendered for stability; no HTML assertion |
+| [`ul_spacing_clamps_to_one`](tests/list_tests.rs#L211) | Markdown only | Faithful | 0 | rendered for stability; no HTML assertion |
+| [`ul_spacing_clamps_to_four`](tests/list_tests.rs#L221) | Markdown only | Faithful | 9 | rendered for stability; no HTML assertion |
+| [`ol_spacing_clamps_to_one`](tests/list_tests.rs#L231) | Markdown only | Faithful | 0 | rendered for stability; no HTML assertion |
+| [`ol_spacing_clamps_to_four`](tests/list_tests.rs#L241) | Markdown only | Faithful | 9 | rendered for stability; no HTML assertion |
+| [`nested_ul_spacing_clamps`](tests/list_tests.rs#L251) | Markdown only | Faithful | 9 | rendered for stability; no HTML assertion |
+| [`nested_ol_spacing_clamps`](tests/list_tests.rs#L261) | Markdown only | Faithful | 9 | rendered for stability; no HTML assertion |
+| [`ordered_list_alignment_across_a_digit_boundary_998`](tests/list_tests.rs#L287) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`ordered_list_alignment_across_a_digit_boundary_9`](tests/list_tests.rs#L296) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`ordered_list_alignment_yields_to_the_spacing_limit`](tests/list_tests.rs#L320) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`simple_table_original`](tests/table_tests.rs#L54) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`table_with_thead_tbody_original`](tests/table_tests.rs#L148) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`table_with_caption_original`](tests/table_tests.rs#L221) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`table_caption_is_commonmark_only_in_pure_mode_case_1`](tests/table_tests.rs#L247) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_table_with_no_header_row_is_written_as_html_case_2`](tests/table_tests.rs#L266) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_table_with_no_header_row_is_written_as_html_case_3`](tests/table_tests.rs#L277) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`pure_mode_writes_an_empty_header_row_for_a_headerless_table_case_4`](tests/table_tests.rs#L299) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`extra_header_rows_are_written_as_html_html_fallback_1`](tests/table_tests.rs#L313) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_header_cell_in_a_body_row_is_written_as_html_html_fallback_1`](tests/table_tests.rs#L345) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`table_content_a_markdown_row_cannot_hold_is_written_as_html_html_fallback_1`](tests/table_tests.rs#L390) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_thead_of_data_cells_is_written_as_html_html_fallback_1`](tests/table_tests.rs#L411) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_second_tbody_is_written_as_html_html_fallback_1`](tests/table_tests.rs#L442) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_second_thead_is_written_as_html_html_fallback_1`](tests/table_tests.rs#L477) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_thead_after_a_body_row_is_written_as_html_html_fallback_1`](tests/table_tests.rs#L524) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_thead_after_an_empty_tbody_is_written_as_html_html_fallback_1`](tests/table_tests.rs#L547) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_header_row_after_a_body_row_is_written_as_html_html_fallback_1`](tests/table_tests.rs#L581) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_row_wider_or_narrower_than_the_header_is_written_as_html_html_fallback_1`](tests/table_tests.rs#L607) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_row_wider_or_narrower_than_the_header_is_written_as_html_html_fallback_2`](tests/table_tests.rs#L631) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_comment_in_a_table_is_written_as_html_html_fallback_1`](tests/table_tests.rs#L678) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_comment_in_a_table_is_written_as_html_case_6`](tests/table_tests.rs#L698) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`a_pipe_in_an_open_tag_is_encoded_case_7`](tests/table_tests.rs#L720) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`a_pipe_in_an_open_tag_is_encoded_case_8`](tests/table_tests.rs#L737) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`a_comment_holding_a_pipe_is_written_as_html_html_fallback_1`](tests/table_tests.rs#L764) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`a_comment_holding_a_pipe_is_written_as_html_case_9`](tests/table_tests.rs#L799) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`a_comment_holding_a_pipe_is_written_as_html_case_10`](tests/table_tests.rs#L815) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`an_empty_column_is_one_wide_case_11`](tests/table_tests.rs#L837) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`an_empty_column_is_one_wide_case_12`](tests/table_tests.rs#L850) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`an_empty_table_is_written_as_html_html_fallback_1`](tests/table_tests.rs#L866) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`an_empty_table_is_written_as_html_html_fallback_2`](tests/table_tests.rs#L881) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`an_empty_table_is_written_as_html_html_fallback_3`](tests/table_tests.rs#L896) | Preserved | Faithful | default Faithful | `H + renderer_suffix` |
+| [`table_with_inlines_original`](tests/table_tests.rs#L975) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`table_block_cells_case_13`](tests/table_tests.rs#L1018) | Markdown only | Faithful | default Faithful; renderer ENABLE_TABLES | rendered for stability; no HTML assertion |
+| [`translating_html_nodes_case_1`](tests/translation_approach_tests.rs#L411) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_blocks_and_code_spans_case_2`](tests/translation_approach_tests.rs#L513) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_blocks_and_code_spans_case_3`](tests/translation_approach_tests.rs#L520) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_blocks_and_code_spans_case_4`](tests/translation_approach_tests.rs#L527) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_blocks_and_code_spans_case_5`](tests/translation_approach_tests.rs#L534) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_blocks_and_code_spans_case_6`](tests/translation_approach_tests.rs#L541) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_blocks_and_code_spans_case_7`](tests/translation_approach_tests.rs#L548) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_blocks_and_code_spans_case_8`](tests/translation_approach_tests.rs#L555) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_blocks_and_code_spans_case_9`](tests/translation_approach_tests.rs#L562) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_span_holding_a_line_ending_case_10`](tests/translation_approach_tests.rs#L584) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_span_holding_a_line_ending_case_11_setext`](tests/translation_approach_tests.rs#L597) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`code_span_holding_a_line_ending_case_12`](tests/translation_approach_tests.rs#L616) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_span_holding_a_line_ending_case_13`](tests/translation_approach_tests.rs#L628) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`code_span_holding_a_line_ending_case_14`](tests/translation_approach_tests.rs#L642) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`empty_code_span_case_15`](tests/translation_approach_tests.rs#L664) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`empty_code_span_case_16`](tests/translation_approach_tests.rs#L671) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`empty_code_span_case_17`](tests/translation_approach_tests.rs#L681) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`emphasis_and_strong_emphasis_case_18`](tests/translation_approach_tests.rs#L708) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`emphasis_and_strong_emphasis_case_19`](tests/translation_approach_tests.rs#L715) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`emphasis_and_strong_emphasis_case_20`](tests/translation_approach_tests.rs#L722) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`emphasis_and_strong_emphasis_case_21`](tests/translation_approach_tests.rs#L729) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`emphasis_and_strong_emphasis_case_22`](tests/translation_approach_tests.rs#L736) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`emphasis_and_strong_emphasis_case_23`](tests/translation_approach_tests.rs#L743) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`emphasis_and_strong_emphasis_case_24`](tests/translation_approach_tests.rs#L750) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`emphasis_and_strong_emphasis_case_25`](tests/translation_approach_tests.rs#L757) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`emphasis_and_strong_emphasis_case_26`](tests/translation_approach_tests.rs#L764) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`emphasis_and_strong_emphasis_case_27`](tests/translation_approach_tests.rs#L771) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`emphasis_and_strong_emphasis_case_28`](tests/translation_approach_tests.rs#L780) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`emphasis_and_strong_emphasis_case_29`](tests/translation_approach_tests.rs#L787) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`brs_alone_in_a_raw_html_inline_case_30`](tests/translation_approach_tests.rs#L802) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`brs_alone_in_a_raw_html_inline_case_31`](tests/translation_approach_tests.rs#L809) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`brs_alone_in_a_raw_html_inline_case_32`](tests/translation_approach_tests.rs#L816) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`brs_alone_in_a_raw_html_inline_case_33`](tests/translation_approach_tests.rs#L823) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`links_case_34`](tests/translation_approach_tests.rs#L838) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`links_case_35`](tests/translation_approach_tests.rs#L845) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`links_case_36`](tests/translation_approach_tests.rs#L852) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`links_case_37`](tests/translation_approach_tests.rs#L859) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`links_case_38`](tests/translation_approach_tests.rs#L866) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`links_case_39`](tests/translation_approach_tests.rs#L873) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`at_the_document_root_case_40`](tests/translation_approach_tests.rs#L887) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`at_the_document_root_case_41`](tests/translation_approach_tests.rs#L894) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`at_the_document_root_case_42`](tests/translation_approach_tests.rs#L901) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`at_the_document_root_case_43`](tests/translation_approach_tests.rs#L908) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`at_the_document_root_case_44`](tests/translation_approach_tests.rs#L918) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`at_the_document_root_case_45`](tests/translation_approach_tests.rs#L925) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`setext_headings_case_46_setext`](tests/translation_approach_tests.rs#L941) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`setext_headings_case_47_setext`](tests/translation_approach_tests.rs#L952) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`setext_headings_case_48_setext`](tests/translation_approach_tests.rs#L963) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`setext_headings_case_49_setext`](tests/translation_approach_tests.rs#L974) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`an_empty_setext_heading_falls_back_to_atx_case_50_setext`](tests/translation_approach_tests.rs#L994) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`an_empty_setext_heading_falls_back_to_atx_case_51_setext`](tests/translation_approach_tests.rs#L1005) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`an_empty_setext_heading_falls_back_to_atx_case_52_setext`](tests/translation_approach_tests.rs#L1016) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`an_empty_setext_heading_falls_back_to_atx_case_53_setext`](tests/translation_approach_tests.rs#L1029) | Markdown only | Faithful | HeadingStyle::Setex | rendered for stability; no HTML assertion |
+| [`atx_headings_case_54`](tests/translation_approach_tests.rs#L1054) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`atx_headings_case_55`](tests/translation_approach_tests.rs#L1061) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`atx_headings_case_56`](tests/translation_approach_tests.rs#L1068) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`atx_headings_case_57`](tests/translation_approach_tests.rs#L1075) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`atx_headings_case_58`](tests/translation_approach_tests.rs#L1082) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`atx_headings_case_59`](tests/translation_approach_tests.rs#L1089) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`atx_headings_case_60`](tests/translation_approach_tests.rs#L1096) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`paragraphs_case_61`](tests/translation_approach_tests.rs#L1114) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`paragraphs_case_62`](tests/translation_approach_tests.rs#L1121) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`paragraphs_case_63`](tests/translation_approach_tests.rs#L1128) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`paragraphs_case_64`](tests/translation_approach_tests.rs#L1135) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`paragraphs_case_65`](tests/translation_approach_tests.rs#L1142) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`paragraphs_case_66`](tests/translation_approach_tests.rs#L1149) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`paragraphs_case_67`](tests/translation_approach_tests.rs#L1156) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`paragraphs_case_68`](tests/translation_approach_tests.rs#L1163) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`blockquotes_case_69`](tests/translation_approach_tests.rs#L1179) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`blockquotes_case_70`](tests/translation_approach_tests.rs#L1186) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`blockquotes_case_71`](tests/translation_approach_tests.rs#L1193) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`blockquotes_case_72`](tests/translation_approach_tests.rs#L1200) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+| [`blockquotes_case_73`](tests/translation_approach_tests.rs#L1207) | Markdown only | Faithful | default Faithful | rendered for stability; no HTML assertion |
+
+Generated cases are defined with their input and expected HTML beside the `Case` construction in the linked test: [`blocks_inside_inlines`](tests/translation_approach_tests.rs) covers all 144 block/inline combinations, including 128 approved literal second-Markdown results; [`round_trip_in_an_inline_context`](tests/basic_tests.rs) covers its 11 named inputs; [`round_trip_losses_of_a_walked_raw_inline`](tests/basic_tests.rs) covers its 12 named losses. The table-driven list, table, and paragraph cases likewise keep their input and reference HTML in the feature test source.
