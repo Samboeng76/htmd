@@ -1329,9 +1329,7 @@ fn table_children_which_only_html_can_express() {
             id,
             html,
             expected_markdown: Some(html),
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         })
         .collect::<Vec<_>>();

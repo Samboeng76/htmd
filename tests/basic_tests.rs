@@ -24,27 +24,21 @@ fn compact_headings_and_paragraphs_round_trip() {
             id: "compact_heading",
             html: "<h1>Heading 1</h1>",
             expected_markdown: Some("# Heading 1"),
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "\n",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         },
         Case {
             id: "paragraphs_with_renderer_layout",
             html: "<p>The first.</p>\n<p>The <span>second.</span></p>",
             expected_markdown: Some("The first.\n\nThe <span>second.</span>"),
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "\n",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         },
         Case {
             id: "consecutive_paragraphs_with_renderer_layout",
             html: "<p>One</p>\n<p>Two</p>",
             expected_markdown: Some("One\n\nTwo"),
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "\n",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         },
     ]);
@@ -86,9 +80,7 @@ fn paragraph_with_attribute_round_trips_as_html() {
         id: "paragraph_with_dir_attribute",
         html: "<p dir=\"ltr\">Test 1</p>",
         expected_markdown: Some("<p dir=\"ltr\">Test 1</p>"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -553,9 +545,7 @@ fn adjacent_math_spans_stay_math() {
             html,
             expected_markdown: Some(markdown),
             markdown_options: CommonMarkOptions::ENABLE_MATH,
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "\n",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         })
         .collect::<Vec<_>>();
@@ -618,6 +608,7 @@ fn inline_raw_html_escaping() {
         expected_markdown: Some(
             r#"Test \<code>tags\</code>, \<!-- comments -->, \<?processing instructions?>, \<!A declaration>, and <!\[CDATA\[character data\]\]>."#,
         ),
+        markdown_options: CommonMarkOptions::all() & !CommonMarkOptions::ENABLE_SMART_PUNCTUATION,
         ..Case::default()
     }]);
 }
@@ -642,6 +633,7 @@ fn multiline_raw_html_escaping() {
         expected_markdown: Some(
             r#"Test \<code>multi-line tags\</code>, \<!-- multi-line comments -->, \<?multi-line processing instructions?>, \<!A multi-line declaration>, and <!\[CDATA\[multi-line character data\]\]>."#,
         ),
+        markdown_options: CommonMarkOptions::all() & !CommonMarkOptions::ENABLE_SMART_PUNCTUATION,
         ..Case::default()
     }]);
 }
@@ -657,9 +649,7 @@ fn inline_email_autolink_escaping() {
     check_cases(&[Case {
         id: "inline_email_autolink_escaping_case_31",
         html,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         expected_markdown: Some(r"Mail \<1foo@bar.com>, \</1@b.co> or \<+a@b.co>."),
         ..Case::default()
     }]);
@@ -838,9 +828,7 @@ fn faithful_mode_p() {
         id: "faithful_mode_p_case_39",
         html: indoc!(r#"<p dir="ltr">Test 1</p>"#),
         expected_markdown: Some(r#"<p dir="ltr">Test 1</p>"#),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -997,9 +985,7 @@ fn faithful_mode_serializes_a_table_with_a_caption() {
     faithful_cases.extend([Case {
         id: "faithful_mode_serializes_a_table_with_a_caption_preserved_line_1150",
         html: expected,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -1217,9 +1203,7 @@ fn html_entities() {
     faithful_cases.extend([Case {
         id: "html_entities_preserved_1",
         html: "<p>&amp;copy; &amp;#169; &amp;#xA9;</p>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -1342,9 +1326,7 @@ fn empty_math_span() {
         html: r#"<p><span class="math math-display"></span></p>"#,
         expected_markdown: Some("$$$$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
@@ -1352,9 +1334,7 @@ fn empty_math_span() {
         html: r#"<p><span class="math math-inline"></span></p>"#,
         expected_markdown: Some(r#"<span class="math math-inline"></span>"#),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -1382,9 +1362,7 @@ fn math_span_whitespace() {
         html: r#"<p><span class="math math-display"> x </span></p>"#,
         expected_markdown: Some("$$ x $$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     // Trimming a control space leaves a trailing `\`, which would escape the
@@ -1394,9 +1372,7 @@ fn math_span_whitespace() {
         html: r#"<p><span class="math math-inline">a\ </span></p>"#,
         expected_markdown: Some(r#"<span class="math math-inline">a\\ </span>"#),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
@@ -1404,9 +1380,7 @@ fn math_span_whitespace() {
         html: r#"<p><span class="math math-display">a\ </span></p>"#,
         expected_markdown: Some(r"$$a\ $$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -1456,9 +1430,7 @@ fn unwritable_math_span() {
             html,
             expected_markdown: Some(markdown),
             markdown_options: CommonMarkOptions::ENABLE_MATH,
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "\n",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         })
         .collect::<Vec<_>>();
@@ -1478,9 +1450,7 @@ fn span_not_of_the_math_form() {
         html,
         expected_markdown: Some(r#"<span class="math math-inline">a*b*</span>"#),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!("a*b*", convert_pure(html).unwrap());
@@ -1490,9 +1460,7 @@ fn span_not_of_the_math_form() {
         html,
         expected_markdown: Some(r#"<span class="math math-inline">a<!--c--></span>"#),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!("a", convert_pure(html).unwrap());
@@ -1502,9 +1470,7 @@ fn span_not_of_the_math_form() {
         html,
         expected_markdown: Some(r#"<span class="math math-inline" id="x">a</span>"#),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!("a", convert_pure(html).unwrap());
@@ -1528,9 +1494,7 @@ fn math_span_in_a_table_cell() {
             "| ---------------- |\n",
             r"| $\\|x\\| = a\|b$ |"
         )),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         markdown_options: CommonMarkOptions::ENABLE_MATH | CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
@@ -1546,9 +1510,7 @@ fn dollar_sign_in_text() {
         html: "<p>$5,$6</p>",
         expected_markdown: Some(r"\$5,\$6"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(r"\$5,\$6", convert_pure("<p>$5,$6</p>").unwrap());
@@ -1643,72 +1605,56 @@ fn a_paragraph_of_leaf_block_syntax_stays_a_paragraph() {
         id: "a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_1",
         html: "<p>-</p>",
         expected_markdown: Some(r"\-"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_2",
         html: "<p>*</p>",
         expected_markdown: Some(r"\*"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_3",
         html: "<p>+</p>",
         expected_markdown: Some(r"\+"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_4",
         html: "<p>---</p>",
         expected_markdown: Some(r"\---"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_5",
         html: "<p>===</p>",
         expected_markdown: Some(r"\==="),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_6",
         html: "<p>1.</p>",
         expected_markdown: Some(r"1\."),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_7",
         html: "<p>1)</p>",
         expected_markdown: Some(r"1\)"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_8",
         html: "<p>- - -</p>",
         expected_markdown: Some(r"\- - -"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -1718,11 +1664,13 @@ fn a_paragraph_of_leaf_block_syntax_stays_a_paragraph() {
         id: "a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_9",
         html: "<p>--foo</p>",
         expected_markdown: Some("--foo"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
+    for case in &mut faithful_cases {
+        case.markdown_options =
+            CommonMarkOptions::all() & !CommonMarkOptions::ENABLE_SMART_PUNCTUATION;
+    }
     check_cases(&faithful_cases);
 }
 
@@ -1736,18 +1684,14 @@ fn an_atx_marker_alone_in_a_paragraph_is_escaped() {
         id: "an_atx_marker_alone_in_a_paragraph_is_escaped_paragraph_1",
         html: "<p>#</p>",
         expected_markdown: Some(r"\#"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "an_atx_marker_alone_in_a_paragraph_is_escaped_paragraph_2",
         html: "<p>######</p>",
         expected_markdown: Some(r"\######"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -1757,9 +1701,7 @@ fn an_atx_marker_alone_in_a_paragraph_is_escaped() {
         id: "an_atx_marker_alone_in_a_paragraph_is_escaped_paragraph_3",
         html: "<p>#######</p>",
         expected_markdown: Some(r"\#######"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -1769,9 +1711,7 @@ fn an_atx_marker_alone_in_a_paragraph_is_escaped() {
         id: "an_atx_marker_alone_in_a_paragraph_is_escaped_paragraph_4",
         html: "<p>#x</p>",
         expected_markdown: Some("#x"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -1794,36 +1734,21 @@ fn a_bullet_marker_closed_by_a_line_ending_is_escaped() {
         id: "a_bullet_marker_closed_by_a_line_ending_is_escaped_paragraph_1",
         html: "<p>-\nfoo</p>",
         expected_markdown: Some(r"\- foo"),
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<p>- foo</p>\n",
-            reason: "paragraph whitespace is trimmed or collapsed during translation",
-            reference: "translation_approach.md#paragraphs",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_bullet_marker_closed_by_a_line_ending_is_escaped_paragraph_2",
         html: "<p>+\nfoo</p>",
         expected_markdown: Some(r"\+ foo"),
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<p>+ foo</p>\n",
-            reason: "paragraph whitespace is trimmed or collapsed during translation",
-            reference: "translation_approach.md#paragraphs",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_bullet_marker_closed_by_a_line_ending_is_escaped_paragraph_3",
         html: "<p>-\tfoo</p>",
         expected_markdown: Some(r"\- foo"),
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<p>- foo</p>\n",
-            reason: "paragraph whitespace is trimmed or collapsed during translation",
-            reference: "translation_approach.md#paragraphs",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -1839,36 +1764,21 @@ fn an_atx_marker_closed_by_a_line_ending_is_escaped() {
         id: "an_atx_marker_closed_by_a_line_ending_is_escaped_paragraph_1",
         html: "<p>#\nfoo</p>",
         expected_markdown: Some(r"\# foo"),
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<p># foo</p>\n",
-            reason: "paragraph whitespace is trimmed or collapsed during translation",
-            reference: "translation_approach.md#paragraphs",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "an_atx_marker_closed_by_a_line_ending_is_escaped_paragraph_2",
         html: "<p>###\nfoo</p>",
         expected_markdown: Some(r"\### foo"),
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<p>### foo</p>\n",
-            reason: "paragraph whitespace is trimmed or collapsed during translation",
-            reference: "translation_approach.md#paragraphs",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "an_atx_marker_closed_by_a_line_ending_is_escaped_paragraph_3",
         html: "<p>#\tfoo</p>",
         expected_markdown: Some(r"\# foo"),
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<p># foo</p>\n",
-            reason: "paragraph whitespace is trimmed or collapsed during translation",
-            reference: "translation_approach.md#paragraphs",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -1884,24 +1794,14 @@ fn an_ordered_item_delimiter_closed_by_a_line_ending_is_escaped() {
         id: "an_ordered_item_delimiter_closed_by_a_line_ending_is_escaped_paragraph_1",
         html: "<p>1.\nfoo</p>",
         expected_markdown: Some(r"1\. foo"),
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<p>1. foo</p>\n",
-            reason: "paragraph whitespace is trimmed or collapsed during translation",
-            reference: "translation_approach.md#paragraphs",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "an_ordered_item_delimiter_closed_by_a_line_ending_is_escaped_paragraph_2",
         html: "<p>1)\nfoo</p>",
         expected_markdown: Some(r"1\) foo"),
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<p>1) foo</p>\n",
-            reason: "paragraph whitespace is trimmed or collapsed during translation",
-            reference: "translation_approach.md#paragraphs",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -1919,48 +1819,28 @@ fn a_marker_behind_leading_whitespace_is_escaped() {
         id: "a_marker_behind_leading_whitespace_is_escaped_paragraph_1",
         html: "<p> 1. foo</p>",
         expected_markdown: Some(r"1\. foo"),
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<p>1. foo</p>\n",
-            reason: "paragraph whitespace is trimmed or collapsed during translation",
-            reference: "translation_approach.md#paragraphs",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_marker_behind_leading_whitespace_is_escaped_paragraph_2",
         html: "<p> - foo</p>",
         expected_markdown: Some(r"\- foo"),
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<p>- foo</p>\n",
-            reason: "paragraph whitespace is trimmed or collapsed during translation",
-            reference: "translation_approach.md#paragraphs",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_marker_behind_leading_whitespace_is_escaped_paragraph_3",
         html: "<p>\n# foo</p>",
         expected_markdown: Some(r"\# foo"),
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<p># foo</p>\n",
-            reason: "paragraph whitespace is trimmed or collapsed during translation",
-            reference: "translation_approach.md#paragraphs",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_marker_behind_leading_whitespace_is_escaped_paragraph_4",
         html: "<p>\n  1.\n  Item numbering\n</p>",
         expected_markdown: Some(r"1\. Item numbering"),
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<p>1. Item numbering</p>\n",
-            reason: "paragraph whitespace is trimmed or collapsed during translation",
-            reference: "translation_approach.md#paragraphs",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -1976,18 +1856,14 @@ fn a_marker_which_starts_no_line_is_not_escaped() {
         id: "a_marker_which_starts_no_line_is_not_escaped_paragraph_1",
         html: "<p>a <em>b</em> - c</p>",
         expected_markdown: Some("a *b* - c"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_marker_which_starts_no_line_is_not_escaped_paragraph_2",
         html: "<p>a <em>b</em> 1. c</p>",
         expected_markdown: Some("a *b* 1. c"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -2004,18 +1880,14 @@ fn a_run_of_ordered_item_delimiters_opens_no_list() {
         id: "a_run_of_ordered_item_delimiters_opens_no_list_paragraph_1",
         html: "<p>1)))</p>",
         expected_markdown: Some("1)))"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_run_of_ordered_item_delimiters_opens_no_list_paragraph_2",
         html: "<p>1.)</p>",
         expected_markdown: Some("1.)"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -2034,18 +1906,14 @@ fn a_paragraph_of_unicode_numerics_needs_no_escape() {
         id: "a_paragraph_of_unicode_numerics_needs_no_escape_paragraph_1",
         html: "<p>2½. text</p>",
         expected_markdown: Some("2½. text"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "a_paragraph_of_unicode_numerics_needs_no_escape_paragraph_2",
         html: "<p>1١. text</p>",
         expected_markdown: Some("1١. text"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -2067,9 +1935,7 @@ fn a_literal_cdata_section_is_lost_unescaped() {
     check_cases(&[Case {
         id: "a_literal_cdata_section_is_lost_unescaped_preserved_line_1884",
         html: "<p>&lt;![CDATA[x]]&gt;</p>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -2149,6 +2015,18 @@ fn round_trip_in_a_block_context() {
             ..Case::default()
         })
         .collect::<Vec<_>>();
+    cases[0].expectation = Some(HtmlExpectation::DocumentedDifference {
+        kind: DifferenceKind::Representation,
+        expected_html: "<script>a*b\n\nc</script>",
+        reason: "fragment parsing omits the body wrapper around the script",
+        reference: "https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inbody",
+    });
+    cases[1].expectation = Some(HtmlExpectation::DocumentedDifference {
+        kind: DifferenceKind::Representation,
+        expected_html: "<style>a*b\n\nc</style>",
+        reason: "fragment parsing omits the body wrapper around the style",
+        reference: "https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inbody",
+    });
     cases[2].expectation = Some(HtmlExpectation::DocumentedDifference {
         kind: DifferenceKind::Representation,
         expected_html: "<div>a*b\n&#10;c</div>",
@@ -2172,9 +2050,7 @@ fn round_trip_in_a_block_context() {
     cases.push(Case {
         id: "round_trip_in_a_block_context_preserved_line_1945",
         html: "<br>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     });
     check_cases(&cases);
@@ -2193,9 +2069,7 @@ fn round_trip_of_a_leaf_block_an_html_block_would_dissolve() {
     cases.extend([Case {
         id: "round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_line_1955",
         html: "<p><br></p>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     // A type 1-6 tag opening the content. A comment is type 2, `iframe` type 6.
@@ -2203,27 +2077,21 @@ fn round_trip_of_a_leaf_block_an_html_block_would_dissolve() {
     cases.extend([Case {
         id: "round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_line_1957",
         html: "<p><!--c--></p>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
     cases.extend([Case {
         id: "round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_line_1958",
         html: "<p><!--c-->a</p>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
     cases.extend([Case {
         id: "round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_line_1959",
         html: r#"<p><iframe src="u">a</iframe></p>"#,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     // A list item's marker and a blockquote's `>` are stripped before the line
@@ -2231,12 +2099,7 @@ fn round_trip_of_a_leaf_block_an_html_block_would_dissolve() {
     cases.extend([Case {
         id: "blockquote_with_break_paragraph",
         html: "<blockquote><p><br></p></blockquote>",
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<blockquote>\n<p><br></p></blockquote>\n",
-            reason: "CommonMark inserts a line ending after the opening blockquote",
-            reference: "translation_approach.md#blockquotes",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -2245,25 +2108,19 @@ fn round_trip_of_a_leaf_block_an_html_block_would_dissolve() {
     cases.extend([Case {
         id: "round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_1",
         html: "<p><br><br></p>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     cases.extend([Case {
         id: "round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_2",
         html: "<p><br>a</p>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     cases.extend([Case {
         id: "round_trip_of_a_leaf_block_an_html_block_would_dissolve_preserved_3",
         html: "<p><del><br></del></p>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -2283,9 +2140,7 @@ fn round_trip_of_a_leaf_block_an_html_block_would_dissolve() {
         id,
         html,
         htmd_options: setext.clone(),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }));
     check_cases(&cases);
@@ -2314,9 +2169,9 @@ fn round_trip_of_a_setext_heading_of_leaf_block_syntax() {
                     heading_style: HeadingStyle::Setex,
                     ..Case::default().htmd_options
                 },
-                expectation: Some(HtmlExpectation::Preserved {
-                    renderer_suffix: "\n",
-                }),
+                markdown_options: CommonMarkOptions::all()
+                    & !CommonMarkOptions::ENABLE_SMART_PUNCTUATION,
+                expectation: Some(HtmlExpectation::Preserved),
                 ..Case::default()
             })
             .collect::<Vec<_>>(),
@@ -2333,45 +2188,32 @@ fn round_trip_of_an_atx_heading_ending_in_a_hash_run() {
     faithful_cases.extend([Case {
         id: "round_trip_of_an_atx_heading_ending_in_a_hash_run_preserved_1",
         html: "<h1>a #</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_an_atx_heading_ending_in_a_hash_run_preserved_2",
         html: "<h1>a ##</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_an_atx_heading_ending_in_a_hash_run_preserved_3",
         html: "<h1><em>a</em> #</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_an_atx_heading_ending_in_a_hash_run_preserved_4",
         html: "<h3>#</h3>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
-    // The walk collapses the tab to a space.
+    // The walk collapses the tab to a space, preserving the same text flow.
     faithful_cases.extend([Case {
         id: "heading_tab_before_hash",
         html: "<h1>a\t#</h1>",
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html: "<h1>a #</h1>\n",
-            reason: "the heading walk collapses a tab to a space",
-            reference: "translation_approach.md#headings",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -2395,9 +2237,7 @@ fn round_trip_of_an_atx_heading_ending_in_a_hash_run() {
         id: "round_trip_of_an_atx_heading_ending_in_a_hash_run_case_62",
         html: r"<h1>a \#</h1>",
         expected_markdown: Some(r"# a \\#"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -2437,7 +2277,7 @@ fn atx_heading_of_a_hash_run_from_a_handler() {
 /// inline. Only its tags are HTML; what sits between them is CommonMark text,
 /// which is what makes the escape of `a\*b` work here — the CommonMark parser
 /// consumes the backslash before any HTML parser sees a `<script>` element.
-/// `round_trip_losses_of_a_walked_raw_inline` holds the cases where reading
+/// `walked_raw_inline_whitespace_and_losses` holds the cases where reading
 /// that content as text costs something.
 #[test]
 fn round_trip_in_an_inline_context() {
@@ -2459,7 +2299,7 @@ fn round_trip_in_an_inline_context() {
             "<h1>x<div>a*b*c</div>y</h1>",
         ),
     ];
-    let losses = [
+    let line_ending_cases = [
         (
             "inline_context_script_line_ending",
             "<h1>x<script>a*b\nc</script>y</h1>",
@@ -2501,31 +2341,36 @@ fn round_trip_in_an_inline_context() {
         .map(|(id, html)| Case {
             id,
             html,
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "\n",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         })
         .collect::<Vec<_>>();
-    cases.extend(losses.iter().map(|(id, html, expected_html)| Case {
-        id,
-        html,
-        expectation: Some(HtmlExpectation::DocumentedDifference {
-            kind: DifferenceKind::Loss,
-            expected_html,
-            reason: "the raw inline walk collapses a line ending to one space",
-            reference: "translation_approach.md#translating-html-nodes",
-        }),
-        ..Case::default()
-    }));
+    cases.extend(
+        line_ending_cases
+            .iter()
+            .map(|(id, html, expected_html)| Case {
+                id,
+                html,
+                expectation: if id.contains("_pre_") || id.contains("_comment_") {
+                    Some(HtmlExpectation::DocumentedDifference {
+                        kind: DifferenceKind::Loss,
+                        expected_html,
+                        reason: "the raw inline walk changes protected code or comment whitespace",
+                        reference: "translation_approach.md#translating-html-nodes",
+                    })
+                } else {
+                    Some(HtmlExpectation::Preserved)
+                },
+                ..Case::default()
+            }),
+    );
     check_cases(&cases);
 }
 
 /// [Translating HTML nodes](../translation_approach.md#translating-html-nodes).
 /// Every raw HTML inline has its content walked, `<pre>`, `<script>` and
 /// `<style>` included, so each of the trips below returns the HTML it started
-/// from. `round_trip_losses_of_a_walked_raw_inline` holds the cases which do
-/// not.
+/// from. `walked_raw_inline_whitespace_and_losses` holds the remaining cases.
 #[test]
 fn round_trip_of_a_walked_raw_inline() {
     let mut faithful_cases = Vec::new();
@@ -2533,25 +2378,19 @@ fn round_trip_of_a_walked_raw_inline() {
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_1",
         html: "<h1>x<div>a<em>b</em>c</div>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_2",
         html: "<h1>x<del>a<em>b</em>c</del>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_3",
         html: "<h1>x<pre>a<em>b</em>c</pre>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -2559,33 +2398,25 @@ fn round_trip_of_a_walked_raw_inline() {
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_4",
         html: "<h1>x<div>a&lt;b&gt;c</div>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_5",
         html: "<h1>x<del>a&lt;b&gt;c</del>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_6",
         html: "<h1>x<pre>a&lt;b&gt;c</pre>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_7",
         html: "<h1>x<textarea>a&lt;b&gt;c</textarea>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -2593,17 +2424,13 @@ fn round_trip_of_a_walked_raw_inline() {
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_8",
         html: "<h1>x<div>a&amp;b</div>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_9",
         html: "<h1>x<pre>a&amp;b</pre>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -2611,33 +2438,25 @@ fn round_trip_of_a_walked_raw_inline() {
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_10",
         html: "<h1>x<div>a*b_c[d]</div>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_11",
         html: "<h1>x<pre>a*b_c[d]</pre>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_12",
         html: "<h1>x<script>a*b_c[d]</script>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_13",
         html: "<h1>x<style>a*b_c[d]</style>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -2646,33 +2465,25 @@ fn round_trip_of_a_walked_raw_inline() {
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_14",
         html: "<h1>x<div>a<code>c*d</code>b</div>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_15",
         html: "<h1>x<pre>a<code>c*d</code>b</pre>y</h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_16",
         html: "<h1><pre><code>a</code></pre></h1>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_17",
         html: r#"<h1>x<div>a<code class="q">c*d</code>b</div>y</h1>"#,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -2682,19 +2493,16 @@ fn round_trip_of_a_walked_raw_inline() {
     faithful_cases.extend([Case {
         id: "round_trip_of_a_walked_raw_inline_preserved_line_2176",
         html: "<pre>a*b\n\nc</pre>",
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
 }
 
 /// [Translating HTML nodes](../translation_approach.md#translating-html-nodes).
-/// The trips of `round_trip_of_a_walked_raw_inline` which lose something. Each
-/// assertion holds what actually comes back, and says what went missing.
+/// These raw inlines include both preserved text-flow whitespace and losses.
 #[test]
-fn round_trip_losses_of_a_walked_raw_inline() {
+fn walked_raw_inline_whitespace_and_losses() {
     let cases = [
         (
             "script_less_than",
@@ -2783,6 +2591,17 @@ fn round_trip_losses_of_a_walked_raw_inline() {
             ..Case::default()
         })
         .collect::<Vec<_>>();
+    for case in &mut cases {
+        if matches!(
+            case.id,
+            "textarea_apparent_emphasis"
+                | "div_line_ending"
+                | "script_line_ending"
+                | "textarea_line_ending"
+        ) {
+            case.expectation = Some(HtmlExpectation::Preserved);
+        }
+    }
     for (case, second_markdown) in cases[..4].iter_mut().zip([
         "# x<script>if(a\\&lt;b){}</script>y",
         "# x<script>a\\&lt;em\\&gt;b\\&lt;/em\\&gt;c</script>y",

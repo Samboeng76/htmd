@@ -61,9 +61,7 @@ fn faithful_mode_preserves_an_empty_language_class() {
         id: "faithful_mode_preserves_an_empty_language_class",
         html,
         expected_markdown: Some(html),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -133,9 +131,7 @@ fn faithful_mode_pre() {
         id: "faithful_mode_pre",
         html: "<pre>Test</pre>",
         expected_markdown: Some("<pre>Test</pre>"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -147,9 +143,7 @@ fn faithful_mode_code_block1() {
         id: "faithful_mode_code_block1",
         html: "<pre><code accesskey=\"f\">Test</code></pre>",
         expected_markdown: Some("<pre><code accesskey=\"f\">Test</code></pre>"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -161,9 +155,7 @@ fn faithful_mode_code_block2() {
         id: "faithful_mode_code_block2",
         html: "<pre><code class=\"language-ruby\"><i>Test</i></code></pre>",
         expected_markdown: Some("<pre><code class=\"language-ruby\"><i>Test</i></code></pre>"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }

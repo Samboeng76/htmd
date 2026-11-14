@@ -239,9 +239,7 @@ fn table_caption_is_commonmark_only_in_pure_mode() {
         id: "table_caption_is_commonmark_only_in_pure_mode_case_1",
         html,
         expected_markdown: Some(html),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -261,9 +259,7 @@ fn a_table_with_no_header_row_is_written_as_html() {
         id: "a_table_with_no_header_row_is_written_as_html_case_2",
         html,
         expected_markdown: Some(html),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -275,9 +271,7 @@ fn a_table_with_no_header_row_is_written_as_html() {
         id: "a_table_with_no_header_row_is_written_as_html_case_3",
         html: block_cell,
         expected_markdown: Some(block_cell),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -300,9 +294,7 @@ fn pure_mode_writes_an_empty_header_row_for_a_headerless_table() {
         id: "pure_mode_writes_an_empty_header_row_for_a_headerless_table_case_4",
         html,
         expected_markdown: Some(html),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -323,9 +315,7 @@ fn extra_header_rows_are_written_as_html() {
             "<table><thead><tr><th>A</th></tr><tr><th>B</th></tr></thead>",
             "<tbody><tr><td>c</td></tr></tbody></table>"
         )),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -355,9 +345,7 @@ fn a_header_cell_in_a_body_row_is_written_as_html() {
             "<table><tbody><tr><th>A</th><th>B</th></tr>",
             "<tr><th>r</th><td>c</td></tr></tbody></table>"
         )),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -405,9 +393,7 @@ fn table_content_a_markdown_row_cannot_hold_is_written_as_html() {
             id,
             html,
             expected_markdown: Some(html),
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         })
         .collect::<Vec<_>>();
@@ -435,9 +421,7 @@ fn a_thead_of_data_cells_is_written_as_html() {
             "<table><thead><tr><td>A</td><td>B</td></tr></thead>",
             "<tbody><tr><td>c</td><td>d</td></tr></tbody></table>"
         )),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -468,9 +452,7 @@ fn a_second_tbody_is_written_as_html() {
             "<tbody><tr><td>a</td></tr></tbody>",
             "<tbody><tr><td>b</td></tr></tbody></table>"
         )),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -503,9 +485,7 @@ fn a_second_thead_is_written_as_html() {
             "<thead><tr><th>B</th></tr></thead>",
             "<tbody><tr><td>c</td></tr></tbody></table>"
         )),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -550,9 +530,7 @@ fn a_thead_after_a_body_row_is_written_as_html() {
             id,
             html,
             expected_markdown: Some(html),
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         })
         .collect::<Vec<_>>();
@@ -582,9 +560,7 @@ fn a_thead_after_an_empty_tbody_is_written_as_html() {
             "<table><tbody></tbody>",
             "<thead><tr><th>B</th></tr></thead></table>"
         )),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -612,9 +588,7 @@ fn a_header_row_after_a_body_row_is_written_as_html() {
         expected_markdown: Some(
             "<table><tbody><tr><td>1</td></tr><tr><th>H</th></tr></tbody></table>",
         ),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -642,9 +616,7 @@ fn a_row_wider_or_narrower_than_the_header_is_written_as_html() {
             "<table><thead><tr><th>A</th></tr></thead>",
             "<tbody><tr><td>c</td><td>d</td></tr></tbody></table>"
         )),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -666,9 +638,7 @@ fn a_row_wider_or_narrower_than_the_header_is_written_as_html() {
             "<table><thead><tr><th>A</th><th>B</th></tr></thead>",
             "<tbody><tr><td>c</td></tr></tbody></table>"
         )),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -718,9 +688,7 @@ fn a_comment_in_a_table_is_written_as_html() {
             id,
             html,
             expected_markdown: Some(html),
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         })
         .collect::<Vec<_>>();
@@ -833,9 +801,7 @@ fn a_comment_holding_a_pipe_is_written_as_html() {
             id,
             html,
             expected_markdown: Some(html),
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         })
         .collect::<Vec<_>>();
@@ -908,9 +874,7 @@ fn an_empty_table_is_written_as_html() {
         id: "an_empty_table_is_written_as_html_html_fallback_1",
         html: "<table></table>",
         expected_markdown: Some("<table></table>"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -923,9 +887,7 @@ fn an_empty_table_is_written_as_html() {
         id: "an_empty_table_is_written_as_html_html_fallback_2",
         html: "<table><tbody></tbody></table>",
         expected_markdown: Some("<table><tbody></tbody></table>"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(
@@ -938,9 +900,7 @@ fn an_empty_table_is_written_as_html() {
         id: "an_empty_table_is_written_as_html_html_fallback_3",
         html: "<table><thead></thead></table>",
         expected_markdown: Some("<table><thead></thead></table>"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!(

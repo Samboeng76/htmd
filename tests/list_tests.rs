@@ -10,18 +10,14 @@ fn simple_lists_round_trip() {
             id: "simple_unordered_list",
             html: "<ul>\n<li>One</li>\n<li>Two</li>\n</ul>",
             expected_markdown: Some("*   One\n*   Two"),
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "\n",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         },
         Case {
             id: "simple_ordered_list",
             html: "<ol>\n<li>One</li>\n<li>Two</li>\n</ol>",
             expected_markdown: Some("1.  One\n2.  Two"),
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "\n",
-            }),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         },
     ]);

@@ -15,9 +15,7 @@ fn paragraph_wrapped_link_round_trips() {
         id: "paragraph_wrapped_link",
         html: "<p><a href=\"/\">Link</a></p>",
         expected_markdown: Some("[Link](/)"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -447,6 +445,7 @@ fn an_image_alt_escapes_its_raw_html() {
         id: "an_image_alt_escapes_its_raw_html_case_22",
         html: r#"<img src="x" alt='a<b c="*">d'>"#,
         expected_markdown: Some(r#"![a\<b c="\*">d](x)"#),
+        markdown_options: CommonMarkOptions::all() & !CommonMarkOptions::ENABLE_SMART_PUNCTUATION,
 
         expectation: Some(HtmlExpectation::DocumentedDifference {
             kind: DifferenceKind::Loss,
@@ -677,9 +676,7 @@ fn a_bang_before_a_link_is_escaped() {
         id: "a_bang_before_a_link_is_escaped_case_26",
         html: r#"<p>Hi!<a href="x">t</a></p>"#,
         expected_markdown: Some(r"Hi\![t](x)"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.push(Case {
@@ -690,9 +687,7 @@ fn a_bang_before_a_link_is_escaped() {
             ..Case::default().htmd_options
         },
         expected_markdown: Some("Hi\\![t][1]\n\n[1]: x"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     });
     // The link needn't be the `!`'s sibling.
@@ -791,9 +786,7 @@ fn link_text_escapes_its_math_delimiters() {
         html,
         expected_markdown: Some(r"[\$a\](v)\$](u)"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     let html = r#"<p><a href="u"><span class="math math-inline">a](v)</span></a></p>"#;
@@ -803,9 +796,7 @@ fn link_text_escapes_its_math_delimiters() {
         html,
         expected_markdown: Some("[$a](v)$](u)"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -993,9 +984,7 @@ fn a_link_keeps_the_whitespace_around_its_text() {
         id: "a_link_keeps_the_whitespace_around_its_text_case_40",
         html: r#"<p>Hi!<a href="x"> t</a></p>"#,
         expected_markdown: Some("Hi\\![ t](x)"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     faithful_cases.push(Case {
@@ -1006,9 +995,7 @@ fn a_link_keeps_the_whitespace_around_its_text() {
             ..Case::default().htmd_options
         },
         expected_markdown: Some("Hi\\![ t][1]\n\n[1]: x"),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     });
     // A space on each side of the `<a>` tag collapses to one.
@@ -1040,9 +1027,7 @@ fn an_image_without_a_source_is_written_as_html() {
         id: "an_image_without_a_source_is_written_as_html_case_43",
         html: r#"<p>a<img alt="q">b</p>"#,
         expected_markdown: Some(r#"a<img alt="q">b"#),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -1060,9 +1045,7 @@ fn an_image_without_alt_text_is_written_as_html() {
         id: "an_image_without_alt_text_is_written_as_html_case_44",
         html: r#"<p>a<img src="i">b</p>"#,
         expected_markdown: Some(r#"a<img src="i">b"#),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     // An empty `alt` is the one `![](i)` spells.
@@ -1096,9 +1079,7 @@ fn an_image_with_an_empty_title_is_written_as_html() {
         id: "an_image_with_an_empty_title_is_written_as_html_case_46",
         html: r#"<p>a<img src="i" alt="q" title="">b</p>"#,
         expected_markdown: Some(r#"a<img src="i" alt="q" title="">b"#),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "\n",
-        }),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
