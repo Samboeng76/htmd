@@ -9,13 +9,13 @@ Section headings count test functions. A function with multiple input-and-mode
 cases has one row per case. Labels show a short input expression or fixture
 name. Links point to the source assertion or fixture; generated combinations
 show their expanded HTML. The `Faithful round trip` column concerns
-**Faithful-mode** HTML → Markdown → HTML checks only. A candidate may need a
-compact fixture; this table does not claim that the exact comparison of section
-3 of `spec.md` has already passed. Keep Pure-mode assertions in mixed tests.
+**Faithful-mode** HTML → Markdown → HTML checks only. This table does not claim
+that the whitespace-aware comparison in section 3 of `spec.md` has already
+passed. Keep Pure-mode assertions in mixed tests.
 
 | Round trip            | Meaning                                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------------------ |
-| Yes                   | Compare the rendered HTML with the input exactly, as section 3 of `spec.md` requires.            |
+| Yes                   | Compare the rendered HTML with the input using the whitespace-aware rules in section 3 of `spec.md`.            |
 | Expected              | Use an explicit expected HTML result for a documented transformation, parser repair, or wrapper. |
 | Configured            | Use the test's htmd options or the matching pulldown-cmark extension.                            |
 | Configured + expected | Both configuration and explicit expected HTML are needed.                                        |
@@ -38,11 +38,11 @@ not count. Existing checks may compare HTML strings or only selected HTML
 features; this column does not claim that they use the proposed standardized
 comparison.
 
-Root-level inline content may gain a `<p>` on rendering. Pretty-printed input
-may contain whitespace text nodes that htmd does not preserve. Those cases need
-a compact fixture or explicit expected HTML; they do not justify a global rule
-that ignores wrappers or whitespace. The known `<br><br>` root failure remains a
-failure of preservation, even though an existing test records the HTML it
+Root-level inline content may gain a `<p>` on rendering; that structural change
+still needs an approved explicit expected HTML result. Formatting-only ASCII
+whitespace outside code follows section 3 of `spec.md`; code whitespace, NBSP,
+and word separation remain significant. Keep original fixtures and coverage.
+The known `<br><br>` root failure remains a failure of preservation, even though an existing test records the HTML it
 currently renders.
 
 Integration tests
