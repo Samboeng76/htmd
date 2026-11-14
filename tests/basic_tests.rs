@@ -11,8 +11,8 @@ use htmd::{
 };
 mod common;
 use common::{
-    Case, DifferenceKind, HtmlExpectation, StabilityExpectation, check_cases, convert_faithful,
-    convert_pure, render_markdown,
+    Case, DifferenceKind, HtmlExpectation, StabilityExpectation, check_cases, convert_pure,
+    render_markdown,
 };
 
 /// [Headings](../translation_approach.md#headings) and
@@ -99,10 +99,6 @@ fn links_with_spaces() {
     let html = r#"
         <a href="https://example.com/Some Page.html">Example</a>
         "#;
-    assert_eq!(
-        "[Example](<https://example.com/Some Page.html>)",
-        convert_faithful(html).unwrap(),
-    );
     check_cases(&[Case {
         id: "links_with_spaces_case_1",
         html,
@@ -122,19 +118,6 @@ fn referenced_links_with_title() {
     let html = r#"
         <a href="https://example.com" title="Some title">Example</a>
         "#;
-    let md = HtmlToMarkdown::builder()
-        .options(Options {
-            link_style: LinkStyle::Referenced,
-            translation_mode: TranslationMode::Faithful,
-            ..Default::default()
-        })
-        .build()
-        .convert(html)
-        .unwrap();
-    assert_eq!(
-        "[Example][1]\n\n[1]: https://example.com \"Some title\"",
-        &md
-    );
     check_cases(&[Case {
         id: "referenced_links_with_title",
         html,
@@ -153,25 +136,6 @@ fn consecutive_referenced_links_with_title() {
     let html = r#"
         <a href="https://example.com" title="Some title">Example</a><a href="https://example.com" title="Some title">Another example</a>
         "#;
-    let md = HtmlToMarkdown::builder()
-        .options(Options {
-            link_style: LinkStyle::Referenced,
-            translation_mode: TranslationMode::Faithful,
-            ..Default::default()
-        })
-        .build()
-        .convert(html)
-        .unwrap();
-    assert_eq!(
-        indoc!(
-            r#"
-        [Example][1][Another example][2]
-
-        [1]: https://example.com "Some title"
-        [2]: https://example.com "Some title""#
-        ),
-        &md
-    );
     check_cases(&[Case {
         id: "consecutive_referenced_links_with_title",
         html,
@@ -197,11 +161,6 @@ fn images() {
         <img src="https://example.com" alt="Image 1" />
         <img src="https://example.com" alt="Image 2" title="Hello" />
         "#;
-    assert_eq!(
-        "![](https://example.com) ![Image 1](https://example.com) \
-            ![Image 2](https://example.com \"Hello\")",
-        convert_faithful(html).unwrap(),
-    );
     check_cases(&[Case {
         id: "images_case_2",
         html,
@@ -219,10 +178,6 @@ fn images_with_spaces_in_url() {
     let html = r#"
         <img src="https://example.com/Some Image.jpg" alt="" />
         "#;
-    assert_eq!(
-        "![](<https://example.com/Some Image.jpg>)",
-        convert_faithful(html).unwrap(),
-    );
     check_cases(&[Case {
         id: "images_with_spaces_in_url_case_3",
         html,
@@ -569,36 +524,44 @@ fn pure_mode_merges_adjacent_inline_elements() {
 /// as HTML.
 #[test]
 fn adjacent_math_spans_stay_math() {
-    for (html, markdown) in [
+    let inputs = [
         (
+            "adjacent_inline_math_spans",
             r#"<p><span class="math math-inline">a</span><span class="math math-inline">b</span></p>"#,
             "$a$$b$",
         ),
         (
+            "adjacent_display_math_spans",
             r#"<p><span class="math math-display">a</span><span class="math math-display">b</span></p>"#,
             "$$a$$$$b$$",
         ),
         (
+            "inline_then_display_math",
             r#"<p><span class="math math-inline">a</span><span class="math math-display">b</span></p>"#,
             "$a$$$b$$",
         ),
         (
+            "display_then_inline_math",
             r#"<p><span class="math math-display">a</span><span class="math math-inline">b</span></p>"#,
             "$$a$$$b$",
         ),
-    ] {
-        check_cases(&[Case {
-            id: "adjacent_math_spans_stay_math_case_26",
+    ];
+    let cases = inputs
+        .iter()
+        .map(|(id, html, markdown)| Case {
+            id,
             html,
             expected_markdown: Some(markdown),
             markdown_options: CommonMarkOptions::ENABLE_MATH,
+            expectation: Some(HtmlExpectation::Preserved {
+                renderer_suffix: "\n",
+            }),
             ..Case::default()
-        }]);
+        })
+        .collect::<Vec<_>>();
+    check_cases(&cases);
+    for (_, html, markdown) in inputs {
         assert_eq!(markdown, convert_pure(html).unwrap());
-        assert_eq!(
-            format!("{html}\n"),
-            render_markdown(markdown, CommonMarkOptions::ENABLE_MATH)
-        );
     }
 }
 
@@ -781,22 +744,6 @@ fn html_escaping() {
 /// [Translating HTML nodes](../translation_approach.md#translating-html-nodes).
 #[test]
 fn faithful_mode_inline() {
-    assert_eq!(
-        convert_faithful(indoc!(
-            r#"<p>
-                <img src="one.png" alt="yyy" title="zzz" scale="50%">
-                <em bar>Testing</em>
-                <strong foo>Testing</strong>
-                <a href="http://foo.com" bar>link</a>
-                <code class="not-a-language">code</code>
-                <br foo>
-            </p>"#
-        ))
-        .unwrap(),
-        indoc!(
-            r#"<img src="one.png" alt="yyy" title="zzz" scale="50%"> <em bar="">Testing</em> <strong foo="">Testing</strong> <a href="http://foo.com" bar="">link</a> <code class="not-a-language">code</code> <br foo="">"#
-        )
-    );
     check_cases(&[Case {
         id: "faithful_mode_inline_case_33",
         html: indoc!(
@@ -891,6 +838,9 @@ fn faithful_mode_p() {
         id: "faithful_mode_p_case_39",
         html: indoc!(r#"<p dir="ltr">Test 1</p>"#),
         expected_markdown: Some(r#"<p dir="ltr">Test 1</p>"#),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
         ..Case::default()
     }]);
 }
@@ -958,17 +908,6 @@ fn faithful_mode_html() {
                 1</summary>
             Test 2
         </details>"#
-    );
-    let md = convert_faithful(html).unwrap();
-    assert_eq!(
-        indoc!(
-            r#"<details>
-                <summary>Test
-            &#10;        1</summary>
-                Test 2
-            </details>"#
-        ),
-        md
     );
     check_cases(&[Case {
         id: "faithful_mode_html",
@@ -1479,42 +1418,51 @@ fn math_span_whitespace() {
 /// nothing else.
 #[test]
 fn unwritable_math_span() {
-    for (math, markdown) in [
+    let mut inputs = Vec::new();
+    for (id, math, markdown) in [
         // An unescaped `$` ends the expression early.
-        ("a$b", r"a\$b"),
-        (r"a\\$b", r"a\\\\\$b"),
+        ("math_unescaped_dollar", "a$b", r"a\$b"),
+        ("math_backslashes_before_dollar", r"a\\$b", r"a\\\\\$b"),
         // A trailing `\` escapes the closing `$`.
-        (r"a\", r"a\\"),
+        ("math_trailing_backslash", r"a\", r"a\\"),
         // pulldown-cmark pairs delimiters only around balanced braces.
-        ("}a{", "}a{"),
-        ("a{", "a{"),
-        (r"\\{a", r"\\\\{a"),
+        ("math_reversed_braces", "}a{", "}a{"),
+        ("math_unclosed_brace", "a{", "a{"),
+        ("math_backslashes_before_brace", r"\\{a", r"\\\\{a"),
     ] {
-        check_cases(&[Case {
-            id: "unwritable_math_span_math_1",
-            html: &format!(r#"<p><span class="math math-inline">{math}</span></p>"#),
-            expected_markdown: Some(&format!(
-                r#"<span class="math math-inline">{markdown}</span>"#
-            )),
+        inputs.push((
+            id,
+            format!(r#"<p><span class="math math-inline">{math}</span></p>"#),
+            format!(r#"<span class="math math-inline">{markdown}</span>"#),
+        ));
+    }
+    for (id, math) in [
+        ("math_escaped_dollar", r"a\$b"),
+        ("math_double_backslash", r"a\\"),
+        ("math_balanced_braces", "{a}"),
+        ("math_escaped_open_brace", r"\{a"),
+        ("math_escaped_close_brace", r"a\}"),
+    ] {
+        inputs.push((
+            id,
+            format!(r#"<p><span class="math math-inline">{math}</span></p>"#),
+            format!("${math}$"),
+        ));
+    }
+    let cases = inputs
+        .iter()
+        .map(|(id, html, markdown)| Case {
+            id,
+            html,
+            expected_markdown: Some(markdown),
             markdown_options: CommonMarkOptions::ENABLE_MATH,
             expectation: Some(HtmlExpectation::Preserved {
                 renderer_suffix: "\n",
             }),
             ..Case::default()
-        }]);
-    }
-    for math in [r"a\$b", r"a\\", "{a}", r"\{a", r"a\}"] {
-        check_cases(&[Case {
-            id: "unwritable_math_span_math_2",
-            html: &format!(r#"<p><span class="math math-inline">{math}</span></p>"#),
-            expected_markdown: Some(&format!("${math}$")),
-            markdown_options: CommonMarkOptions::ENABLE_MATH,
-            expectation: Some(HtmlExpectation::Preserved {
-                renderer_suffix: "\n",
-            }),
-            ..Case::default()
-        }]);
-    }
+        })
+        .collect::<Vec<_>>();
+    check_cases(&cases);
 }
 
 /// [Math](../translation_approach.md#math).
@@ -2327,12 +2275,12 @@ fn round_trip_of_a_leaf_block_an_html_block_would_dissolve() {
     };
     // Content which opens no HTML block keeps the setext form.
     let headings = [
-        "<h1><br></h1>",
-        "<h1><div>a</div></h1>",
-        "<h1><br><br></h1>",
+        ("setext_heading_with_one_break", "<h1><br></h1>"),
+        ("setext_heading_with_div", "<h1><div>a</div></h1>"),
+        ("setext_heading_with_two_breaks", "<h1><br><br></h1>"),
     ];
-    cases.extend(headings.iter().map(|html| Case {
-        id: html,
+    cases.extend(headings.iter().map(|(id, html)| Case {
+        id,
         html,
         htmd_options: setext.clone(),
         expectation: Some(HtmlExpectation::Preserved {
@@ -2350,12 +2298,17 @@ fn round_trip_of_a_leaf_block_an_html_block_would_dissolve() {
 /// headings section's fallback to ATX is not needed here.
 #[test]
 fn round_trip_of_a_setext_heading_of_leaf_block_syntax() {
-    let headings = ["<h1>-</h1>", "<h2>-</h2>", "<h1>---</h1>", "<h1>1.</h1>"];
+    let headings = [
+        ("setext_h1_with_dash", "<h1>-</h1>"),
+        ("setext_h2_with_dash", "<h2>-</h2>"),
+        ("setext_h1_with_thematic_break", "<h1>---</h1>"),
+        ("setext_h1_with_list_marker", "<h1>1.</h1>"),
+    ];
     check_cases(
         &headings
             .iter()
-            .map(|html| Case {
-                id: html,
+            .map(|(id, html)| Case {
+                id,
                 html,
                 htmd_options: Options {
                     heading_style: HeadingStyle::Setex,
@@ -2490,52 +2443,55 @@ fn atx_heading_of_a_hash_run_from_a_handler() {
 fn round_trip_in_an_inline_context() {
     let preserved = [
         (
-            "script_without_line_ending",
+            "inline_context_script_without_line_ending",
             "<h1>x<script>a*b*c</script>y</h1>",
         ),
         (
-            "style_without_line_ending",
+            "inline_context_style_without_line_ending",
             "<h1>x<style>a*b*c</style>y</h1>",
         ),
         (
-            "script_holding_markdown_link",
+            "inline_context_script_holding_markdown_link",
             "<h1>x<script>[a](b)</script>y</h1>",
         ),
-        ("div_without_line_ending", "<h1>x<div>a*b*c</div>y</h1>"),
+        (
+            "inline_context_div_without_line_ending",
+            "<h1>x<div>a*b*c</div>y</h1>",
+        ),
     ];
     let losses = [
         (
-            "script_line_ending",
+            "inline_context_script_line_ending",
             "<h1>x<script>a*b\nc</script>y</h1>",
             "<h1>x<script>a*b c</script>y</h1>\n",
         ),
         (
-            "style_line_ending",
+            "inline_context_style_line_ending",
             "<h1>x<style>a*b\nc</style>y</h1>",
             "<h1>x<style>a*b c</style>y</h1>\n",
         ),
         (
-            "textarea_line_ending",
+            "inline_context_textarea_line_ending",
             "<h1>x<textarea>a*b\nc</textarea>y</h1>",
             "<h1>x<textarea>a*b c</textarea>y</h1>\n",
         ),
         (
-            "pre_line_ending",
+            "inline_context_pre_line_ending",
             "<h1>x<pre>a*b\nc</pre>y</h1>",
             "<h1>x<pre>a*b c</pre>y</h1>\n",
         ),
         (
-            "div_line_ending",
+            "inline_context_div_line_ending",
             "<h1>x<div>a*b\nc</div>y</h1>",
             "<h1>x<div>a*b c</div>y</h1>\n",
         ),
         (
-            "del_line_ending",
+            "inline_context_del_line_ending",
             "<h1>x<del>a*b\nc</del>y</h1>",
             "<h1>x<del>a*b c</del>y</h1>\n",
         ),
         (
-            "comment_line_ending",
+            "inline_context_comment_line_ending",
             "<h1>x<!--a\nb-->y</h1>",
             "<h1>x<!--a b-->y</h1>\n",
         ),

@@ -347,7 +347,14 @@ a blank `>` line, since a truly blank line would end the blockquote instead.
 
 ### Lists
 
-**Important**: This section is under development. Ignore it.
+**Important**: The list translation algorithm below is under development. The
+round-trip limitations in this paragraph are current behavior, not that
+algorithm: an ordered list whose `start` is zero or negative is written with
+`1` as its first CommonMark marker. When two such lists are separated by a
+blank line, pulldown-cmark reads their Markdown as one loose list, so the
+second list's numbering continues instead of restarting. This changes the
+HTML structure and makes a second Faithful conversion write different
+Markdown. The corresponding test records this loss and instability explicitly.
 
 | Description                          | HTML in                                    | Faithful expected     |
 | ------------------------------------ | ------------------------------------------ | --------------------- |
@@ -562,6 +569,19 @@ Emit an autolink when:
   characters. (The `&` character in an autolink becomes `&amp;`, hence its
   inclusion in characters to avoid.)
 
+A root `<a>` translated as a CommonMark link or autolink is rendered inside a
+`<p>`. The paragraph changes the document structure on a round trip; this is
+an expected limitation of writing a root inline as CommonMark link syntax.
+
+On the HTML round trip, pulldown-cmark percent-encodes some characters in link
+destinations, including spaces, tabs, line endings, backslashes, and angle
+brackets. For example, a destination containing a space can render with `%20`
+in `href`. The changed attribute value is a loss under source fidelity. A
+second Faithful conversion then spells the encoded destination rather than the
+original character, so the Markdown can be unstable. Tests of this limitation
+specify the exact second Markdown, and cases that claim an HTML difference also
+specify the exact rendered HTML.
+
 Escaping rules:
 
 * If a `!` immediately precedes a link, it must be escaped, to prevent links
@@ -619,6 +639,11 @@ covered in section TODO.
 Per the [spec](https://spec.commonmark.org/0.31.2/#images), images follow the
 same rules as links. For simplicity, images are translated like inline links,
 even with `LinkStyle::Referenced`. In addition:
+
+The link destination round-trip limitation above also applies to an image's
+`src`: pulldown-cmark may percent-encode its destination, and a second Faithful
+conversion then uses that encoded value. A root image rendered from CommonMark
+also gains a paragraph wrapper.
 
 * The image description follows link text rules. However, while link text can
   contain HTML markup, the `<img>` tag's `alt` attribute is not interpreted as

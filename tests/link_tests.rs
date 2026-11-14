@@ -1,11 +1,10 @@
 use htmd::{
     HtmlToMarkdown,
-    options::{LinkStyle, Options, TranslationMode},
+    options::{LinkStyle, Options},
 };
 mod common;
 use common::{
-    Case, DifferenceKind, HtmlExpectation, StabilityExpectation, check_cases, convert_faithful,
-    convert_faithful_options, convert_pure, render_markdown,
+    Case, DifferenceKind, HtmlExpectation, StabilityExpectation, check_cases, convert_pure,
 };
 use pulldown_cmark::Options as CommonMarkOptions;
 
@@ -30,10 +29,6 @@ fn links() {
         <a href="https://example.com">Link 1</a>
         <a href="https://example.com" title="Hello">Link 2</a>
         "#;
-    assert_eq!(
-        "[Link 1](https://example.com) [Link 2](https://example.com \"Hello\")",
-        convert_faithful(html).unwrap(),
-    );
     check_cases(&[Case {
         id: "links_case_1",
         html,
@@ -47,11 +42,6 @@ fn links() {
 /// [Links](../translation_approach.md#links).
 #[test]
 fn links_with_spaces_in_destination_and_title() {
-    assert_eq!(
-        r#"[Link](<https://example.com/hello world> "Hello")"#,
-        convert_faithful(r#"<a href="https://example.com/hello world" title="Hello">Link</a>"#)
-            .unwrap(),
-    );
     check_cases(&[Case {
         id: "links_with_spaces_in_destination_and_title_case_2",
         html: r#"<a href="https://example.com/hello world" title="Hello">Link</a>"#,
@@ -88,28 +78,6 @@ fn links_with_spaces_around_text() {
 /// [Links](../translation_approach.md#links).
 #[test]
 fn links_inlined_prefer_autolinks() {
-    let converter = HtmlToMarkdown::builder()
-        .options(Options {
-            translation_mode: TranslationMode::Faithful,
-            link_style: LinkStyle::InlinedPreferAutolinks,
-            ..Default::default()
-        })
-        .build();
-
-    let html = r#"<a href="https://example.com">https://example.com</a>"#;
-    assert_eq!("<https://example.com>", converter.convert(html).unwrap());
-
-    let html = r#"<a href="https://example.com">Link</a>"#;
-    assert_eq!(
-        "[Link](https://example.com)",
-        converter.convert(html).unwrap()
-    );
-
-    let html = r#"<a href="https://example.com" title="https://example.com">Link</a>"#;
-    assert_eq!(
-        r#"[Link](https://example.com "https://example.com")"#,
-        converter.convert(html).unwrap()
-    );
     let options = Options {
         link_style: LinkStyle::InlinedPreferAutolinks,
         ..Case::default().htmd_options
@@ -131,7 +99,7 @@ fn links_inlined_prefer_autolinks() {
         },
         Case {
             id: "link_title_disables_autolink_preference",
-            html,
+            html: r#"<a href="https://example.com" title="https://example.com">Link</a>"#,
             htmd_options: options,
             expected_markdown: Some(r#"[Link](https://example.com "https://example.com")"#),
             ..Case::default()
@@ -285,14 +253,6 @@ fn nested_convert_with_referenced_links() {
 fn discard_links_in_table_falling_back_to_raw_html() {
     use indoc::indoc;
 
-    let converter = HtmlToMarkdown::builder()
-        .options(Options {
-            link_style: LinkStyle::Referenced,
-            translation_mode: TranslationMode::Faithful,
-            ..Default::default()
-        })
-        .build();
-
     let html = indoc!(
         r#"
         <table>
@@ -303,24 +263,6 @@ fn discard_links_in_table_falling_back_to_raw_html() {
         </table>
         <p><a href="https://kept.com">Kept</a></p>
         "#
-    );
-    let md = converter.convert(html).unwrap();
-
-    assert_eq!(
-        indoc!(
-            r#"
-            <table>
-                <tbody><tr>
-                    <td><a href="https://discarded.com">Discarded</a></td>
-                    <td><custom-unsupported>test</custom-unsupported></td>
-                </tr>
-            </tbody></table>
-
-            [Kept][1]
-
-            [1]: https://kept.com"#
-        ),
-        md
     );
     check_cases(&[Case {
         id: "discard_links_in_table_falling_back_to_raw_html",
@@ -580,10 +522,6 @@ fn a_bracketed_link_destination_escapes_its_angle_brackets() {
 #[test]
 fn an_autolink_spells_its_destination_without_escapes() {
     let mut faithful_cases = Vec::new();
-    assert_eq!(
-        r"<https://example.com/a\b>",
-        convert_autolinks(r#"<a href="https://example.com/a\b">https://example.com/a\b</a>"#)
-    );
     faithful_cases.extend([Case {
         id: "an_autolink_spells_its_destination_without_escapes_case_1_autolinks",
         html: r#"<a href="https://example.com/a\b">https://example.com/a\b</a>"#,
@@ -600,29 +538,23 @@ fn an_autolink_spells_its_destination_without_escapes() {
         ..Case::default()
     }]);
     // Text-node escapes don't prevent an autolink.
-    assert_eq!(
-        "<https://example.com/a_b*c>",
-        convert_autolinks(r#"<a href="https://example.com/a_b*c">https://example.com/a_b*c</a>"#)
-    );
     faithful_cases.extend([Case {
         id: "an_autolink_spells_its_destination_without_escapes_case_2_autolinks",
         html: r#"<a href="https://example.com/a_b*c">https://example.com/a_b*c</a>"#,
         expected_markdown: Some("<https://example.com/a_b*c>"),
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html:
+                "<p><a href=\"https://example.com/a_b*c\">https://example.com/a_b*c</a></p>\n",
+            reason: "the root link gains a paragraph when CommonMark renders it",
+            reference: "translation_approach.md#links",
+        }),
         htmd_options: Options {
             link_style: LinkStyle::InlinedPreferAutolinks,
             ..Case::default().htmd_options
         },
         ..Case::default()
     }]);
-    assert_eq!(
-        "<p><a href=\"https://example.com/a_b*c\">https://example.com/a_b*c</a></p>\n",
-        render_markdown(
-            &convert_autolinks(
-                r#"<a href="https://example.com/a_b*c">https://example.com/a_b*c</a>"#
-            ),
-            CommonMarkOptions::empty()
-        )
-    );
     check_cases(&faithful_cases);
 }
 
@@ -633,10 +565,6 @@ fn an_autolink_spells_its_destination_without_escapes() {
 fn an_autolink_needs_every_condition() {
     let mut faithful_cases = Vec::new();
     // No autolink can hold a `<`.
-    assert_eq!(
-        r"[https://example.com/a\<b](https://example.com/a<b)",
-        convert_autolinks(r#"<a href="https://example.com/a<b">https://example.com/a&lt;b</a>"#)
-    );
     faithful_cases.extend([Case {
         id: "an_autolink_needs_every_condition_case_3_autolinks",
         html: r#"<a href="https://example.com/a<b">https://example.com/a&lt;b</a>"#,
@@ -653,12 +581,6 @@ fn an_autolink_needs_every_condition() {
         ..Case::default()
     }]);
     // An autolink would write a `&` as `&amp;`.
-    assert_eq!(
-        r"[https://example.com/?a\&b](https://example.com/?a\&b)",
-        convert_autolinks(
-            r#"<a href="https://example.com/?a&amp;b">https://example.com/?a&amp;b</a>"#
-        )
-    );
     faithful_cases.extend([Case {
         id: "an_autolink_needs_every_condition_case_4_autolinks",
         html: r#"<a href="https://example.com/?a&amp;b">https://example.com/?a&amp;b</a>"#,
@@ -670,10 +592,6 @@ fn an_autolink_needs_every_condition() {
         ..Case::default()
     }]);
     // An autolink can't hold a title.
-    assert_eq!(
-        r#"[https://example.com](https://example.com "t")"#,
-        convert_autolinks(r#"<a href="https://example.com" title="t">https://example.com</a>"#)
-    );
     faithful_cases.extend([Case {
         id: "an_autolink_needs_every_condition_case_5_autolinks",
         html: r#"<a href="https://example.com" title="t">https://example.com</a>"#,
@@ -685,10 +603,6 @@ fn an_autolink_needs_every_condition() {
         ..Case::default()
     }]);
     // The content must be a single text node.
-    assert_eq!(
-        "[*https://example.com*](https://example.com)",
-        convert_autolinks(r#"<a href="https://example.com"><em>https://example.com</em></a>"#)
-    );
     faithful_cases.extend([Case {
         id: "an_autolink_needs_every_condition_case_6_autolinks",
         html: r#"<a href="https://example.com"><em>https://example.com</em></a>"#,
@@ -768,13 +682,19 @@ fn a_bang_before_a_link_is_escaped() {
         }),
         ..Case::default()
     }]);
-    assert_eq!(
-        r"Hi\![t][1]",
-        convert_referenced(r#"<p>Hi!<a href="x">t</a></p>"#)
-            .lines()
-            .next()
-            .unwrap()
-    );
+    faithful_cases.push(Case {
+        id: "a_bang_before_a_link_is_escaped_referenced",
+        html: r#"<p>Hi!<a href="x">t</a></p>"#,
+        htmd_options: Options {
+            link_style: LinkStyle::Referenced,
+            ..Case::default().htmd_options
+        },
+        expected_markdown: Some("Hi\\![t][1]\n\n[1]: x"),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "\n",
+        }),
+        ..Case::default()
+    });
     // The link needn't be the `!`'s sibling.
     assert_eq!(
         r"Hi\![t](x)",
@@ -864,7 +784,6 @@ fn a_link_escapes_its_ampersands() {
 #[test]
 fn link_text_escapes_its_math_delimiters() {
     let mut faithful_cases = Vec::new();
-    let math = CommonMarkOptions::ENABLE_MATH;
     let html = r#"<p><a href="u">$a](v)$</a></p>"#;
 
     faithful_cases.extend([Case {
@@ -872,12 +791,11 @@ fn link_text_escapes_its_math_delimiters() {
         html,
         expected_markdown: Some(r"[\$a\](v)\$](u)"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "\n",
+        }),
         ..Case::default()
     }]);
-    assert_eq!(
-        format!("{html}\n"),
-        render_markdown(&convert_faithful(html).unwrap(), math)
-    );
     let html = r#"<p><a href="u"><span class="math math-inline">a](v)</span></a></p>"#;
 
     faithful_cases.extend([Case {
@@ -885,12 +803,11 @@ fn link_text_escapes_its_math_delimiters() {
         html,
         expected_markdown: Some("[$a](v)$](u)"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "\n",
+        }),
         ..Case::default()
     }]);
-    assert_eq!(
-        format!("{html}\n"),
-        render_markdown(&convert_faithful(html).unwrap(), math)
-    );
     check_cases(&faithful_cases);
 }
 
@@ -1081,13 +998,19 @@ fn a_link_keeps_the_whitespace_around_its_text() {
         }),
         ..Case::default()
     }]);
-    assert_eq!(
-        "Hi\\![ t][1]",
-        convert_referenced(r#"<p>Hi!<a href="x"> t</a></p>"#)
-            .lines()
-            .next()
-            .unwrap()
-    );
+    faithful_cases.push(Case {
+        id: "a_link_keeps_the_whitespace_around_its_text_referenced",
+        html: r#"<p>Hi!<a href="x"> t</a></p>"#,
+        htmd_options: Options {
+            link_style: LinkStyle::Referenced,
+            ..Case::default().htmd_options
+        },
+        expected_markdown: Some("Hi\\![ t][1]\n\n[1]: x"),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "\n",
+        }),
+        ..Case::default()
+    });
     // A space on each side of the `<a>` tag collapses to one.
 
     faithful_cases.extend([Case {
@@ -1217,30 +1140,4 @@ fn a_link_escapes_an_email_autolink() {
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
-}
-
-/// `convert_faithful` with [`LinkStyle::InlinedPreferAutolinks`], the style
-/// whose link text and destination decide between the two spellings.
-fn convert_autolinks(html: &str) -> String {
-    convert_faithful_options(
-        html,
-        Options {
-            link_style: LinkStyle::InlinedPreferAutolinks,
-            ..Default::default()
-        },
-    )
-    .unwrap()
-}
-
-/// `convert_faithful` with [`LinkStyle::Referenced`], the style which writes
-/// the destination in a link reference definition rather than inline.
-fn convert_referenced(html: &str) -> String {
-    convert_faithful_options(
-        html,
-        Options {
-            link_style: LinkStyle::Referenced,
-            ..Default::default()
-        },
-    )
-    .unwrap()
 }

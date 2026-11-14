@@ -1,5 +1,5 @@
 mod common;
-use common::{Case, HtmlExpectation, check_cases, convert_faithful};
+use common::{Case, HtmlExpectation, check_cases};
 use indoc::indoc;
 use pretty_assertions::assert_eq;
 use pulldown_cmark::Options as CommonMarkOptions;
@@ -48,9 +48,6 @@ fn simple_table() {
 "#
     .trim();
 
-    let markdown = convert_faithful(html).unwrap();
-    let result = markdown.trim();
-    assert_eq!(expected, result);
     check_cases(&[Case {
         id: "simple_table_original",
         html,
@@ -142,9 +139,6 @@ fn table_with_thead_tbody() {
 "#
     .trim();
 
-    let markdown = convert_faithful(html).unwrap();
-    let result = markdown.trim();
-    assert_eq!(expected, result);
     check_cases(&[Case {
         id: "table_with_thead_tbody_original",
         html,
@@ -215,9 +209,6 @@ fn table_with_caption() {
     // `<table>`, so faithful mode serializes the whole table.
     let expected = html.trim();
 
-    let markdown = convert_faithful(html).unwrap();
-    let result = markdown.trim();
-    assert_eq!(expected, result);
     check_cases(&[Case {
         id: "table_with_caption_original",
         html,
@@ -248,6 +239,9 @@ fn table_caption_is_commonmark_only_in_pure_mode() {
         id: "table_caption_is_commonmark_only_in_pure_mode_case_1",
         html,
         expected_markdown: Some(html),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
         ..Case::default()
     }]);
 }
@@ -267,6 +261,9 @@ fn a_table_with_no_header_row_is_written_as_html() {
         id: "a_table_with_no_header_row_is_written_as_html_case_2",
         html,
         expected_markdown: Some(html),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
         ..Case::default()
     }]);
 
@@ -278,6 +275,9 @@ fn a_table_with_no_header_row_is_written_as_html() {
         id: "a_table_with_no_header_row_is_written_as_html_case_3",
         html: block_cell,
         expected_markdown: Some(block_cell),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -300,6 +300,9 @@ fn pure_mode_writes_an_empty_header_row_for_a_headerless_table() {
         id: "pure_mode_writes_an_empty_header_row_for_a_headerless_table_case_4",
         html,
         expected_markdown: Some(html),
+        expectation: Some(HtmlExpectation::Preserved {
+            renderer_suffix: "",
+        }),
         ..Case::default()
     }]);
 }
@@ -373,29 +376,43 @@ fn a_header_cell_in_a_body_row_is_written_as_html() {
 /// reach the Markdown table as nothing at all.
 #[test]
 fn table_content_a_markdown_row_cannot_hold_is_written_as_html() {
-    for html in [
-        concat!(
-            "<table><colgroup><col></colgroup><thead><tr><th>A</th></tr></thead>",
-            "<tbody><tr><td>c</td></tr></tbody></table>"
+    let inputs = [
+        (
+            "table_content_with_colgroup",
+            concat!(
+                "<table><colgroup><col></colgroup><thead><tr><th>A</th></tr></thead>",
+                "<tbody><tr><td>c</td></tr></tbody></table>"
+            ),
         ),
-        concat!(
-            "<table><thead><tr><th>A</th></tr></thead>",
-            "<tbody><script>x</script><tr><td>c</td></tr></tbody></table>"
+        (
+            "table_content_with_script",
+            concat!(
+                "<table><thead><tr><th>A</th></tr></thead>",
+                "<tbody><script>x</script><tr><td>c</td></tr></tbody></table>"
+            ),
         ),
-        concat!(
-            "<table><thead><tr><th>A</th></tr></thead>",
-            "<tbody><tr><td>c</td></tr><tr></tr></tbody></table>"
+        (
+            "table_content_with_empty_row",
+            concat!(
+                "<table><thead><tr><th>A</th></tr></thead>",
+                "<tbody><tr><td>c</td></tr><tr></tr></tbody></table>"
+            ),
         ),
-    ] {
-        check_cases(&[Case {
-            id: "table_content_a_markdown_row_cannot_hold_is_written_as_html_html_fallback_1",
+    ];
+    let cases = inputs
+        .iter()
+        .map(|(id, html)| Case {
+            id,
             html,
             expected_markdown: Some(html),
             expectation: Some(HtmlExpectation::Preserved {
                 renderer_suffix: "",
             }),
             ..Case::default()
-        }]);
+        })
+        .collect::<Vec<_>>();
+    check_cases(&cases);
+    for (_, html) in inputs {
         assert_eq!(
             "| A |\n| - |\n| c |",
             htmd::HtmlToMarkdown::new().convert(html).unwrap()
@@ -511,25 +528,36 @@ fn a_second_thead_is_written_as_html() {
 /// the reordering.
 #[test]
 fn a_thead_after_a_body_row_is_written_as_html() {
-    for html in [
-        concat!(
-            "<table><tbody><tr><td>c</td></tr></tbody>",
-            "<thead><tr><th>B</th></tr></thead></table>"
+    let inputs = [
+        (
+            "thead_after_body_row",
+            concat!(
+                "<table><tbody><tr><td>c</td></tr></tbody>",
+                "<thead><tr><th>B</th></tr></thead></table>"
+            ),
         ),
-        concat!(
-            "<table><tbody><tr><th>A</th></tr><tr><td>c</td></tr></tbody>",
-            "<thead><tr><th>B</th></tr></thead></table>"
+        (
+            "thead_after_tbody_header_row",
+            concat!(
+                "<table><tbody><tr><th>A</th></tr><tr><td>c</td></tr></tbody>",
+                "<thead><tr><th>B</th></tr></thead></table>"
+            ),
         ),
-    ] {
-        check_cases(&[Case {
-            id: "a_thead_after_a_body_row_is_written_as_html_html_fallback_1",
+    ];
+    let cases = inputs
+        .iter()
+        .map(|(id, html)| Case {
+            id,
             html,
             expected_markdown: Some(html),
             expectation: Some(HtmlExpectation::Preserved {
                 renderer_suffix: "",
             }),
             ..Case::default()
-        }]);
+        })
+        .collect::<Vec<_>>();
+    check_cases(&cases);
+    for (_, html) in inputs {
         assert_eq!(
             "| B |\n| - |\n| c |",
             htmd::HtmlToMarkdown::new().convert(html).unwrap()
@@ -661,29 +689,43 @@ fn a_row_wider_or_narrower_than_the_header_is_written_as_html() {
 /// foster-parents it out of the table, ahead of the table's own output.
 #[test]
 fn a_comment_in_a_table_is_written_as_html() {
-    for html in [
-        concat!(
-            "<table><!-- c --><thead><tr><th>A</th></tr></thead>",
-            "<tbody><tr><td>c</td></tr></tbody></table>"
+    let inputs = [
+        (
+            "comment_before_thead",
+            concat!(
+                "<table><!-- c --><thead><tr><th>A</th></tr></thead>",
+                "<tbody><tr><td>c</td></tr></tbody></table>"
+            ),
         ),
-        concat!(
-            "<table><thead><tr><th>A</th></tr></thead>",
-            "<tbody><!-- c --><tr><td>c</td></tr></tbody></table>"
+        (
+            "comment_before_body_row",
+            concat!(
+                "<table><thead><tr><th>A</th></tr></thead>",
+                "<tbody><!-- c --><tr><td>c</td></tr></tbody></table>"
+            ),
         ),
-        concat!(
-            "<table><thead><tr><th>A</th></tr></thead>",
-            "<tbody><tr><!-- c --><td>c</td></tr></tbody></table>"
+        (
+            "comment_inside_body_row",
+            concat!(
+                "<table><thead><tr><th>A</th></tr></thead>",
+                "<tbody><tr><!-- c --><td>c</td></tr></tbody></table>"
+            ),
         ),
-    ] {
-        check_cases(&[Case {
-            id: "a_comment_in_a_table_is_written_as_html_html_fallback_1",
+    ];
+    let cases = inputs
+        .iter()
+        .map(|(id, html)| Case {
+            id,
             html,
             expected_markdown: Some(html),
             expectation: Some(HtmlExpectation::Preserved {
                 renderer_suffix: "",
             }),
             ..Case::default()
-        }]);
+        })
+        .collect::<Vec<_>>();
+    check_cases(&cases);
+    for (_, html) in inputs {
         assert_eq!(
             "| A |\n| - |\n| c |",
             htmd::HtmlToMarkdown::new().convert(html).unwrap()
@@ -761,48 +803,47 @@ fn a_pipe_in_an_open_tag_is_encoded() {
 #[test]
 fn a_comment_holding_a_pipe_is_written_as_html() {
     // Pure mode drops every comment, so none of these reaches a row.
-    check_cases(&[Case {
-        id: "a_comment_holding_a_pipe_is_written_as_html_html_fallback_1",
-        html: concat!(
-            "<table><tbody><tr><th>A</th></tr>",
-            "<tr><td><!-- a|b --></td></tr></tbody></table>"
-        ),
-        expected_markdown: Some(concat!(
-            "<table><tbody><tr><th>A</th></tr>",
-            "<tr><td><!-- a|b --></td></tr></tbody></table>"
-        )),
-        expectation: Some(HtmlExpectation::Preserved {
-            renderer_suffix: "",
-        }),
-        ..Case::default()
-    }]);
-    assert_eq!(
-        "| A |\n| - |\n|   |",
-        htmd::HtmlToMarkdown::new()
-            .convert(concat!(
+    let inputs = [
+        (
+            "comment_with_pipe_in_body_cell",
+            concat!(
                 "<table><tbody><tr><th>A</th></tr>",
                 "<tr><td><!-- a|b --></td></tr></tbody></table>"
-            ))
-            .unwrap()
-    );
-    for html in [
-        concat!(
-            "<table><tbody><tr><th><!-- a|b --></th></tr>",
-            "<tr><td>c</td></tr></tbody></table>"
+            ),
         ),
-        concat!(
-            "<table><tbody><tr><th>A</th></tr><tr><td>",
-            "<table><tbody><tr><td><!-- a|b --></td></tr></tbody></table>",
-            "</td></tr></tbody></table>"
+        (
+            "comment_with_pipe_in_header_cell",
+            concat!(
+                "<table><tbody><tr><th><!-- a|b --></th></tr>",
+                "<tr><td>c</td></tr></tbody></table>"
+            ),
         ),
-    ] {
-        check_cases(&[Case {
-            id: "a_comment_holding_a_pipe_is_written_as_html_case_9",
+        (
+            "comment_with_pipe_in_nested_table",
+            concat!(
+                "<table><tbody><tr><th>A</th></tr><tr><td>",
+                "<table><tbody><tr><td><!-- a|b --></td></tr></tbody></table>",
+                "</td></tr></tbody></table>"
+            ),
+        ),
+    ];
+    let cases = inputs
+        .iter()
+        .map(|(id, html)| Case {
+            id,
             html,
             expected_markdown: Some(html),
+            expectation: Some(HtmlExpectation::Preserved {
+                renderer_suffix: "",
+            }),
             ..Case::default()
-        }]);
-    }
+        })
+        .collect::<Vec<_>>();
+    check_cases(&cases);
+    assert_eq!(
+        "| A |\n| - |\n|   |",
+        htmd::HtmlToMarkdown::new().convert(inputs[0].1).unwrap()
+    );
 
     // A comment holding no `|` still translates, as
     // `a_comment_in_a_table_is_written_as_html` shows for one outside a
@@ -969,9 +1010,6 @@ fn table_with_inlines() {
 "#
     .trim();
 
-    let markdown = convert_faithful(html).unwrap();
-    let result = markdown.trim();
-    assert_eq!(expected, result);
     check_cases(&[Case {
         id: "table_with_inlines_original",
         html,
@@ -987,34 +1025,6 @@ fn table_with_inlines() {
 /// the "Translating HTML nodes" section of `translation_approach.md`.
 #[test]
 fn table_block_cells() {
-    assert_eq!(
-        indoc!(
-            r#"
-                | a | <p>b</p> |
-                | - | -------- |
-                | c | d        |"#
-        ),
-        // This has a block (a paragraph) in the table headings.
-        convert_faithful(indoc!(
-            r#"
-                <table>
-                    <thead>
-                        <tr>
-                            <th>a</th>
-                            <th><p>b</p></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>c</td>
-                            <td>d</td>
-                        </tr>
-                    </tbody>
-                </table>
-                "#
-        ))
-        .unwrap()
-    );
     check_cases(&[Case {
         id: "table_block_cells_case_13",
         html: indoc!(

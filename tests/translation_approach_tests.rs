@@ -10,7 +10,7 @@ use htmd::options::{HeadingStyle, Options};
 use pretty_assertions::assert_eq;
 
 mod common;
-use common::{Case, HtmlExpectation, StabilityExpectation, check_cases, convert_faithful};
+use common::{Case, HtmlExpectation, StabilityExpectation, check_cases};
 
 /// Approved second-trip results for block children inside inline elements.
 /// [Translating HTML nodes](../translation_approach.md#translating-html-nodes).
@@ -430,14 +430,25 @@ fn blocks_inside_inlines() {
     // flank, so the "Emphasis and strong emphasis" approach writes that
     // emphasis as HTML.
     let inlines = [
-        (r#"<a href="u">{}</a>"#, "[{}](u)", "[{}](u)"),
-        ("<em>{}</em>", "*{}*", "<em>{}</em>"),
-        ("<i>{}</i>", "*{}*", "<i>{}</i>"),
-        ("<strong>{}</strong>", "**{}**", "<strong>{}</strong>"),
-        ("<b>{}</b>", "**{}**", "<b>{}</b>"),
-        ("<code>{}</code>", "<code>{}</code>", "<code>{}</code>"),
-        ("<del>{}</del>", "<del>{}</del>", "<del>{}</del>"),
+        ("link", r#"<a href="u">{}</a>"#, "[{}](u)", "[{}](u)"),
+        ("em", "<em>{}</em>", "*{}*", "<em>{}</em>"),
+        ("i", "<i>{}</i>", "*{}*", "<i>{}</i>"),
         (
+            "strong",
+            "<strong>{}</strong>",
+            "**{}**",
+            "<strong>{}</strong>",
+        ),
+        ("b", "<b>{}</b>", "**{}**", "<b>{}</b>"),
+        (
+            "code",
+            "<code>{}</code>",
+            "<code>{}</code>",
+            "<code>{}</code>",
+        ),
+        ("del", "<del>{}</del>", "<del>{}</del>", "<del>{}</del>"),
+        (
+            "span",
             r#"<span class="s">{}</span>"#,
             r#"<span class="s">{}</span>"#,
             r#"<span class="s">{}</span>"#,
@@ -446,33 +457,40 @@ fn blocks_inside_inlines() {
     // Each is spelled as it serializes, so the table carries the `<tbody>` the
     // HTML parser would otherwise insert.
     let blocks = [
-        "<p>b</p>",
-        "<h2>b</h2>",
-        "<ul><li>b</li></ul>",
-        "<ol><li>b</li></ol>",
-        "<blockquote>b</blockquote>",
-        "<pre>b</pre>",
-        "<hr>",
-        "<table><tbody><tr><td>b</td></tr></tbody></table>",
-        "<div>b</div>",
+        ("paragraph", "<p>b</p>"),
+        ("heading", "<h2>b</h2>"),
+        ("unordered_list", "<ul><li>b</li></ul>"),
+        ("ordered_list", "<ol><li>b</li></ol>"),
+        ("blockquote", "<blockquote>b</blockquote>"),
+        ("pre", "<pre>b</pre>"),
+        ("thematic_break", "<hr>"),
+        ("table", "<table><tbody><tr><td>b</td></tr></tbody></table>"),
+        ("div", "<div>b</div>"),
     ];
 
     let mut inputs = Vec::new();
-    for (inline, between_text, alone) in inlines {
-        for block in blocks {
+    for (inline_name, inline, between_text, alone) in inlines {
+        for (block_name, block) in blocks {
             let block_between_text = format!("x{block}y");
-            let contents = [(block_between_text.as_str(), between_text), (block, alone)];
-            for (content, markdown) in contents {
+            let contents = [
+                ("between_text", block_between_text.as_str(), between_text),
+                ("alone", block, alone),
+            ];
+            for (placement, content, markdown) in contents {
                 let html = format!("a{}c", inline.replace("{}", content));
                 let expected = format!("a{}c", markdown.replace("{}", content));
-                inputs.push((html, expected));
+                inputs.push((
+                    format!("{inline_name}_with_{block_name}_{placement}"),
+                    html,
+                    expected,
+                ));
             }
         }
     }
     let cases = inputs
         .iter()
-        .map(|(html, expected)| Case {
-            id: html,
+        .map(|(id, html, expected)| Case {
+            id,
             html,
             expected_markdown: Some(expected),
             stability: INLINE_BLOCK_INSTABILITIES
@@ -1219,14 +1237,14 @@ fn blockquotes() {
 #[test]
 fn tables() {
     let rows = [
-        ("<br><em>b</em>", "<br>*b*"),
-        ("<em>a</em><br>", "*a*<br>"),
-        ("<br>", "<br>"),
-        ("<br><br><br>", "<br><br><br>"),
+        ("break_before_emphasis", "<br><em>b</em>", "<br>*b*"),
+        ("break_after_emphasis", "<em>a</em><br>", "*a*<br>"),
+        ("single_break", "<br>", "<br>"),
+        ("three_breaks", "<br><br><br>", "<br><br><br>"),
     ];
     let inputs = rows
         .iter()
-        .map(|(cell, written)| {
+        .map(|(id, cell, written)| {
             let html = format!(
                 "<table><thead><tr><th>h</th></tr></thead>\
                  <tbody><tr><td>{cell}</td></tr></tbody></table>"
@@ -1236,13 +1254,13 @@ fn tables() {
                 " ".repeat(written.len().saturating_sub(1)),
                 "-".repeat(written.len())
             );
-            (html, markdown)
+            (id, html, markdown)
         })
         .collect::<Vec<_>>();
     let cases = inputs
         .iter()
-        .map(|(html, markdown)| Case {
-            id: html,
+        .map(|(id, html, markdown)| Case {
+            id,
             html,
             expected_markdown: Some(markdown),
             markdown_options: pulldown_cmark::Options::ENABLE_TABLES,
@@ -1261,38 +1279,61 @@ fn tables() {
 /// `tr_handler` and `table_section_handler`, so it repeats their checks.
 #[test]
 fn table_children_which_only_html_can_express() {
-    for html in [
+    let inputs = [
         // The cell carrying an attribute, the case the rule names.
-        "<table><thead><tr><th scope=\"col\">h</th></tr></thead>\
-         <tbody><tr><td>a</td></tr></tbody></table>",
+        (
+            "table_header_cell_with_scope",
+            "<table><thead><tr><th scope=\"col\">h</th></tr></thead>\
+             <tbody><tr><td>a</td></tr></tbody></table>",
+        ),
         // A body row, a header row, a `<thead>` and a `<tbody>` carrying one.
-        "<table><thead><tr><th>h</th></tr></thead>\
-         <tbody><tr id=\"r\"><td>a</td></tr></tbody></table>",
-        "<table><thead><tr id=\"r\"><th>h</th></tr></thead>\
-         <tbody><tr><td>a</td></tr></tbody></table>",
-        "<table><thead id=\"t\"><tr><th>h</th></tr></thead>\
-         <tbody><tr><td>a</td></tr></tbody></table>",
-        "<table><thead><tr><th>h</th></tr></thead>\
-         <tbody id=\"b\"><tr><td>a</td></tr></tbody></table>",
+        (
+            "table_body_row_with_id",
+            "<table><thead><tr><th>h</th></tr></thead>\
+             <tbody><tr id=\"r\"><td>a</td></tr></tbody></table>",
+        ),
+        (
+            "table_header_row_with_id",
+            "<table><thead><tr id=\"r\"><th>h</th></tr></thead>\
+             <tbody><tr><td>a</td></tr></tbody></table>",
+        ),
+        (
+            "table_head_with_id",
+            "<table><thead id=\"t\"><tr><th>h</th></tr></thead>\
+             <tbody><tr><td>a</td></tr></tbody></table>",
+        ),
+        (
+            "table_body_with_id",
+            "<table><thead><tr><th>h</th></tr></thead>\
+             <tbody id=\"b\"><tr><td>a</td></tr></tbody></table>",
+        ),
         // A GFM table has one body, so a `<tfoot>`'s rows could only join it,
         // losing the footer.
-        "<table><thead><tr><th>h</th></tr></thead>\
-         <tbody><tr><td>a</td></tr></tbody>\
-         <tfoot><tr><td>f</td></tr></tfoot></table>",
+        (
+            "table_with_footer",
+            "<table><thead><tr><th>h</th></tr></thead>\
+             <tbody><tr><td>a</td></tr></tbody>\
+             <tfoot><tr><td>f</td></tr></tfoot></table>",
+        ),
         // A `<colgroup>` has no Markdown spelling at all.
-        "<table><colgroup><col span=\"2\"></colgroup>\
-         <thead><tr><th>h</th></tr></thead>\
-         <tbody><tr><td>a</td></tr></tbody></table>",
-    ] {
-        assert_eq!(html, convert_faithful(html).unwrap());
-        check_cases(&[Case {
-            id: html,
+        (
+            "table_with_column_group",
+            "<table><colgroup><col span=\"2\"></colgroup>\
+             <thead><tr><th>h</th></tr></thead>\
+             <tbody><tr><td>a</td></tr></tbody></table>",
+        ),
+    ];
+    let cases = inputs
+        .iter()
+        .map(|(id, html)| Case {
+            id,
             html,
             expected_markdown: Some(html),
             expectation: Some(HtmlExpectation::Preserved {
                 renderer_suffix: "",
             }),
             ..Case::default()
-        }]);
-    }
+        })
+        .collect::<Vec<_>>();
+    check_cases(&cases);
 }

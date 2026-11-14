@@ -1,9 +1,6 @@
 use htmd::options::Options;
 mod common;
-use common::{
-    Case, HtmlExpectation, StabilityExpectation, check_cases, convert_faithful,
-    convert_faithful_options,
-};
+use common::{Case, DifferenceKind, HtmlExpectation, StabilityExpectation, check_cases};
 
 /// [Lists](../translation_approach.md#lists) retain the items in renderer layout.
 #[test]
@@ -40,10 +37,6 @@ fn unordered_lists() {
             <li>Item 3</li>
         </ul>
         "#;
-    assert_eq!(
-        "*   Item 1\n*   Item 2\n*   Item 3",
-        convert_faithful(html).unwrap()
-    );
     check_cases(&[Case {
         id: "unordered_lists_original",
         html,
@@ -62,12 +55,6 @@ fn unordered_lists_custom_bullet_spacing() {
             <li>Item 3</li>
         </ul>
         "#;
-    let options = Options {
-        ul_bullet_spacing: 2,
-        ..Default::default()
-    };
-    let md = convert_faithful_options(html, options).unwrap();
-    assert_eq!("*  Item 1\n*  Item 2\n*  Item 3", md);
     check_cases(&[Case {
         id: "unordered_lists_custom_bullet_spacing",
         html,
@@ -90,10 +77,6 @@ fn ordered_lists() {
             <li>Item 3</li>
         </ol>
         "#;
-    assert_eq!(
-        "1.  Item 1\n2.  Item 2\n3.  Item 3",
-        convert_faithful(html).unwrap()
-    );
     check_cases(&[Case {
         id: "ordered_lists_original",
         html,
@@ -112,12 +95,6 @@ fn ordered_lists_custom_bullet_spacing() {
             <li>Item 3</li>
         </ol>
         "#;
-    let options = Options {
-        ol_number_spacing: 1,
-        ..Default::default()
-    };
-    let md = convert_faithful_options(html, options).unwrap();
-    assert_eq!("1. Item 1\n2. Item 2\n3. Item 3", md);
     check_cases(&[Case {
         id: "ordered_lists_custom_bullet_spacing",
         html,
@@ -145,15 +122,6 @@ fn ordered_lists_start_with_zero_or_negative() {
             <li>Item 3</li>
         </ol>
         "#;
-    let options = Options {
-        ol_number_spacing: 1,
-        ..Default::default()
-    };
-    let md = convert_faithful_options(html, options).unwrap();
-    assert_eq!(
-        "1. Item 1\n2. Item 2\n3. Item 3\n\n1. Item 1\n2. Item 2\n3. Item 3",
-        md
-    );
     check_cases(&[Case {
         id: "ordered_lists_start_with_zero_or_negative",
         html,
@@ -164,6 +132,19 @@ fn ordered_lists_start_with_zero_or_negative() {
         expected_markdown: Some(
             "1. Item 1\n2. Item 2\n3. Item 3\n\n1. Item 1\n2. Item 2\n3. Item 3",
         ),
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: concat!(
+                "<ol>\n<li>\n<p>Item 1</p>\n</li>\n",
+                "<li>\n<p>Item 2</p>\n</li>\n",
+                "<li>\n<p>Item 3</p>\n</li>\n",
+                "<li>\n<p>Item 1</p>\n</li>\n",
+                "<li>\n<p>Item 2</p>\n</li>\n",
+                "<li>\n<p>Item 3</p>\n</li>\n</ol>\n",
+            ),
+            reason: "both nonpositive starts become one, and the two lists merge into a loose list with item paragraphs",
+            reference: "translation_approach.md#lists",
+        }),
         stability: StabilityExpectation::DocumentedInstability {
             second_markdown: "1. Item 1\n\n2. Item 2\n\n3. Item 3\n\n4. Item 1\n\n5. Item 2\n\n6. Item 3",
             reason: "the blank line joins adjacent ordered lists into one loose list, losing the second start",
@@ -176,22 +157,8 @@ fn ordered_lists_start_with_zero_or_negative() {
 /// [Lists](../translation_approach.md#lists).
 #[test]
 fn list_spacing_outside_the_commonmark_range() {
-    let convert = |html, options| convert_faithful_options(html, options).unwrap();
-    let ul = |ul_bullet_spacing| Options {
-        ul_bullet_spacing,
-        ..Default::default()
-    };
-    let ol = |ol_number_spacing| Options {
-        ol_number_spacing,
-        ..Default::default()
-    };
     let ul_html = "<ul><li>Item 1</li><li>Item 2</li></ul>";
     let ol_html = "<ol><li>Item 1</li><li>Item 2</li></ol>";
-
-    assert_eq!("* Item 1\n* Item 2", convert(ul_html, ul(0)));
-    assert_eq!("*    Item 1\n*    Item 2", convert(ul_html, ul(9)));
-    assert_eq!("1. Item 1\n2. Item 2", convert(ol_html, ol(0)));
-    assert_eq!("1.    Item 1\n2.    Item 2", convert(ol_html, ol(9)));
 
     // A nested list is indented to its parent item's content column, so the
     // clamp keeps it a list: past four spaces, CommonMark reads that
@@ -199,14 +166,6 @@ fn list_spacing_outside_the_commonmark_range() {
     let nested_ul_html = "<ul><li>Outer<ul><li>Inner</li></ul></li></ul>";
     let nested_ol_html = "<ol><li>Outer<ol><li>Inner</li></ol></li></ol>";
 
-    assert_eq!(
-        "*    Outer\n     *    Inner",
-        convert(nested_ul_html, ul(9))
-    );
-    assert_eq!(
-        "1.    Outer\n      1.    Inner",
-        convert(nested_ol_html, ol(9))
-    );
     check_cases(&[
         Case {
             id: "ul_spacing_clamps_to_one",
@@ -279,11 +238,6 @@ fn ordered_list_alignment_across_a_digit_boundary() {
     // Here the padding the narrower markers need stays within the spacing
     // CommonMark allows, so every item's content keeps the same column.
     let html = format!(r#"<ol start="998">{}</ol>"#, "<li>Item</li>".repeat(5));
-    let md = convert_faithful(&html).unwrap();
-    assert_eq!(
-        "998.   Item\n999.   Item\n1000.  Item\n1001.  Item\n1002.  Item",
-        md
-    );
     faithful_cases.extend([Case {
         id: "ordered_list_alignment_across_a_digit_boundary_998",
         html: &html,
@@ -292,7 +246,6 @@ fn ordered_list_alignment_across_a_digit_boundary() {
     }]);
 
     let html = format!(r#"<ol start="9">{}</ol>"#, "<li>Item</li>".repeat(2));
-    assert_eq!("9.   Item\n10.  Item", convert_faithful(&html).unwrap());
     faithful_cases.extend([Case {
         id: "ordered_list_alignment_across_a_digit_boundary_9",
         html: &html,
@@ -306,10 +259,6 @@ fn ordered_list_alignment_across_a_digit_boundary() {
 #[test]
 fn ordered_list_alignment_yields_to_the_spacing_limit() {
     let html = format!("<ol>{}</ol>", "<li>Item</li>".repeat(1000));
-    let md = convert_faithful(&html).unwrap();
-    let mut lines = md.lines();
-    assert_eq!("1.    Item", lines.next().unwrap());
-    assert_eq!("1000.  Item", lines.last().unwrap());
     let expected_markdown = (1..=1000)
         .map(|number: usize| {
             let spaces = (6 - number.to_string().len()).clamp(1, 4);
