@@ -95,6 +95,12 @@ fn links_with_spaces() {
         id: "links_with_spaces_case_1",
         html,
         expected_markdown: Some("[Example](<https://example.com/Some Page.html>)"),
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"https://example.com/Some%20Page.html\">Example</a></p>\n",
+            reason: "the root link gains a paragraph and pulldown-cmark percent-encodes the destination space",
+            reference: "translation_approach.md#links",
+        }),
         stability: StabilityExpectation::DocumentedInstability {
             second_markdown: "[Example](https://example.com/Some%20Page.html)",
             reason: "pulldown-cmark percent-encodes the space in the link destination",
@@ -174,6 +180,12 @@ fn images_with_spaces_in_url() {
         id: "images_with_spaces_in_url_case_3",
         html,
         expected_markdown: Some("![](<https://example.com/Some Image.jpg>)"),
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><img src=\"https://example.com/Some%20Image.jpg\" alt=\"\" /></p>\n",
+            reason: "the root image gains a paragraph and pulldown-cmark percent-encodes the source space",
+            reference: "translation_approach.md#images",
+        }),
         stability: StabilityExpectation::DocumentedInstability {
             second_markdown: "![](https://example.com/Some%20Image.jpg)",
             reason: "pulldown-cmark percent-encodes the space in the image source",
@@ -215,6 +227,7 @@ fn headings() {
             "# Heading 1\n\n## Heading 2\n\n### Heading 3\n\n\
              #### Heading 4\n\n##### Heading 5\n\n###### Heading 6",
         ),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -361,6 +374,7 @@ fn paragraphs() {
         id: "paragraphs_case_14",
         html,
         expected_markdown: Some("The first.\n\nThe <span>second.</span>"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -438,6 +452,7 @@ fn faithful_mode_keeps_adjacent_emphasis_apart() {
         id: "faithful_mode_keeps_adjacent_emphasis_apart_case_19",
         html: "<p><em>a</em><em>b</em></p>",
         expected_markdown: Some("<em>a</em><em>b</em>"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -445,6 +460,7 @@ fn faithful_mode_keeps_adjacent_emphasis_apart() {
         id: "faithful_mode_keeps_adjacent_emphasis_apart_case_20",
         html: "<p><i>a</i><em>b</em></p>",
         expected_markdown: Some("<i>a</i><em>b</em>"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -452,6 +468,7 @@ fn faithful_mode_keeps_adjacent_emphasis_apart() {
         id: "faithful_mode_keeps_adjacent_emphasis_apart_case_21",
         html: "<p><b>a</b><strong>b</strong></p>",
         expected_markdown: Some("<b>a</b><strong>b</strong>"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -467,6 +484,7 @@ fn faithful_mode_keeps_adjacent_code_spans_apart() {
         id: "faithful_mode_keeps_adjacent_code_spans_apart_case_22",
         html: "<p><code>a</code><code>b</code></p>",
         expected_markdown: Some("<code>a</code><code>b</code>"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -481,6 +499,7 @@ fn faithful_mode_keeps_adjacent_untranslated_elements_apart() {
         id: "faithful_mode_keeps_adjacent_untranslated_elements_apart_case_23",
         html: "<p><sub>a</sub><sub>b</sub></p>",
         expected_markdown: Some("<sub>a</sub><sub>b</sub>"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -488,6 +507,7 @@ fn faithful_mode_keeps_adjacent_untranslated_elements_apart() {
         id: "faithful_mode_keeps_adjacent_untranslated_elements_apart_case_24",
         html: r#"<p><abbr title="t">a</abbr><abbr title="t">b</abbr></p>"#,
         expected_markdown: Some(r#"<abbr title="t">a</abbr><abbr title="t">b</abbr>"#),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -495,6 +515,7 @@ fn faithful_mode_keeps_adjacent_untranslated_elements_apart() {
         id: "faithful_mode_keeps_adjacent_untranslated_elements_apart_case_25",
         html: r#"<p><span class="x">a</span><span class="x">b</span></p>"#,
         expected_markdown: Some(r#"<span class="x">a</span><span class="x">b</span>"#),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -749,6 +770,7 @@ fn faithful_mode_inline() {
         expected_markdown: Some(
             r#"<img src="one.png" alt="yyy" title="zzz" scale="50%"> <em bar="">Testing</em> <strong foo="">Testing</strong> <a href="http://foo.com" bar="">link</a> <code class="not-a-language">code</code> <br foo="">"#,
         ),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -760,6 +782,7 @@ fn faithful_mode_hr() {
         id: "faithful_mode_hr_case_34",
         html: indoc!(r#"<hr bar>"#),
         expected_markdown: Some(r#"<hr bar="">"#),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -782,6 +805,7 @@ fn faithful_mode_blockquote() {
             &#10;    <blockquote>Nested</blockquote>
             </blockquote>"#,
         )),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -793,6 +817,7 @@ fn faithful_mode_h1() {
         id: "faithful_mode_h1_case_36",
         html: indoc!(r#"<h1 class="foo">Heading</h1>"#),
         expected_markdown: Some(r#"<h1 class="foo">Heading</h1>"#),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -808,6 +833,7 @@ fn heading_attributes() {
         id: "heading_attributes_case_37",
         html: r#"<h1 class="">a</h1>"#,
         expected_markdown: Some(r#"<h1 class="">a</h1>"#),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -815,6 +841,7 @@ fn heading_attributes() {
         id: "heading_attributes_case_38",
         html: "<h2 id>a</h2>",
         expected_markdown: Some(r#"<h2 id="">a</h2>"#),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     assert_eq!("# a", convert_pure(r#"<h1 class="x">a</h1>"#).unwrap());
@@ -852,6 +879,7 @@ fn faithful_mode_ol1() {
                 <li>Test 3</li>
             </ol>"#,
         )),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -871,6 +899,7 @@ fn faithful_mode_ol2() {
                 <li>Test</li>
             </ol>"#,
         )),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -882,6 +911,7 @@ fn faithful_mode_comment() {
         id: "faithful_mode_comment_case_42",
         html: indoc!(r#"<!-- Test -->"#),
         expected_markdown: Some(r#"<!-- Test -->"#),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -907,6 +937,7 @@ fn faithful_mode_html() {
                 Test 2
             </details>"#
         )),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -950,6 +981,7 @@ fn faithful_mode_table() {
         </tbody></table>"#,
         )),
         markdown_options: CommonMarkOptions::ENABLE_TABLES,
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -975,6 +1007,7 @@ fn faithful_mode_serializes_a_table_with_a_caption() {
         id: "faithful_mode_serializes_a_table_with_a_caption_case_44",
         html,
         expected_markdown: Some(expected),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     // The point of serializing the whole table: the `<caption>` comes back as
@@ -1044,6 +1077,7 @@ fn faithful_mode_nested_inline_html() {
         id: "faithful_mode_nested_inline_html_case_45",
         html: "<p>Nested <foo><bar><em>content</em></bar></foo></p>",
         expected_markdown: Some("Nested <foo><bar>*content*</bar></foo>"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -1070,6 +1104,7 @@ fn consecutive_blocks() {
         id: "consecutive_blocks_case_47",
         html,
         expected_markdown: Some("One\n\nTwo"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -1622,10 +1657,12 @@ fn a_paragraph_of_leaf_block_syntax_stays_a_paragraph() {
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
+    // The escaped thematic break leaves `--`, which smart punctuation changes.
     faithful_cases.extend([Case {
         id: "a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_4",
         html: "<p>---</p>",
         expected_markdown: Some(r"\---"),
+        markdown_options: CommonMarkOptions::all() & !CommonMarkOptions::ENABLE_SMART_PUNCTUATION,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
@@ -1658,19 +1695,18 @@ fn a_paragraph_of_leaf_block_syntax_stays_a_paragraph() {
         ..Case::default()
     }]);
 
+    // Smart punctuation changes this `--` to an en dash, so this row checks
+    // block escaping with that extension disabled.
     // A `-` run opens a break or an underline only where nothing else shares
     // the line, so text behind it needs no escape.
     faithful_cases.extend([Case {
         id: "a_paragraph_of_leaf_block_syntax_stays_a_paragraph_paragraph_9",
         html: "<p>--foo</p>",
         expected_markdown: Some("--foo"),
+        markdown_options: CommonMarkOptions::all() & !CommonMarkOptions::ENABLE_SMART_PUNCTUATION,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
-    for case in &mut faithful_cases {
-        case.markdown_options =
-            CommonMarkOptions::all() & !CommonMarkOptions::ENABLE_SMART_PUNCTUATION;
-    }
     check_cases(&faithful_cases);
 }
 
@@ -2153,24 +2189,41 @@ fn round_trip_of_a_leaf_block_an_html_block_would_dissolve() {
 /// headings section's fallback to ATX is not needed here.
 #[test]
 fn round_trip_of_a_setext_heading_of_leaf_block_syntax() {
+    // Smart punctuation changes the remaining `--` in the escaped thematic
+    // break to an en dash; that row checks block escaping without the extension.
     let headings = [
-        ("setext_h1_with_dash", "<h1>-</h1>"),
-        ("setext_h2_with_dash", "<h2>-</h2>"),
-        ("setext_h1_with_thematic_break", "<h1>---</h1>"),
-        ("setext_h1_with_list_marker", "<h1>1.</h1>"),
+        (
+            "setext_h1_with_dash",
+            "<h1>-</h1>",
+            CommonMarkOptions::all(),
+        ),
+        (
+            "setext_h2_with_dash",
+            "<h2>-</h2>",
+            CommonMarkOptions::all(),
+        ),
+        (
+            "setext_h1_with_thematic_break",
+            "<h1>---</h1>",
+            CommonMarkOptions::all() & !CommonMarkOptions::ENABLE_SMART_PUNCTUATION,
+        ),
+        (
+            "setext_h1_with_list_marker",
+            "<h1>1.</h1>",
+            CommonMarkOptions::all(),
+        ),
     ];
     check_cases(
         &headings
             .iter()
-            .map(|(id, html)| Case {
+            .map(|(id, html, markdown_options)| Case {
                 id,
                 html,
                 htmd_options: Options {
                     heading_style: HeadingStyle::Setex,
                     ..Case::default().htmd_options
                 },
-                markdown_options: CommonMarkOptions::all()
-                    & !CommonMarkOptions::ENABLE_SMART_PUNCTUATION,
+                markdown_options: *markdown_options,
                 expectation: Some(HtmlExpectation::Preserved),
                 ..Case::default()
             })

@@ -821,6 +821,7 @@ fn brs_alone_in_a_raw_html_inline() {
         id: "brs_alone_in_a_raw_html_inline_case_30",
         html: "<p>a<del><br></del>b</p>",
         expected_markdown: Some("a<del><br></del>b"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -828,6 +829,7 @@ fn brs_alone_in_a_raw_html_inline() {
         id: "brs_alone_in_a_raw_html_inline_case_31",
         html: "<p>a<del><br><br><br></del>b</p>",
         expected_markdown: Some("a<del><br><br><br></del>b"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -835,6 +837,7 @@ fn brs_alone_in_a_raw_html_inline() {
         id: "brs_alone_in_a_raw_html_inline_case_32",
         html: "<p>a<span><br></span>b</p>",
         expected_markdown: Some("a<span><br></span>b"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -842,6 +845,7 @@ fn brs_alone_in_a_raw_html_inline() {
         id: "brs_alone_in_a_raw_html_inline_case_33",
         html: "<p>a<span><br><br><br></span>b</p>",
         expected_markdown: Some("a<span><br><br><br></span>b"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);

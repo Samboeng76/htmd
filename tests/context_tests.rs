@@ -345,6 +345,7 @@ fn a_cell_attribute_writes_the_whole_table_as_html() {
         id: "a_cell_attribute_writes_the_whole_table_as_html_case_35",
         html: with_colspan,
         expected_markdown: Some(with_colspan),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     let heading_colspan = "<table><thead><tr><th colspan=\"2\">h</th></tr></thead>\
@@ -354,6 +355,7 @@ fn a_cell_attribute_writes_the_whole_table_as_html() {
         id: "a_cell_attribute_writes_the_whole_table_as_html_case_36",
         html: heading_colspan,
         expected_markdown: Some(heading_colspan),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);

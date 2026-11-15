@@ -281,6 +281,7 @@ fn discard_links_in_table_falling_back_to_raw_html() {
 
 [1]: https://kept.com"#
         )),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }

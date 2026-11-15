@@ -213,6 +213,7 @@ fn table_with_caption() {
         id: "table_with_caption_original",
         html,
         expected_markdown: Some(expected),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -1007,6 +1008,7 @@ fn table_block_cells() {
         ),
         expected_markdown: Some("| a | <p>b</p> |\n| - | -------- |\n| c | d        |"),
         markdown_options: CommonMarkOptions::ENABLE_TABLES,
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
