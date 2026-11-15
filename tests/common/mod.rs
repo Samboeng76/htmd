@@ -87,6 +87,7 @@ enum ComparedNode {
         name: (String, String),
         attributes: Vec<(String, String, String)>,
         children: Vec<ComparedNode>,
+        template_contents: Option<Vec<ComparedNode>>,
     },
     Text(String),
     Comment(String),
@@ -195,13 +196,23 @@ fn finish_flow(flows: &mut Vec<String>, current: &mut String) {
 fn collect_flow(node: &Handle, flows: &mut Vec<String>, current: &mut String) {
     match &node.data {
         NodeData::Text { contents } => push_collapsed_text(current, &contents.borrow()),
-        NodeData::Element { name, .. } => {
-            let block = is_block_element(name.local.as_ref());
+        NodeData::Element {
+            name,
+            template_contents,
+            ..
+        } => {
+            let block = name.ns == ns!(html) && is_block_element(name.local.as_ref());
             if block {
                 finish_flow(flows, current);
             }
             for child in node.children.borrow().iter() {
                 collect_flow(child, flows, current);
+            }
+            if let Some(contents) = template_contents.borrow().as_ref() {
+                // Inert template contents have their own flow, separate from surrounding text.
+                let mut template_flow = String::new();
+                collect_flow(contents, flows, &mut template_flow);
+                finish_flow(flows, &mut template_flow);
             }
             if block {
                 finish_flow(flows, current);
@@ -226,7 +237,14 @@ fn compared_children(node: &Handle, exact_text: bool) -> Vec<ComparedNode> {
 fn compared_node(node: &Handle, exact_text: bool) -> Option<ComparedNode> {
     match &node.data {
         NodeData::Document => Some(ComparedNode::Document(compared_children(node, exact_text))),
-        NodeData::Element { name, attrs, .. } => {
+        NodeData::Element {
+            name,
+            attrs,
+            template_contents,
+            ..
+        } => {
+            let exact_text = exact_text
+                || (name.ns == ns!(html) && matches!(name.local.as_ref(), "code" | "pre"));
             let mut attributes: Vec<_> = attrs
                 .borrow()
                 .iter()
@@ -242,10 +260,11 @@ fn compared_node(node: &Handle, exact_text: bool) -> Option<ComparedNode> {
             Some(ComparedNode::Element {
                 name: (name.ns.to_string(), name.local.to_string()),
                 attributes,
-                children: compared_children(
-                    node,
-                    exact_text || matches!(name.local.as_ref(), "code" | "pre"),
-                ),
+                children: compared_children(node, exact_text),
+                template_contents: template_contents
+                    .borrow()
+                    .as_ref()
+                    .map(|contents| compared_children(contents, exact_text)),
             })
         }
         NodeData::Text { contents } => {
@@ -321,11 +340,13 @@ fn first_structure_difference(
                 name: expected_name,
                 attributes: expected_attributes,
                 children: expected_children,
+                template_contents: expected_template,
             },
             ComparedNode::Element {
                 name: actual_name,
                 attributes: actual_attributes,
                 children: actual_children,
+                template_contents: actual_template,
             },
         ) => {
             if expected_name != actual_name {
@@ -338,7 +359,18 @@ fn first_structure_difference(
                     "{path}: expected attributes {expected_attributes:?}, actual {actual_attributes:?}"
                 ));
             }
-            first_child_difference(expected_children, actual_children, path)
+            if let Some(difference) =
+                first_child_difference(expected_children, actual_children, path)
+            {
+                return Some(difference);
+            }
+            match (expected_template, actual_template) {
+                (Some(expected), Some(actual)) => {
+                    first_child_difference(expected, actual, &format!("{path}/template"))
+                }
+                (None, None) => None,
+                _ => Some(format!("{path}: template content fragments differ")),
+            }
         }
         _ if expected != actual => {
             Some(format!("{path}: expected {expected:?}, actual {actual:?}"))

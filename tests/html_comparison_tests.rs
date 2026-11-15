@@ -69,3 +69,91 @@ fn case_label_is_optional() {
         ..Case::default()
     }]);
 }
+
+/// [HTML comparison](../spec.md#3-html-comparison-and-correctness-criteria).
+#[test]
+fn template_content_changes_fail() {
+    for (expected, actual) in [
+        (
+            "<template><p>a</p></template>",
+            "<template><p>b</p></template>",
+        ),
+        ("<template><p>a</p></template>", "<template></template>"),
+        (
+            "<template><span title=\"a\">x</span></template>",
+            "<template><span title=\"b\">x</span></template>",
+        ),
+        (
+            "<template><template>a</template></template>",
+            "<template><template>b</template></template>",
+        ),
+        (
+            "<template><!--a--></template>",
+            "<template><!--b--></template>",
+        ),
+        (
+            "<template><code>a\nb</code></template>",
+            "<template><code>a b</code></template>",
+        ),
+        (
+            "<pre><template><span>a\tb</span></template></pre>",
+            "<pre><template><span>a b</span></template></pre>",
+        ),
+        (
+            "<template><em>a</em> <strong>b</strong></template>",
+            "<template><em>a</em><strong>b</strong></template>",
+        ),
+    ] {
+        assert!(
+            compare_html(expected, actual).is_err(),
+            "{expected:?} vs {actual:?}"
+        );
+    }
+}
+
+/// [HTML comparison](../spec.md#3-html-comparison-and-correctness-criteria).
+#[test]
+fn template_formatting_preserves_separate_text_flows() {
+    for (expected, actual) in [
+        (
+            "<template><p>a\t b</p></template>",
+            "<template>\n<p>a b</p>\n</template>",
+        ),
+        (
+            "<p>a<template>x</template> b</p>",
+            "<p>a <template>x</template>b</p>",
+        ),
+        (
+            "<template><em>a </em><strong>b</strong></template>",
+            "<template><em>a</em> <strong>b</strong></template>",
+        ),
+    ] {
+        assert!(
+            compare_html(expected, actual).is_ok(),
+            "{expected:?} vs {actual:?}"
+        );
+    }
+    assert!(
+        compare_html(
+            "<p>a<template>x</template> b</p>",
+            "<p>a<template>x</template>b</p>",
+        )
+        .is_err()
+    );
+}
+
+/// [HTML comparison](../spec.md#3-html-comparison-and-correctness-criteria).
+#[test]
+fn foreign_elements_do_not_create_html_block_boundaries() {
+    let expected = "<svg><text>a</text><title> b</title><text>c</text></svg>";
+    let missing_space = "<svg><text>a</text><title>b</title><text>c</text></svg>";
+    assert!(compare_html(expected, missing_space).is_err());
+    assert!(compare_html(missing_space, expected).is_err());
+    assert!(
+        compare_html(
+            expected,
+            "<svg><text>a</text><title>\t b</title><text>c</text></svg>",
+        )
+        .is_ok()
+    );
+}

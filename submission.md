@@ -245,10 +245,9 @@ check:</strong>
 
 ## Final submission
 
-Status: in progress. The instructor-feedback revisions to the strategy are
-recorded below. Implementing the proposed runner/comparator and completing the
-migration, implementation reviews, and each member's additional authored commit
-remain final-submission work. Draft review rounds above are not counted here.
+The shared runner/comparator and migrated test cases are implemented under
+`tests/`. Final-stage reviews and contributions are recorded separately for
+each member below; draft review rounds above are not counted here.
 
 ### Yuriy Kim
 
@@ -355,7 +354,7 @@ GitHub userid: alibekbtu
 
 #### Contributions
 
-Revised the HTML-comparison strategy in response to instructor feedback, integrated the shared specification corrections, and organized the common submission report.
+Completed and reviewed the Section 3 HTML comparator, corrected template-fragment and namespace handling, and added regression tests while preserving the finalized specification.
 
 #### Specification review rounds
 
@@ -386,15 +385,37 @@ Reviewed Section 3 SHA-256 with LF line endings:
 
 #### Implementation review rounds
 
-The proposed implementation has not been completed in this documentation revision.
+Reviews performed on 2026-11-15 against Section 3 only. Round 1 reviewed the
+initial shared implementation at `2966de3`; round 2 reviewed the fixes and
+regression tests below. These were successive self-reviews in this Codex session.
 
 | Round | Findings | Main changes made |
 | --- | --- | --- |
+| 1 | 2 | Compared template content fragments and their independent text flows, made HTML whitespace rules namespace-aware, and added three regression tests covering the two confirmed false passes. |
+| 2 | 0 | Rechecked the corrected comparator, whitespace boundaries, protected contents, and regressions; no further relevant correctness findings remained. |
+
+Both round-1 findings were applied; none were rejected. Before the fixes, the
+targeted regression run reported 4 passing and 2 failing tests. All 6 comparator
+tests pass after the fixes.
 
 #### Last implementation review
 
-The implementation owner will add the actual model, prompt, and last review
-output after implementation and repeated review.
+**Model:** GPT-6.1 Sol, Extra High, the user-confirmed model for this Codex session.
+
+**Prompt:**
+
+```text
+Review only the implementation of Section 3, "HTML comparison and correctness criteria", in tests/common/mod.rs (ComparedNode through compare_html) and its tests in tests/html_comparison_tests.rs against spec.md. Check parsed structure and attributes, template content fragments and their text flows, HTML versus foreign namespaces, ASCII-whitespace normalization, inline word separation, exact code/pre descendants, NBSP, comments, and parser-normalized line endings. Use the runner and other specification sections only as context. Report only concrete actionable correctness findings with short corrections; do not rewrite the specification, review other owners' sections, or target a finding count. If no relevant findings remain, say so.
+```
+
+**Final output, verbatim:**
+
+> No further relevant correctness findings in the Section 3 implementation. Template content fragments are now compared recursively, including nested structure, attributes, comments, and protected text, while their text flows remain separate from surrounding content. HTML-specific whitespace boundaries use the HTML namespace, so SVG title content cannot hide a removed separator. The regression tests reject both previously accepted changes and retain the permitted whitespace transformations, exact code/pre contents, NBSP, and inline word separation. The build, warnings-denied Clippy run, full test suite, and simple example all passed; the suite reported 271 passed, 1 ignored, and 0 failed.
+
+Reviewed LF-normalized SHA-256 values:
+
+- Comparator range (`ComparedNode` through `compare_html`) in `tests/common/mod.rs`: `7fbd9c8f78e192df87e3ef21eb9305de8ee5e89dd238edb7bafbe779c50c99f7`.
+- `tests/html_comparison_tests.rs`: `dc617a29fde5d6b278ef40af348672f03b6d09151f638d12c3c7e1158dbd929f`.
 
 ### Kamila Bagdat
 
@@ -450,20 +471,25 @@ Refined Section 4, "Round-trip execution and project verification", incorporatin
 >
 > Successful execution of Cargo build, Clippy, tests, and the example establishes that the project baseline can compile and run. It does not by itself establish that the new round-trip implementation satisfies every requirement in Section 4.
 
-## Verification of this documentation revision
+## Verification of this implementation revision
 
 **Date:** 2026-11-15, Asia/Almaty. **Environment:** Alibek's local macOS ARM64
 workspace. **Model:** GPT-6.1 Sol, Extra High.
 
-**Prompt:** `Verify that you can compile and run the project in the current git repo.`
+**Prompt:** `Verify that you can build and run the project in the current git repo.`
 
-**Summarized LLM output:** All four commands passed again on the PR #13
-baseline `79dd7e8`: `cargo build`, `cargo clippy -- --deny warnings`,
-`cargo test`, and `cargo run --example simple`. The suite reported **267
-passed, 1 ignored, 0 failed**. The subsequent changes are documentation only;
-Rust sources, tests, examples, and Cargo files are unchanged. This local check
-does not substitute for the other members' individual environments or validate
-the proposed generalized runner, which remains subsequent work.
+**Summarized LLM output:** I built and ran the implementation based on
+`2966de3` with the Section 3 corrections reviewed above. All four commands
+completed successfully; the full suite reported **271 passed, 1 ignored,
+0 failed**, including all 6 comparator tests. The two new failing regressions
+were observed before their fixes and passed afterward.
+
+| Command | Exit code | Result |
+| --- | --- | --- |
+| `cargo build` | 0 | Passed. |
+| `cargo clippy -- --deny warnings` | 0 | Passed with warnings denied. |
+| `cargo test` | 0 | 271 passed; 1 ignored; 0 failed. |
+| `cargo run --example simple` | 0 | Example completed successfully. |
 
 ## Instructor feedback and provenance
 
