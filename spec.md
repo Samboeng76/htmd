@@ -27,10 +27,10 @@ These terms mean the same thing in every section.
 
 The current tests check the right things but do not agree on how:
 
-- **Six helpers check translations differently.** `round_trip` and `render_markdown` (`tests/common/mod.rs`), `assert_round_trips`, `assert_math_round_trips` and `assert_paragraph_survives` (`basic_tests.rs`), and `assert_html_fallback` (`table_tests.rs`). Markdown is read back with different pulldown-cmark options (none, math, tables, or both); `assert_html_fallback` does not read it back at all. Callers handle the trailing newline and `&#10;` differently: appending `\n`, trimming, or asserting `&#10;` literally.
+- **Eight helpers check translations differently.** `round_trip` and `render_markdown` (`tests/common/mod.rs`), `assert_round_trips`, `assert_math_round_trips`, `assert_paragraph_survives`, `round_trip_setext` and the Pure-mode `round_trip_pure_table` (`basic_tests.rs`), and `assert_html_fallback` (`table_tests.rs`). Markdown is read back with different pulldown-cmark options (none, math, tables, or both); `assert_html_fallback` does not read it back at all. Callers handle the trailing newline and `&#10;` differently: appending `\n`, trimming, or asserting `&#10;` literally.
 - **Nothing checks stability.** No test converts htmd's Markdown back to HTML and then to Markdown again.
 - **Differences are not documented.** Where a trip loses something, the test asserts the lossy string, usually without a reason or a reference to the rule that explains it.
-- **Styles are mixed.** 227 tests in 10 files; `table_tests.rs` uses nested modules, and `table_tests.rs` and `event_tests.rs` use `test_` names.
+- **Styles are mixed.** 227 tests in 10 files at the baseline commit `2e7bf3a`; `table_tests.rs` uses nested modules and `test_` names.
 
 With one case format and one runner (section 4), every case states what it expects and why, and a reader can tell a documented difference from a bug.
 
@@ -43,6 +43,7 @@ With one case format and one runner (section 4), every case states what it expec
 | Kept                | Pure mode                                                                                                 | Existing assertions                                                                     | Pure mode drops HTML by design, so most round trips would be documented losses. Checking the stability of Pure-mode Markdown is follow-up work.                                                                         |
 | Kept                | Extension API tests: handlers registered with `add_handler`, and element events (`event_tests.rs`)        | Existing assertions                                                                     | The handler or listener decides the output; `translation_approach.md` only constrains it ([Translating HTML nodes](https://github.com/Samboeng76/htmd/blob/spec/scope/translation_approach.md#translating-html-nodes)). |
 | Kept                | Shared-converter concurrency (`multithreading` in `basic_tests.rs`)                                       | Existing assertions                                                                     | It checks simultaneous use of one converter, which the common case runner does not exercise.                                                                                                                            |
+| Kept                | Comparator and runner self-tests (`html_comparison_tests.rs`)                                             | Existing assertions                                                                     | They test the test infrastructure (`compare_html`, `check_cases`), not translations.                                                                                                                                    |
 | Kept                | Turndown cases (`turndown_cases_tests.rs`, `turndown_online_demo_tests.rs`)                               | Existing assertions                                                                     | They compare htmd's Markdown with the Markdown each Turndown case expects.                                                                                                                                              |
 | Out                 | Unit tests in `src/`                                                                                      | —                                                                                       | They test private helpers, not translations.                                                                                                                                                                            |
 | Out                 | Output of a custom handler which breaks the rules of "Translating HTML nodes", e.g. a bare inline newline | —                                                                                       | `translation_approach.md` leaves it unspecified.                                                                                                                                                                        |
@@ -59,15 +60,16 @@ Each case records:
 | **Field**           | **Required**                                     | **Meaning**                                                                                                                    |
 | ------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
 | `html`              | Yes                                              | Literal input HTML, with significant whitespace made visible in the source.                                                    |
-| `htmd_options`      | Yes                                              | Faithful mode plus all overrides of the pinned baseline defaults.                                                              |
+| `htmd_options`      | No; defaults to the Faithful baseline            | Overrides of the Faithful baseline (`Case::default().htmd_options`); the mode must stay Faithful.                            |
 | `markdown_options`  | When overriding the default                      | pulldown-cmark flags; default `Options::all()`, with an explicit override when a case needs different flags.                                                      |
 | `expectation`       | Unless the case checks only Markdown (section 2) | `Preserved` or `DocumentedDifference { kind, expected_html, reason, reference }`, as defined in section 3. |
 | `expected_markdown` | When the rule specifies the Markdown text        | An exact assertion of `M(H)`, e.g. a row of a "Faithful expected" column in `translation_approach.md`.                         |
-| `stability`         | Yes; `Stable` unless stated                      | `Stable`, or `DocumentedInstability { second_markdown, reason, reference }`, as defined in section 3.                          |
+| `stability`         | No; defaults to `Stable`                         | `Stable`, or `DocumentedInstability { second_markdown, reason, reference }`, as defined in section 3.                          |
+| `id`                | No                                               | Optional descriptive label shown with the row number in failure reports.                                                       |
 
 A case states at least one of `expectation` and `expected_markdown`. The test
 function name identifies the test; table-driven failures also report the row
-number or an optional descriptive label. A separate case `id` is not required.
+number and, when set, the case's `id` label. A case does not need an `id`.
 
 Rules for test files and functions:
 
@@ -77,7 +79,7 @@ Rules for test files and functions:
 4. Related cases go in one table-driven test. The test runs every case, collects the failures and reports them all at once, as `blocks_inside_inlines` in `translation_approach_tests.rs` does.
 5. Changing the format must preserve the original input, option coverage, and purpose of each migrated test.
 
-An illustrative case (not normative; section 4 fixes the real names). The loss is the one section 3's last example and the "At the document root" table describe. The case leaves `stability` at `Stable`: `M(R(H))` is `<br><br>` again.
+An illustrative case (not normative; the real names are in `tests/common/mod.rs`). The loss is the one section 3's last example and the "At the document root" table describe. The case leaves `stability` at `Stable`: `M(R(H))` is `<br><br>` again.
 
 ```
 /// [At the document root](../translation_approach.md#at-the-document-root).
@@ -86,12 +88,12 @@ fn lone_breaks_at_the_document_root() {
     check_cases(&[Case {
         html: "<br><br>",
         expected_markdown: Some("<br><br>"),
-        expectation: DocumentedDifference {
+        expectation: Some(DocumentedDifference {
             kind: Loss,
             expected_html: "<p><br><br></p>\n",
             reason: "two or more root <br>s read back inside a paragraph",
             reference: "translation_approach.md#at-the-document-root",
-        },
+        }),
         ..Case::default()
     }]);
 }

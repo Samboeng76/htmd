@@ -256,18 +256,55 @@ GitHub userid: kim0111
 
 #### Contributions
 
-Yuriy will record final-stage contributions here.
+Reviewed and revised Section 1, "Scope and common test-case format", after the instructor feedback, correcting its field defaults, optional `id`, example case, helper list, baseline test count, and classification of the comparator self-tests.
 
 #### Specification review rounds
 
-No final-stage rounds are recorded here yet.
+Only final-stage Section 1 reviews from 2026-11-15 are included. Each round ran in a new session, and findings were fixed by hand before the next round.
 
 | Round | Findings | Main changes made |
 | --- | --- | --- |
+| 1 | 5 | Corrected the example's names and `Option` wrapping, marked defaulted fields as optional, made the `id` field optional, and classified the comparator self-tests as kept. |
+| 2 | 4 | Listed all eight existing helpers, removed the kept `event_tests.rs` from the style problems, pointed `htmd_options` at `Case::default()`, and tied the test count to the baseline commit. |
+| 3 | 3 | No changes: one finding was incorrect (math-only read-back is used at the baseline), one restated the optional `id` the instructor's feedback allows, and one was a trivial type detail. |
 
 #### Last specification review
 
-The section owner will add the final-stage model, prompt, and output here.
+**Model:** Claude Opus 5.5, high effort, in Claude Code.
+
+**Exact prompt:**
+
+```text
+Review only Section 1, "Scope and common test-case format", in spec.md, after the
+instructor feedback on PR #13 (Options::all() by default, no separate case id,
+whitespace-aware HTML comparison). Use the other sections and the tests only as
+context. Report only actionable correctness findings with short corrections; do not
+rewrite the section. If no relevant findings remain, say so.
+```
+
+**Final output, verbatim;** strikethrough marks findings I judged incorrect or irrelevant:
+
+> I found two small factual problems in Section 1 and one possible conflict with the instructor's feedback. The rest of the section is accurate.
+>
+> 1. ~~The id field may contradict "no separate case id" (§1.3, field table and the paragraph after it). The section now adds id as an optional field. The tests set id: "…" 453 times, mostly as generated labels like a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_5. That is a separate case id in practice.~~
+>    - ~~If the instructor meant ids should be optional, the text is correct as written.~~
+>    - ~~If they meant there should be no id field, remove the id row and change the sentence to: "The test function name identifies the test; table-driven failures also report the row number."~~
+> 2. ~~The list of pulldown-cmark options in §1.1 is wrong. "(none, math, tables, or both)" says some helper uses math alone, but none does. At baseline, round_trip and round_trip_setext use no flags, round_trip_pure_table uses tables, and assert_math_round_trips uses math and tables together. Correction: "(none, tables only, or math with tables)".~~
+> 3. ~~The expectation field's meaning doesn't match its type (§1.3). The field is an Option, and the example writes Some(DocumentedDifference { … }), but the table's Meaning column lists only the bare variants. Correction: "Some(Preserved) or Some(DocumentedDifference { … }); None when the case checks only Markdown."~~
+>
+> I checked these against the current text and the code:
+> - The baseline claims hold at 2e7bf3a: 227 tests in 10 files, the eight named helpers, and nested modules plus test_ names in table_tests.rs.
+> - Options::all() is the default in the R(H) term, the field table and Case::default().
+> - The "whitespace-aware" wording for Preserved matches section 3.
+> - htmd_options and stability defaults, and the Faithful-only check, match check_cases.
+>
+> The example case's HTML and Markdown match the real case in context_tests.rs. I didn't run it, so its round-trip and stability claims are unverified.
+
+Why the struck findings need no change:
+
+1. The instructor asked whether a separate case ID is necessary; Section 1 makes `id` optional and identifies a test by its function name, which is the first reading the review itself accepts.
+2. Incorrect: at `2e7bf3a`, Markdown is read back with math alone through `render_markdown` at `tests/basic_tests.rs:320` and `tests/link_tests.rs:484`.
+3. The field table names the expectation kinds; the example shows the exact Rust wrapping, and repeating it in the table would overspecify the section.
 
 #### Implementation review rounds
 
