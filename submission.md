@@ -1,5 +1,4 @@
 # Project 2 submission
-=====================
 
 Team name: standardize htmd testing - 1 (PR #13)
 
@@ -628,20 +627,15 @@ GitHub userid: bagdatkamilla
 
 #### Contributions
 
-Refined Section 4, "Round-trip execution and project verification",
-incorporating instructor feedback and improving the strategy for round-trip
-execution, stage-specific converter options, Markdown stability, independent
-assertions, and failure diagnostics. Contributed to ensuring consistency between
-the shared test-case format, HTML comparison criteria, and implementation
-requirements.
+Refined Section 4, "Round-trip execution and project verification", incorporating instructor feedback on default converter options, round-trip stability, independent assertions, Markdown-only cases, and failure diagnostics, and reviewed the consistency of the round-trip strategy with the shared test-case format and HTML comparison requirements.
 
 #### Specification review rounds
 
-| Round        | Findings | Main changes made                                                                                                                                              |
-| ------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Review 1     | 4        | Evaluated the updated conversion strategy, focusing on `Options::all()` defaults, explicit option overrides, and consistency with the shared test-case format. |
-| Review 2     | 2        | Examined intermediate Markdown preservation, independent HTML and Markdown assertions, Markdown-only cases, and documented instability handling.               |
-| Final review | 0        | Assessed the specification's coverage of round-trip execution, error diagnostics, and project verification requirements.                                       |
+| Round | Findings | Main changes made |
+| --- | --- | --- |
+| 1 | 4 | Reviewed converter defaults and explicit overrides; no code changes were documented for this round. |
+| 2 | 2 | Rechecked intermediate Markdown preservation, stability expectations, and Markdown-only cases; no changes were documented for this round. |
+| 3 | 0 | No changes; the recorded assessment identified no further specification changes to propose. |
 
 #### Last specification review
 
@@ -649,33 +643,23 @@ requirements.
 
 **Prompt:**
 
-> Review only Section 4, "Round-trip execution and project verification", in
-> spec.md. Check the consistency of converter options, default Options::all()
-> behavior, HTML-to-Markdown-to-HTML execution, Markdown stability, documented
-> instability expectations, Markdown-only test cases, intermediate Markdown
-> preservation, failure diagnostics, and verification commands. Identify
-> correctness issues and contradictions without expanding the project scope.
+```text
+Review only Section 4, "Round-trip execution and project verification", in spec.md. Check the consistency of converter options, default Options::all() behavior, HTML-to-Markdown-to-HTML execution, Markdown stability, documented instability expectations, Markdown-only test cases, intermediate Markdown preservation, failure diagnostics, and verification commands. Identify correctness issues and contradictions without expanding the project scope.
+```
 
-**Review assessment:**
+**Final review output:**
 
-> The documented Section 4 strategy addresses the major requirements for
-> round-trip execution and project verification. It distinguishes converter
-> options across execution stages, preserves intermediate Markdown for
-> independent assertions, and defines stability expectations for Markdown-only
-> and HTML-preservation cases.
+> The documented Section 4 strategy addresses the major requirements for round-trip execution and project verification. It distinguishes converter options across execution stages, preserves intermediate Markdown for independent assertions, and defines stability expectations for Markdown-only and HTML-preservation cases.
 >
-> The specification also describes expectation-specific diagnostics and
-> verification commands. The final revised source should be checked to confirm
-> that these requirements remain consistent with Sections 1–3 and that all
-> instructor-requested changes have been incorporated.
+> The specification also describes expectation-specific diagnostics and verification commands. The final revised source should be checked to confirm that these requirements remain consistent with Sections 1–3 and that all instructor-requested changes have been incorporated.
 
 #### Implementation review rounds
 
-| Round        | Findings | Main changes made                                                                                                                           |
-| ------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Review 1     | 5        | Defined the implementation checks for conversion stages, default options, explicit overrides, and independent assertions.                   |
-| Review 2     | 2        | Defined checks for Markdown stability, documented instability, preservation of intermediate output, and diagnostic reporting.               |
-| Final review | 0        | Defined the final verification criteria for round-trip behavior, existing test coverage, and integration with the shared testing framework. |
+| Round | Findings | Main changes made |
+| --- | --- | --- |
+| 1 | 5 | Reviewed conversion stages, default options, explicit overrides, and independent assertions; no implementation changes were documented for this round. |
+| 2 | 2 | Rechecked Markdown stability, documented instability, intermediate outputs, and diagnostic reporting; no changes were documented for this round. |
+| 3 | 0 | No changes; the recorded assessment did not propose further modifications to the review criteria. |
 
 #### Last implementation review
 
@@ -683,29 +667,17 @@ requirements.
 
 **Prompt:**
 
-> Review the Rust implementation of Section 4, "Round-trip execution and project
-> verification", against spec.md. Verify HTML-to-Markdown-to-HTML conversion,
-> Markdown-to-HTML-to-Markdown stability, default Options::all() configuration,
-> explicit option overrides, intermediate Markdown preservation, independent
-> assertions, documented instability handling, Markdown-only test cases, and
-> meaningful failure diagnostics. Identify concrete correctness problems without
-> unnecessary refactoring.
+```text
+Review the Rust implementation of Section 4, "Round-trip execution and project verification", against spec.md. Verify HTML-to-Markdown-to-HTML conversion, Markdown-to-HTML-to-Markdown stability, default Options::all() configuration, explicit option overrides, intermediate Markdown preservation, independent assertions, documented instability handling, Markdown-only test cases, and meaningful failure diagnostics. Identify concrete correctness problems without unnecessary refactoring.
+```
 
-**Review assessment:**
+**Final review output:**
 
-> The implementation must preserve the required sequence of conversion stages
-> and apply the correct options at each stage. HTML-preservation and
-> Markdown-stability assertions must remain independent, and Markdown-only cases
-> must not require an unnecessary HTML expectation.
+> The implementation must preserve the required sequence of conversion stages and apply the correct options at each stage. HTML-preservation and Markdown-stability assertions must remain independent, and Markdown-only cases must not require an unnecessary HTML expectation.
 >
-> Failure diagnostics should identify the affected case, failed assertion, and
-> relevant intermediate output. Existing tests should retain their original
-> coverage during migration.
+> Failure diagnostics should identify the affected case, failed assertion, and relevant intermediate output. Existing tests should retain their original coverage during migration.
 >
-> Successful execution of Cargo build, Clippy, tests, and the example
-> establishes that the project baseline can compile and run. It does not by
-> itself establish that the new round-trip implementation satisfies every
-> requirement in Section 4.
+> Successful execution of Cargo build, Clippy, tests, and the example establishes that the project baseline can compile and run. It does not by itself establish that the new round-trip implementation satisfies every requirement in Section 4.
 
 Verification of this implementation revision
 --------------------------------------------
