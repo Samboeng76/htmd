@@ -1,4 +1,4 @@
- Project 2 submission
+# Project 2 submission
 =====================
 
 Team name: standardize htmd testing - 1 (PR #13)
@@ -41,9 +41,9 @@ updated the inventory to the instructor's current baseline.
 
 #### Build and run test
 
-<strong>Model:</strong> Claude Opus 5.5, as reported by Yuriy.
+**Model:** Claude Opus 5.5, as reported by Yuriy.
 
-<strong>Summarized result:</strong> Yuriy confirmed successful local execution
+**Summarized result:** Yuriy confirmed successful local execution
 of `cargo build`, `cargo clippy -- --deny warnings`, `cargo test`, and `cargo
 run --example simple`. This participant-reported summary was confirmed by Alibek
 on 2026-11-15; it is not a verbatim transcript.
@@ -57,15 +57,15 @@ on 2026-11-15; it is not a verbatim transcript.
 
 #### Last specification review
 
-<strong>Model:</strong> GPT-6.1 Sol, Extra High.
+**Model:** GPT-6.1 Sol, Extra High.
 
-<strong>Exact prompt:</strong>
+**Exact prompt:**
 
 ```text
 Review only Section 1, "Scope and common test-case format", in spec.md. Check the in/kept/out boundaries, consistency of the scope table with the case fields, Markdown-only and documented-difference cases, option handling, and retention of existing coverage. Use the other sections and current tests only as context. Report only actionable correctness findings with short corrections; do not rewrite the section or target a finding count. If no relevant findings remain, say so.
 ```
 
-<strong>Final output, verbatim:</strong>
+**Final output, verbatim:**
 
 > No further relevant correctness findings in Section 1. The scope table now
 > matches the optional HTML expectation in the case format: Markdown-only cases
@@ -104,15 +104,15 @@ failures, and 1 ignored test. Cargo printed a nonfatal path warning.
 
 #### Last specification review
 
-<strong>Model:</strong> GPT-6.1 Sol, Extra High, as recorded by Sam.
+**Model:** GPT-6.1 Sol, Extra High, as recorded by Sam.
 
-<strong>Prompt:</strong>
+**Prompt:**
 
 ```text
 review the migration of existing tests section of spec.md
 ```
 
-<strong>Last output (text extracted from Sam's HTML-formatted record):</strong>
+**Last output (text extracted from Sam's HTML-formatted record):**
 
 > I found no actionable correctness issues in “Migration of existing tests”
 > (line 107). It covers individual input and mode cases, retained assertions,
@@ -133,15 +133,15 @@ and stability criteria and checked them with 31 measured cases.
 
 #### Build and run test
 
-<strong>Model:</strong> GPT-6.1 Sol, Extra High.
+**Model:** GPT-6.1 Sol, Extra High.
 
-<strong>Prompt:</strong>
+**Prompt:**
 
 ```text
 Verify that you can compile and run the project in the current git repo.
 ```
 
-<strong>Summarized LLM output, verified on 2026-11-09:</strong>
+**Summarized LLM output, verified on 2026-11-09:**
 
 > I verified that I can compile and run htmd. `cargo build`, `cargo clippy --
 > --deny warnings`, `cargo test`, and `cargo run --example simple` all exited
@@ -191,15 +191,15 @@ diagnostics, and supplied the Section 4 review and verification record.
 
 #### Build and run test
 
-<strong>Exact instructor-requested prompt:</strong>
+**Exact instructor-requested prompt:**
 
 > Verify that you can compile and run the project in the current git repo.
 
-<strong>Verification assistant:</strong> GitHub Copilot in VS Code -
+**Verification assistant:** GitHub Copilot in VS Code -
 MAI-Code-1.1-Flash
 
-<strong>LLM output (successful verification response, preserved from the
-provided conversation):</strong>
+**LLM output (successful verification response, preserved from the
+provided conversation):**
 
 > I’m re-running the repo verification in the actual project root with the Rust
 > toolchain available so I can give you a final yes/no status based on fresh
@@ -234,7 +234,6 @@ provided conversation):</strong>
 >     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.34s
 >      Running `target\debug\examples\simple.exe`
 > RUN_EXIT:0
-> `
 > ```
 
 #### Specification review rounds
@@ -248,10 +247,10 @@ provided conversation):</strong>
 
 #### Last specification review
 
-<strong>Model:</strong> OpenAI GPT-6.
+**Model:** OpenAI GPT-6.
 
-<strong>Exact review prompt used for the final written consistency
-check:</strong>
+**Exact review prompt used for the final written consistency
+check:**
 
 > Review the updated `spec.md`, concentrating on Section 4 and its consistency
 > with Sections 1–3. Check the handling of default versus generalized round-trip
@@ -261,7 +260,7 @@ check:</strong>
 > in the specification; do not infer that the proposed runner has been
 > implemented.
 
-<strong>Final review output:</strong>
+**Final review output:**
 
 > No additional relevant findings in the supplied specification. Section 4 now
 > distinguishes the stage-specific converter options; preserves the intermediate
@@ -303,9 +302,9 @@ in a new session, and findings were fixed by hand before the next round.
 
 #### Last specification review
 
-<strong>Model:</strong> Claude Opus 5.5, high effort, in Claude Code.
+**Model:** Claude Opus 5.5, high effort, in Claude Code.
 
-<strong>Exact prompt:</strong>
+**Exact prompt:**
 
 ```text
 Review only Section 1, "Scope and common test-case format", in spec.md, after the
@@ -315,33 +314,33 @@ context. Report only actionable correctness findings with short corrections; do 
 rewrite the section. If no relevant findings remain, say so.
 ```
 
-<strong>Final output, verbatim;</strong> strikethrough marks findings I judged
+**Final output, verbatim;** strikethrough marks findings I judged
 incorrect or irrelevant:
 
 > I found two small factual problems in Section 1 and one possible conflict with
 > the instructor's feedback. The rest of the section is accurate.
 >
-> 1. <del>The id field may contradict "no separate case id" (§1.3, field table
+> 1. ~~The id field may contradict "no separate case id" (§1.3, field table
 >    and the paragraph after it). The section now adds id as an optional field.
 >    The tests set id: "…" 453 times, mostly as generated labels like
 >    a\_type\_7\_tag\_is\_a\_raw\_inline\_even\_in\_a\_block\_context\_case\_5.
->    That is a separate case id in practice.</del>
->    * <del>If the instructor meant ids should be optional, the text is correct
->      as written.</del>
->    * <del>If they meant there should be no id field, remove the id row and
+>    That is a separate case id in practice.~~
+>    * ~~If the instructor meant ids should be optional, the text is correct
+>      as written.~~
+>    * ~~If they meant there should be no id field, remove the id row and
 >      change the sentence to: "The test function name identifies the test;
->      table-driven failures also report the row number."</del>
-> 2. <del>The list of pulldown-cmark options in §1.1 is wrong. "(none, math,
+>      table-driven failures also report the row number."~~
+> 2. ~~The list of pulldown-cmark options in §1.1 is wrong. "(none, math,
 >    tables, or both)" says some helper uses math alone, but none does. At
 >    baseline, round\_trip and round\_trip\_setext use no flags,
 >    round\_trip\_pure\_table uses tables, and assert\_math\_round\_trips uses
 >    math and tables together. Correction: "(none, tables only, or math with
->    tables)".</del>
-> 3. <del>The expectation field's meaning doesn't match its type (§1.3). The
+>    tables)".~~
+> 3. ~~The expectation field's meaning doesn't match its type (§1.3). The
 >    field is an Option, and the example writes Some(DocumentedDifference { …
 >    }), but the table's Meaning column lists only the bare variants.
 >    Correction: "Some(Preserved) or Some(DocumentedDifference { … }); None when
->    the case checks only Markdown."</del>
+>    the case checks only Markdown."~~
 >
 > I checked these against the current text and the code:
 >
@@ -429,7 +428,7 @@ Review findings
   independently approved exception before it is recorded as a
   DocumentedDifference.`
 
-<code> P2 — The generated inline/block cases use a reference that does not
+P2 — The generated inline/block cases use a reference that does not
 support their loss classification. All 144 cases in \[blocks\_inside\_inlines
 (line 1014)\](/C:/Users/tmsse/OneDrive/Family Files/Desktop/Literate
 Programming/htmd\_sbe80Fork/htmd/tests/translation\_approach\_tests.rs:1014)
@@ -440,90 +439,54 @@ references to the applicable approved rule or normative parsing rule, as
 \[spec.md (line 169)\](/C:/Users/tmsse/OneDrive/Family Files/Desktop/Literate
 Programming/htmd\_sbe80Fork/htmd/spec.md:169) requires. No files were changed.
 cargo build, cargo clippy -- --deny warnings, cargo test, and cargo run
---example simple all passed. </code><code> </code>
+--example simple all passed.
 
 Both of these findings are handled by the inventory.
 
-<code> </code>
-
 #### Implementation review rounds
-
-<code> </code>
 
 The proposed implementation has not been completed in this documentation
 revision.
 
-<code> </code>
-
 | Round | Findings | Main changes made |
 | ----- | -------- | ----------------- |
 
-<code> </code>
-
 #### Last implementation review
-
-<code> </code>
 
 The implementation owner will add the actual model, prompt, and last review
 output after implementation and repeated review.
 
-<code> </code>
-
 ### Alibek Baisholanov
-
-<code> </code>
 
 GitHub userid: alibekbtu
 
-<code> </code>
-
 #### Contributions
-
-<code> </code>
 
 Completed and reviewed the Section 3 HTML comparator, corrected
 template-fragment and namespace handling, and added regression tests while
 preserving the finalized specification.
 
-<code> </code>
-
 #### Specification review rounds
 
-<code> </code>
-
 Only final-stage Section 3 reviews from 2026-11-15 are included.
-
-<code> </code>
 
 | Round | Findings | Main changes made                                                                                                                                                    |
 | ----- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1     | 0        | Reviewed the revised whitespace-aware comparison, protected code/pre content, documented expectations, and exact Markdown checks; no further changes were requested. |
 | 2     | 0        | Rechecked the examples and boundary cases for inline word separators, NBSP, parser normalization, and stability; no additional changes were requested.               |
 
-<code> </code>
-
 #### Last specification review
 
-<code> </code>
-
-<strong>Model:</strong> GPT-6.1 Sol, Extra High, the user-confirmed model for
+**Model:** GPT-6.1 Sol, Extra High, the user-confirmed model for
 this Codex session. These were successive self-reviews in this session.
 
-<code> </code>
-
-<strong>Prompt:</strong>
-
-<code> </code>
+**Prompt:**
 
 ```text
 Review only Section 3, "HTML comparison and correctness criteria", in spec.md after the instructor feedback on PR #13. Check permitted ASCII-whitespace collapse outside code, exact code/pre text and descendants, inline word separators, NBSP, attribute/comment data, HTML parsing, exact documented expectations, and exact Markdown stability under fixed options. Use the other sections only as context. Report only actionable correctness findings with short corrections; do not rewrite other sections or target a finding count. If no relevant findings remain, say so.
 ```
 
-<code> </code>
-
-<strong>Final output, verbatim:</strong>
-
-<code> </code>
+**Final output, verbatim:**
 
 > No further relevant correctness findings in Section 3. Checking the examples
 > and boundary cases confirms that ordinary tab/newline collapse and
@@ -533,59 +496,37 @@ Review only Section 3, "HTML comparison and correctness criteria", in spec.md af
 > and HTML whitespace allowances do not weaken the exact Markdown stability
 > assertion. No additional specification change is requested.
 
-<code> </code>
-
 Reviewed Section 3 SHA-256 with LF line endings:
 `b366be99b0b51c722e736fe0394f6d0c083b185626b33d7071b04d36b27b005d`.
 
-<code> </code>
-
 #### Implementation review rounds
-
-<code> </code>
 
 Reviews performed on 2026-11-15 against Section 3 only. Round 1 reviewed the
 initial shared implementation at `2966de3`; round 2 reviewed the fixes and
 regression tests below. These were successive self-reviews in this Codex
 session.
 
-<code> </code>
-
 | Round | Findings | Main changes made                                                                                                                                                                           |
 | ----- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1     | 2        | Compared template content fragments and their independent text flows, made HTML whitespace rules namespace-aware, and added three regression tests covering the two confirmed false passes. |
 | 2     | 0        | Rechecked the corrected comparator, whitespace boundaries, protected contents, and regressions; no further relevant correctness findings remained.                                          |
 
-<code> </code>
-
 Both round-1 findings were applied; none were rejected. Before the fixes, the
 targeted regression run reported 4 passing and 2 failing tests. All 6 comparator
 tests pass after the fixes.
 
-<code> </code>
-
 #### Last implementation review
 
-<code> </code>
-
-<strong>Model:</strong> GPT-6.1 Sol, Extra High, the user-confirmed model for
+**Model:** GPT-6.1 Sol, Extra High, the user-confirmed model for
 this Codex session.
 
-<code> </code>
-
-<strong>Prompt:</strong>
-
-<code> </code>
+**Prompt:**
 
 ```text
 Review only the implementation of Section 3, "HTML comparison and correctness criteria", in tests/common/mod.rs (ComparedNode through compare_html) and its tests in tests/html_comparison_tests.rs against spec.md. Check parsed structure and attributes, template content fragments and their text flows, HTML versus foreign namespaces, ASCII-whitespace normalization, inline word separation, exact code/pre descendants, NBSP, comments, and parser-normalized line endings. Use the runner and other specification sections only as context. Report only concrete actionable correctness findings with short corrections; do not rewrite the specification, review other owners' sections, or target a finding count. If no relevant findings remain, say so.
 ```
 
-<code> </code>
-
-<strong>Final output, verbatim:</strong>
-
-<code> </code>
+**Final output, verbatim:**
 
 > No further relevant correctness findings in the Section 3 implementation.
 > Template content fragments are now compared recursively, including nested
@@ -598,11 +539,7 @@ Review only the implementation of Section 3, "HTML comparison and correctness cr
 > suite, and simple example all passed; the suite reported 271 passed, 1
 > ignored, and 0 failed.
 
-<code> </code>
-
 Reviewed LF-normalized SHA-256 values:
-
-<code> </code>
 
 * Comparator range (`ComparedNode` through `compare_html`) in
   `tests/common/mod.rs`:
@@ -610,19 +547,11 @@ Reviewed LF-normalized SHA-256 values:
 * `tests/html_comparison_tests.rs`:
   `dc617a29fde5d6b278ef40af348672f03b6d09151f638d12c3c7e1158dbd929f`.
 
-<code> </code>
-
 ### Kamila Bagdat
-
-<code> </code>
 
 GitHub userid: bagdatkamilla
 
-<code> </code>
-
 #### Contributions
-
-<code> </code>
 
 Refined Section 4, "Round-trip execution and project verification",
 incorporating instructor feedback and improving the strategy for round-trip
@@ -631,11 +560,7 @@ assertions, and failure diagnostics. Contributed to ensuring consistency between
 the shared test-case format, HTML comparison criteria, and implementation
 requirements.
 
-<code> </code>
-
 #### Specification review rounds
-
-<code> </code>
 
 | Round        | Findings | Main changes made                                                                                                                                              |
 | ------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -643,19 +568,11 @@ requirements.
 | Review 2     | 2        | Examined intermediate Markdown preservation, independent HTML and Markdown assertions, Markdown-only cases, and documented instability handling.               |
 | Final review | 0        | Assessed the specification's coverage of round-trip execution, error diagnostics, and project verification requirements.                                       |
 
-<code> </code>
-
 #### Last specification review
 
-<code> </code>
+**Model:** OpenAI GPT-6
 
-<strong>Model:</strong> OpenAI GPT-6
-
-<code> </code>
-
-<strong>Prompt:</strong>
-
-<code> </code>
+**Prompt:**
 
 > Review only Section 4, "Round-trip execution and project verification", in
 > spec.md. Check the consistency of converter options, default Options::all()
@@ -664,11 +581,7 @@ requirements.
 > preservation, failure diagnostics, and verification commands. Identify
 > correctness issues and contradictions without expanding the project scope.
 
-<code> </code>
-
-<strong>Review assessment:</strong>
-
-<code> </code>
+**Review assessment:**
 
 > The documented Section 4 strategy addresses the major requirements for
 > round-trip execution and project verification. It distinguishes converter
@@ -681,11 +594,7 @@ requirements.
 > that these requirements remain consistent with Sections 1–3 and that all
 > instructor-requested changes have been incorporated.
 
-<code> </code>
-
 #### Implementation review rounds
-
-<code> </code>
 
 | Round        | Findings | Main changes made                                                                                                                           |
 | ------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -693,19 +602,11 @@ requirements.
 | Review 2     | 2        | Defined checks for Markdown stability, documented instability, preservation of intermediate output, and diagnostic reporting.               |
 | Final review | 0        | Defined the final verification criteria for round-trip behavior, existing test coverage, and integration with the shared testing framework. |
 
-<code> </code>
-
 #### Last implementation review
 
-<code> </code>
+**Model:** OpenAI GPT-6
 
-<strong>Model:</strong> OpenAI GPT-6
-
-<code> </code>
-
-<strong>Prompt:</strong>
-
-<code> </code>
+**Prompt:**
 
 > Review the Rust implementation of Section 4, "Round-trip execution and project
 > verification", against spec.md. Verify HTML-to-Markdown-to-HTML conversion,
@@ -715,11 +616,7 @@ requirements.
 > meaningful failure diagnostics. Identify concrete correctness problems without
 > unnecessary refactoring.
 
-<code> </code>
-
-<strong>Review assessment:</strong>
-
-<code> </code>
+**Review assessment:**
 
 > The implementation must preserve the required sequence of conversion stages
 > and apply the correct options at each stage. HTML-preservation and
@@ -735,31 +632,21 @@ requirements.
 > itself establish that the new round-trip implementation satisfies every
 > requirement in Section 4.
 
-<code> </code>
-
 Verification of this implementation revision
 --------------------------------------------
 
-<code> </code>
-
-<strong>Date:</strong> 2026-11-15, Asia/Almaty. <strong>Environment:</strong>
-Alibek's local macOS ARM64 workspace. <strong>Model:</strong> GPT-6.1 Sol, Extra
+**Date:** 2026-11-15, Asia/Almaty. **Environment:**
+Alibek's local macOS ARM64 workspace. **Model:** GPT-6.1 Sol, Extra
 High.
 
-<code> </code>
-
-<strong>Prompt:</strong> `Verify that you can build and run the project in the
+**Prompt:** `Verify that you can build and run the project in the
 current git repo.`
 
-<code> </code>
-
-<strong>Summarized LLM output:</strong> I built and ran the implementation based
+**Summarized LLM output:** I built and ran the implementation based
 on `2966de3` with the Section 3 corrections reviewed above. All four commands
 completed successfully; the full suite reported **271 passed, 1 ignored, 0
 failed**, including all 6 comparator tests. The two new failing regressions were
 observed before their fixes and passed afterward.
-
-<code> </code>
 
 | Command                           | Exit code | Result                           |
 | --------------------------------- | --------- | -------------------------------- |
@@ -768,12 +655,8 @@ observed before their fixes and passed afterward.
 | `cargo test`                      | 0         | 271 passed; 1 ignored; 0 failed. |
 | `cargo run --example simple`      | 0         | Example completed successfully.  |
 
-<code> </code>
-
 Instructor feedback and provenance
 ----------------------------------
-
-<code> </code>
 
 | Feedback                                  | Change in this revision                                                                                                                                  |
 | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -784,20 +667,13 @@ Instructor feedback and provenance
 | HTML comparison was too strict            | Permit ASCII text-whitespace collapse and block formatting; preserve code/pre text, inline word separation, NBSP, structure, and attribute/comment data. |
 | Verify each member's environment          | Recorded Alibek's measured checks and Yuriy/Kamila's confirmed local results; Sam's own verification remains for him to add.                             |
 
-<code> </code>
-
 Source records are retained in Git history:
-
-<code> </code>
 
 * [Sam's updated common draft report](https://github.com/Samboeng76/htmd/blob/79dd7e8839f76e5e0ffda568bf2fbbad1c652c95/llm-review.md).
 * [Alibek's draft evidence](https://github.com/Samboeng76/htmd/blob/79dd7e8839f76e5e0ffda568bf2fbbad1c652c95/llm-review-alibek.md).
 * [Kamila's supplied draft record](https://github.com/Samboeng76/htmd/blob/79dd7e8839f76e5e0ffda568bf2fbbad1c652c95/llm-review-kamila.md).
 
-<code> </code>
-
 The 31-case whitespace probe in the draft used empty extension flags and the old
 source-exact criteria. Its measurements remain historical evidence, not
 validation of the new default flags or the revised proposed comparator.
 
-<code> </code>
