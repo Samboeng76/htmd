@@ -710,18 +710,19 @@ requirements.
 Verification of this implementation revision
 --------------------------------------------
 
-**Date:** 2026-11-15, Asia/Almaty. **Environment:**
+**Date:** 2026-11-16, Asia/Almaty. **Environment:**
 Alibek's local macOS ARM64 workspace. **Model:** GPT-6.1 Sol, Extra
 High.
 
 **Prompt:** `Verify that you can build and run the project in the
 current git repo.`
 
-**Summarized LLM output:** I built and ran the implementation based
-on `2966de3` with the Section 3 corrections reviewed above. All four commands
-completed successfully; the full suite reported **271 passed, 1 ignored, 0
-failed**, including all 6 comparator tests. The two new failing regressions were
-observed before their fixes and passed afterward.
+**Summarized LLM output:** I built and ran the integrated implementation at
+`14e66d4`, including the team's latest migration fixes and the Section 3
+corrections reviewed above. All four commands completed successfully; the full
+suite reported **271 passed, 1 ignored, 0 failed**, including all 6 comparator
+tests. The Section 3 regressions had been observed failing before their fixes
+and pass in this integrated version.
 
 | Command                           | Exit code | Result                           |
 | --------------------------------- | --------- | -------------------------------- |
@@ -751,4 +752,3 @@ Source records are retained in Git history:
 The 31-case whitespace probe in the draft used empty extension flags and the old
 source-exact criteria. Its measurements remain historical evidence, not
 validation of the new default flags or the revised proposed comparator.
-
