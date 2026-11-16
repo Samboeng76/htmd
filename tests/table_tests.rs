@@ -2,7 +2,6 @@ mod common;
 use common::{Case, DifferenceKind, HtmlExpectation, check_cases};
 use indoc::indoc;
 use pretty_assertions::assert_eq;
-use pulldown_cmark::Options as CommonMarkOptions;
 
 fn longest_space_run(text: &str) -> usize {
     let mut longest = 0;
@@ -58,7 +57,6 @@ fn simple_table() {
         }),
         html,
         expected_markdown: Some(expected),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
 }
@@ -150,7 +148,6 @@ fn table_with_thead_tbody() {
         expectation: Some(HtmlExpectation::Preserved),
         html,
         expected_markdown: Some(expected),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
 }
@@ -723,7 +720,6 @@ fn a_comment_in_a_table_is_written_as_html() {
         }),
         html: with_stray_text,
         expected_markdown: Some("stray\n\n| A |\n| - |\n| c |"),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
 }
@@ -750,7 +746,6 @@ fn a_pipe_in_an_open_tag_is_encoded() {
             "| ------------------------------- |\n",
             "| <span title=\"a&#124;b\">c</span> |"
         )),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
 
@@ -768,7 +763,6 @@ fn a_pipe_in_an_open_tag_is_encoded() {
             "| ------------------------------- |\n",
             "| c                               |"
         )),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
 
@@ -840,7 +834,6 @@ fn a_comment_holding_a_pipe_is_written_as_html() {
         expectation: Some(HtmlExpectation::Preserved),
         html: without_a_pipe,
         expected_markdown: Some("| A            |\n| ------------ |\n| a<!-- c -->b |"),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
 }
@@ -863,7 +856,6 @@ fn an_empty_column_is_one_wide() {
         expectation: Some(HtmlExpectation::Preserved),
         html: only_column,
         expected_markdown: Some("|   |\n| - |\n|   |"),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
 
@@ -877,7 +869,6 @@ fn an_empty_column_is_one_wide() {
         expectation: Some(HtmlExpectation::Preserved),
         html: among_others,
         expected_markdown: Some("|   | B |\n| - | - |\n|   | d |"),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -994,7 +985,6 @@ fn table_with_inlines() {
         expectation: Some(HtmlExpectation::Preserved),
         html,
         expected_markdown: Some(expected),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
 }
@@ -1026,7 +1016,6 @@ fn table_block_cells() {
                 "#
         ),
         expected_markdown: Some("| a | <p>b</p> |\n| - | -------- |\n| c | d        |"),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);

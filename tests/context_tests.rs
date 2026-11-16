@@ -3,7 +3,6 @@
 //! `translation_approach.md`.
 
 use pretty_assertions::assert_eq;
-use pulldown_cmark::Options as CommonMarkOptions;
 
 mod common;
 use common::{
@@ -187,7 +186,6 @@ fn a_commonmark_block_in_an_inline_context_is_a_raw_inline() {
         expected_markdown: Some(
             "# <table><thead><tr><th>h</th></tr></thead><tbody><tr><td>a</td></tr></tbody></table>",
         ),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -359,7 +357,6 @@ fn html_in_a_table_cell_is_a_raw_inline() {
         html: "<table><thead><tr><th>h</th></tr></thead>\
              <tbody><tr><td><br><em>b</em></td></tr></tbody></table>",
         expected_markdown: Some("| h       |\n| ------- |\n| <br>*b* |"),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
     // A block element in a cell is a raw HTML inline like any other.
@@ -370,7 +367,6 @@ fn html_in_a_table_cell_is_a_raw_inline() {
         html: "<table><thead><tr><th>h</th></tr></thead>\
              <tbody><tr><td><p>a</p></td></tr></tbody></table>",
         expected_markdown: Some("| h        |\n| -------- |\n| <p>a</p> |"),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
 
@@ -382,7 +378,6 @@ fn html_in_a_table_cell_is_a_raw_inline() {
         expected_markdown: Some(
             "| h                   |\n| ------------------- |\n| <ul><li>a</li></ul> |",
         ),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -750,7 +745,6 @@ fn a_raw_inline_escapes_the_line_endings_of_its_attributes() {
             "| ------------------------ |\n",
             "| <em foo=\"1&#10;2\">y</em> |"
         )),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
     // An HTML *block* keeps its line structure: only a blank line ends a type 6
@@ -784,7 +778,6 @@ fn a_raw_inline_encodes_the_pipes_of_its_attributes() {
             "| ---------------------------- |\n",
             r#"| <em foo="1&#124;2">y\|z</em> |"#
         )),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
     // Outside a cell the encoding is redundant but harmless: it decodes back to
@@ -938,7 +931,6 @@ fn a_title_escapes_its_line_endings() {
             "| ---------------- |\n",
             "| [t](u \"a&#10;b\") |"
         )),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -1174,7 +1166,6 @@ fn a_math_span_replaces_its_line_endings_with_spaces() {
         expectation: Some(HtmlExpectation::Preserved),
         html: "<p>x<span class=\"math math-inline\">a\nb</span>y</p>",
         expected_markdown: Some("x$a b$y"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
 
@@ -1183,7 +1174,6 @@ fn a_math_span_replaces_its_line_endings_with_spaces() {
         expectation: Some(HtmlExpectation::Preserved),
         html: "<p><span class=\"math math-display\">a\nb</span></p>",
         expected_markdown: Some("$$a b$$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     // A carriage return reaches the span only as a character reference, the
@@ -1195,7 +1185,6 @@ fn a_math_span_replaces_its_line_endings_with_spaces() {
         expectation: Some(HtmlExpectation::Preserved),
         html: "<p><span class=\"math math-inline\">a&#13;&#10;b</span></p>",
         expected_markdown: Some("$a b$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     // ...while a lone carriage return is a line ending of its own.
@@ -1205,7 +1194,6 @@ fn a_math_span_replaces_its_line_endings_with_spaces() {
         expectation: Some(HtmlExpectation::Preserved),
         html: "<p><span class=\"math math-inline\">a&#13;b</span></p>",
         expected_markdown: Some("$a b$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     // An escaped line ending is LaTeX's control space, which an escaped space
@@ -1216,7 +1204,6 @@ fn a_math_span_replaces_its_line_endings_with_spaces() {
         expectation: Some(HtmlExpectation::Preserved),
         html: "<p><span class=\"math math-inline\">a\\\nb</span></p>",
         expected_markdown: Some(r"$a\ b$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -1240,7 +1227,6 @@ fn a_math_span_strips_its_comments() {
         }),
         html: "<p><span class=\"math math-inline\">\\alpha%c\n  \tx</span></p>",
         expected_markdown: Some(r"$\alpha x$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     // The space is wrong in text mode, where the comment joined two letters.
@@ -1255,7 +1241,6 @@ fn a_math_span_strips_its_comments() {
         }),
         html: "<p><span class=\"math math-inline\">\\text{fo%c\no}</span></p>",
         expected_markdown: Some(r"$\text{fo o}$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     // Every line ending bounds a comment: a CRLF pair and a lone carriage
@@ -1271,7 +1256,6 @@ fn a_math_span_strips_its_comments() {
         }),
         html: "<p><span class=\"math math-display\">a%x&#13;&#10;b&#13;c%y&#13;d</span></p>",
         expected_markdown: Some("$$a b c d$$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     // A comment on the last line still leaves its space, which only inline math
@@ -1287,7 +1271,6 @@ fn a_math_span_strips_its_comments() {
         }),
         html: "<p><span class=\"math math-display\">a%b</span></p>",
         expected_markdown: Some("$$a $$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     // `\%` is a literal percent sign...
@@ -1297,7 +1280,6 @@ fn a_math_span_strips_its_comments() {
         expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><span class="math math-inline">a\%b</span></p>"#,
         expected_markdown: Some(r"$a\%b$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     // ...but `\\` is a control symbol, leaving the `%` after it unescaped.
@@ -1312,7 +1294,6 @@ fn a_math_span_strips_its_comments() {
         }),
         html: r#"<p><span class="math math-inline">a\\%b</span></p>"#,
         expected_markdown: Some(r"$a\\$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     // A span which is all comment holds no math. Inline math cannot be empty,
@@ -1329,7 +1310,6 @@ fn a_math_span_strips_its_comments() {
         }),
         html: r#"<p><span class="math math-inline">%a</span></p>"#,
         expected_markdown: Some(r#"<span class="math math-inline"> </span>"#),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     check_cases(&faithful_cases);

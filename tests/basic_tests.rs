@@ -611,7 +611,6 @@ fn adjacent_math_spans_stay_math() {
             id,
             html,
             expected_markdown: Some(markdown),
-            markdown_options: CommonMarkOptions::ENABLE_MATH,
             expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         })
@@ -1051,7 +1050,6 @@ fn faithful_mode_table() {
             </tr>
         </tbody></table>"#,
         )),
-        markdown_options: CommonMarkOptions::ENABLE_TABLES,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
@@ -1419,7 +1417,6 @@ fn math() {
         expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><span class="math math-inline">x^2</span></p>"#,
         expected_markdown: Some("$x^2$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
 
@@ -1428,7 +1425,6 @@ fn math() {
         expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><span class="math math-display">x^2</span></p>"#,
         expected_markdown: Some("$$x^2$$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
 
@@ -1439,7 +1435,6 @@ fn math() {
         expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><span class="math math-display">{a}_1, b_{2}, a*1, b*2, [a](b), 3 &lt;a&gt; b, a \; b</span></p>"#,
         expected_markdown: Some("$${a}_1, b_{2}, a*1, b*2, [a](b), 3 <a> b, a \\; b$$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -1455,7 +1450,6 @@ fn empty_math_span() {
         id: "empty_math_span_math_1",
         html: r#"<p><span class="math math-display"></span></p>"#,
         expected_markdown: Some("$$$$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
@@ -1463,7 +1457,6 @@ fn empty_math_span() {
         id: "empty_math_span_math_2",
         html: r#"<p><span class="math math-inline"></span></p>"#,
         expected_markdown: Some(r#"<span class="math math-inline"></span>"#),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
@@ -1490,14 +1483,12 @@ fn math_span_whitespace() {
         }),
         html: "<p><span class=\"math math-inline\"> \u{b}x\t</span></p>",
         expected_markdown: Some("$x$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         ..Case::default()
     }]);
     faithful_cases.extend([Case {
         id: "math_span_whitespace_math_1",
         html: r#"<p><span class="math math-display"> x </span></p>"#,
         expected_markdown: Some("$$ x $$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
@@ -1507,7 +1498,6 @@ fn math_span_whitespace() {
         id: "math_span_whitespace_math_2",
         html: r#"<p><span class="math math-inline">a\ </span></p>"#,
         expected_markdown: Some(r#"<span class="math math-inline">a\\ </span>"#),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
@@ -1515,7 +1505,6 @@ fn math_span_whitespace() {
         id: "math_span_whitespace_math_3",
         html: r#"<p><span class="math math-display">a\ </span></p>"#,
         expected_markdown: Some(r"$$a\ $$"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
@@ -1565,7 +1554,6 @@ fn unwritable_math_span() {
             id,
             html,
             expected_markdown: Some(markdown),
-            markdown_options: CommonMarkOptions::ENABLE_MATH,
             expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         })
@@ -1585,7 +1573,6 @@ fn span_not_of_the_math_form() {
         id: "span_not_of_the_math_form_math_1",
         html,
         expected_markdown: Some(r#"<span class="math math-inline">a*b*</span>"#),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
@@ -1595,7 +1582,6 @@ fn span_not_of_the_math_form() {
         id: "span_not_of_the_math_form_math_2",
         html,
         expected_markdown: Some(r#"<span class="math math-inline">a<!--c--></span>"#),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
@@ -1605,7 +1591,6 @@ fn span_not_of_the_math_form() {
         id: "span_not_of_the_math_form_math_3",
         html,
         expected_markdown: Some(r#"<span class="math math-inline" id="x">a</span>"#),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
@@ -1631,7 +1616,6 @@ fn math_span_in_a_table_cell() {
             r"| $\\|x\\| = a\|b$ |"
         )),
         expectation: Some(HtmlExpectation::Preserved),
-        markdown_options: CommonMarkOptions::ENABLE_MATH | CommonMarkOptions::ENABLE_TABLES,
         ..Case::default()
     }]);
 }
@@ -1645,7 +1629,6 @@ fn dollar_sign_in_text() {
         id: "dollar_sign_in_text_math_1",
         html: "<p>$5,$6</p>",
         expected_markdown: Some(r"\$5,\$6"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
@@ -2276,16 +2259,26 @@ fn round_trip_of_a_leaf_block_an_html_block_would_dissolve() {
         heading_style: HeadingStyle::Setex,
         ..Case::default().htmd_options
     };
-    // Content which opens no HTML block keeps the setext form.
+    // A lone `<br>` and a `<div>` open HTML blocks, so they fall back to ATX;
+    // `<br><br>` opens none and keeps the setext form.
     let headings = [
-        ("setext_heading_with_one_break", "<h1><br></h1>"),
-        ("setext_heading_with_div", "<h1><div>a</div></h1>"),
-        ("setext_heading_with_two_breaks", "<h1><br><br></h1>"),
+        ("setext_heading_with_one_break", "<h1><br></h1>", "# <br>"),
+        (
+            "setext_heading_with_div",
+            "<h1><div>a</div></h1>",
+            "# <div>a</div>",
+        ),
+        (
+            "setext_heading_with_two_breaks",
+            "<h1><br><br></h1>",
+            "<br><br>\n========",
+        ),
     ];
-    cases.extend(headings.iter().map(|(id, html)| Case {
+    cases.extend(headings.iter().map(|(id, html, markdown)| Case {
         id,
         html,
         htmd_options: setext.clone(),
+        expected_markdown: Some(markdown),
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }));
@@ -2305,34 +2298,39 @@ fn round_trip_of_a_setext_heading_of_leaf_block_syntax() {
         (
             "setext_h1_with_dash",
             "<h1>-</h1>",
+            "\\-\n==",
             CommonMarkOptions::all(),
         ),
         (
             "setext_h2_with_dash",
             "<h2>-</h2>",
+            "\\-\n--",
             CommonMarkOptions::all(),
         ),
         (
             "setext_h1_with_thematic_break",
             "<h1>---</h1>",
+            "\\---\n====",
             CommonMarkOptions::all() & !CommonMarkOptions::ENABLE_SMART_PUNCTUATION,
         ),
         (
             "setext_h1_with_list_marker",
             "<h1>1.</h1>",
+            "1\\.\n===",
             CommonMarkOptions::all(),
         ),
     ];
     check_cases(
         &headings
             .iter()
-            .map(|(id, html, markdown_options)| Case {
+            .map(|(id, html, markdown, markdown_options)| Case {
                 id,
                 html,
                 htmd_options: Options {
                     heading_style: HeadingStyle::Setex,
                     ..Case::default().htmd_options
                 },
+                expected_markdown: Some(markdown),
                 markdown_options: *markdown_options,
                 expectation: Some(HtmlExpectation::Preserved),
                 ..Case::default()

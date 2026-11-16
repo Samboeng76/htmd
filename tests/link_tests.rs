@@ -977,7 +977,6 @@ fn link_text_escapes_its_math_delimiters() {
         id: "link_text_escapes_its_math_delimiters_case_32",
         html,
         expected_markdown: Some(r"[\$a\](v)\$](u)"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
@@ -987,7 +986,6 @@ fn link_text_escapes_its_math_delimiters() {
         id: "link_text_escapes_its_math_delimiters_case_33",
         html,
         expected_markdown: Some("[$a](v)$](u)"),
-        markdown_options: CommonMarkOptions::ENABLE_MATH,
         expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);

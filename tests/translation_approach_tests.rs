@@ -1910,7 +1910,6 @@ fn tables() {
             id,
             html,
             expected_markdown: Some(markdown),
-            markdown_options: pulldown_cmark::Options::ENABLE_TABLES,
             expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         })
