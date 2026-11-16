@@ -486,6 +486,10 @@ pub fn check_cases(cases: &[Case<'_>]) {
             case.markdown_options,
             case.html
         );
+        if case.html.is_empty() {
+            failures.push(format!("{context}\ncase needs input HTML"));
+            continue;
+        }
         if case.expectation.is_none() && case.expected_markdown.is_none() {
             failures.push(format!("{context}\ncase needs at least one assertion"));
             continue;

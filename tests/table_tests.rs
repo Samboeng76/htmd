@@ -687,7 +687,11 @@ fn a_comment_in_a_table_is_written_as_html() {
             ),
         ),
     ];
-    let cases = inputs
+    let with_stray_text = concat!(
+        "<table><thead><tr><th>A</th></tr></thead>",
+        "<tbody>stray<tr><td>c</td></tr></tbody></table>"
+    );
+    let mut cases = inputs
         .iter()
         .map(|(id, html)| Case {
             id,
@@ -697,20 +701,7 @@ fn a_comment_in_a_table_is_written_as_html() {
             ..Case::default()
         })
         .collect::<Vec<_>>();
-    check_cases(&cases);
-    for (_, html) in inputs {
-        assert_eq!(
-            "| A |\n| - |\n| c |",
-            htmd::HtmlToMarkdown::new().convert(html).unwrap()
-        );
-    }
-
-    let with_stray_text = concat!(
-        "<table><thead><tr><th>A</th></tr></thead>",
-        "<tbody>stray<tr><td>c</td></tr></tbody></table>"
-    );
-
-    check_cases(&[Case {
+    cases.push(Case {
         id: "a_comment_in_a_table_is_written_as_html_case_6",
         expectation: Some(HtmlExpectation::DocumentedDifference {
             kind: DifferenceKind::Loss,
@@ -721,7 +712,14 @@ fn a_comment_in_a_table_is_written_as_html() {
         html: with_stray_text,
         expected_markdown: Some("stray\n\n| A |\n| - |\n| c |"),
         ..Case::default()
-    }]);
+    });
+    check_cases(&cases);
+    for (_, html) in inputs {
+        assert_eq!(
+            "| A |\n| - |\n| c |",
+            htmd::HtmlToMarkdown::new().convert(html).unwrap()
+        );
+    }
 }
 
 /// [Tables](../translation_approach.md#tables).
@@ -805,7 +803,14 @@ fn a_comment_holding_a_pipe_is_written_as_html() {
             ),
         ),
     ];
-    let cases = inputs
+    // A comment holding no `|` still translates, as
+    // `a_comment_in_a_table_is_written_as_html` shows for one outside a
+    // cell.
+    let without_a_pipe = concat!(
+        "<table><thead><tr><th>A</th></tr></thead>",
+        "<tbody><tr><td>a<!-- c -->b</td></tr></tbody></table>"
+    );
+    let mut cases = inputs
         .iter()
         .map(|(id, html)| Case {
             id,
@@ -815,27 +820,18 @@ fn a_comment_holding_a_pipe_is_written_as_html() {
             ..Case::default()
         })
         .collect::<Vec<_>>();
-    check_cases(&cases);
-    assert_eq!(
-        "| A |\n| - |\n|   |",
-        htmd::HtmlToMarkdown::new().convert(inputs[0].1).unwrap()
-    );
-
-    // A comment holding no `|` still translates, as
-    // `a_comment_in_a_table_is_written_as_html` shows for one outside a
-    // cell.
-    let without_a_pipe = concat!(
-        "<table><thead><tr><th>A</th></tr></thead>",
-        "<tbody><tr><td>a<!-- c -->b</td></tr></tbody></table>"
-    );
-
-    check_cases(&[Case {
+    cases.push(Case {
         id: "a_comment_holding_a_pipe_is_written_as_html_case_10",
         expectation: Some(HtmlExpectation::Preserved),
         html: without_a_pipe,
         expected_markdown: Some("| A            |\n| ------------ |\n| a<!-- c -->b |"),
         ..Case::default()
-    }]);
+    });
+    check_cases(&cases);
+    assert_eq!(
+        "| A |\n| - |\n|   |",
+        htmd::HtmlToMarkdown::new().convert(inputs[0].1).unwrap()
+    );
 }
 
 /// [Tables](../translation_approach.md#tables).
