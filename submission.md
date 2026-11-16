@@ -287,7 +287,9 @@ GitHub userid: kim0111
 Reviewed and revised Section 1, "Scope and common test-case format", after the
 instructor feedback, correcting its field defaults, optional `id`, example case,
 helper list, baseline test count, and classification of the comparator
-self-tests.
+self-tests, then reviewed its implementation and fixed how migrated tests fill
+in cases (exact setext Markdown, default pulldown-cmark flags, one
+`check_cases` call per test, required input HTML).
 
 #### Specification review rounds
 
@@ -368,16 +370,89 @@ Why the struck findings need no change:
 
 #### Implementation review rounds
 
-The proposed implementation has not been completed in this documentation
-revision.
+Final-stage reviews of the Section 1 implementation from 2026-11-16: the `Case`
+struct and its defaults, how `check_cases` uses them in `tests/common/mod.rs`,
+and how the migrated tests fill in cases. Each round ran in a new session with
+the same prompt. Round 1 fixes are in commit `a757322` and round 2 fixes in
+`807bdc1`.
 
-| Round | Findings | Main changes made |
-| ----- | -------- | ----------------- |
+| Round | Findings | Main changes made                                                                                                                                                      |
+| ----- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | 2        | Added exact Markdown to the seven setext heading cases and removed the 51 pulldown-cmark flag overrides no case needed, keeping the five smart-punctuation exceptions. |
+| 2     | 2        | Merged the extra case of two table tests into their single `check_cases` call and made the runner reject a case with empty input HTML.                                 |
+| 3     | 2        | No changes: both findings were trivial (a missing comment on three needed overrides, and stale line numbers in eight case labels); neither changes what a test checks. |
 
 #### Last implementation review
 
-The implementation owner will add the actual model, prompt, and last review
-output after implementation and repeated review.
+**Model:** Claude Opus 5.5, high effort, in Claude Code.
+
+**Exact prompt:**
+
+```text
+Review only the implementation of Section 1, "Scope and common test-case format", of spec.md: the Case struct, its fields and defaults, and how check_cases uses them in tests/common/mod.rs, plus how migrated tests fill in cases. Check them against Section 1. Use the other sections only as context. Report only actionable correctness findings with short corrections; do not rewrite the code. If no relevant findings remain, say so.
+```
+
+**Final output, verbatim;** strikethrough marks text I judged incorrect or
+irrelevant:
+
+> I found no correctness bugs in the Section 1 core: the Case struct, its
+> defaults and how check\_cases uses them all match the spec. Two minor fixes
+> remain in how migrated tests fill in cases. This was a read-only review; I
+> didn't run cargo test.
+>
+> Findings
+>
+> 1. Three cases turn off smart punctuation without saying why. Section 1.3
+>    lets a case change markdown\_options only "when a case needs different
+>    flags". Other cases that do this explain it in a comment, such as
+>    tests/basic\_tests.rs:1753 and :1792, plus the setext table at :2296.
+>    These three don't:
+>    * tests/basic\_tests.rs:695 (inline\_raw\_html\_escaping)
+>    * tests/basic\_tests.rs:726 (multiline\_raw\_html\_escaping)
+>    * tests/link\_tests.rs:571 (an\_image\_alt\_escapes\_its\_raw\_html)
+>
+>    Without a stated reason, a reader can't tell a real need from hiding a
+>    mismatch, which Section 4 forbids. The -- in &lt;!-- … --&gt; and the " in
+>    the alt text would be changed by smart punctuation.
+>    Fix: add a one-line reason for each override, as the other cases do.
+>    ~~If smart punctuation would really change the text and nothing in the
+>    spec approves that, keep the default CommonMarkOptions::all() and record
+>    it as a DocumentedDifference with a reference instead.~~
+> 2. Eight case ids contain wrong source line numbers. For example,
+>    faithful\_mode\_serializes\_a\_table\_with\_a\_caption\_preserved\_line\_1150
+>    is at tests/basic\_tests.rs:1088. Others are at :2065, :2180, :2199,
+>    :2207, :2214, :2221 and :2657. The id is the label printed in failure
+>    reports (1.3), so these send the reader to the wrong line.
+>    Fix: remove the \_line\_NNNN suffix, or rename each to describe what the
+>    case checks.
+>
+> What checks out
+>
+> * Fields and defaults: html is required. htmd\_options defaults to the
+>   Faithful baseline and must stay Faithful. markdown\_options defaults to
+>   Options::all(), and stability defaults to Stable. id is optional, and every
+>   case must have at least one of expectation or expected\_markdown.
+> * Faithful baseline: it matches the old helpers exactly (Options::default()
+>   with the mode set to Faithful).
+> * Failure reports: every case runs, all failures are reported together, and
+>   each one shows the test name, row number and id.
+> * Rules 2–4: no migrated test uses a test\_ prefix or nested modules. Each
+>   migrated test calls check\_cases once, and its doc comment's first line
+>   links translation\_approach.md.
+> * Rule 5: I compared every HTML string in the baseline commit 2e7bf3a against
+>   the current tests. Every Faithful input, option override and Markdown
+>   check that disappeared turned out to be an expected HTML string now
+>   covered by Preserved.
+
+Why no change was made:
+
+1. The three overrides are needed: under `Options::all()`, smart punctuation
+   rewrites their `--` or `"` and the cases fail, as round 1 showed; only a
+   comment is missing. The struck alternative is incorrect: the change comes
+   from a pulldown-cmark extension the case does not test, not from a loss in
+   htmd's translation, so it is not a `DocumentedDifference`.
+2. The `_line_NNNN` suffixes are labels only. A failure report also names the
+   test and row number, which locate the case.
 
 ### Sam English
 
