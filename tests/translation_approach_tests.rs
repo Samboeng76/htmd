@@ -10,7 +10,7 @@ use htmd::options::{HeadingStyle, Options};
 use pretty_assertions::assert_eq;
 
 mod common;
-use common::{Case, HtmlExpectation, StabilityExpectation, check_cases};
+use common::{Case, DifferenceKind, HtmlExpectation, StabilityExpectation, check_cases};
 
 /// Approved second-trip results for block children inside inline elements.
 /// [Translating HTML nodes](../translation_approach.md#translating-html-nodes).
@@ -410,11 +410,535 @@ const INLINE_BLOCK_INSTABILITIES: &[(&str, &str)] = &[
 fn translating_html_nodes() {
     check_cases(&[Case {
         id: "translating_html_nodes_case_1",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><p>a</p></h1>",
         expected_markdown: Some("# <p>a</p>"),
         ..Case::default()
     }]);
 }
+
+/// Exact first-trip HTML for the generated block-inside-inline fixtures.
+const INLINE_BLOCK_EXPECTED_HTML: &[(&str, &str)] = &[
+    (
+        "link_with_paragraph_between_text",
+        "<p>a<a href=\"u\">x<p>b</p>y</a>c</p>\n",
+    ),
+    (
+        "link_with_paragraph_alone",
+        "<p>a<a href=\"u\"><p>b</p></a>c</p>\n",
+    ),
+    (
+        "link_with_heading_between_text",
+        "<p>a<a href=\"u\">x<h2>b</h2>y</a>c</p>\n",
+    ),
+    (
+        "link_with_heading_alone",
+        "<p>a<a href=\"u\"><h2>b</h2></a>c</p>\n",
+    ),
+    (
+        "link_with_unordered_list_between_text",
+        "<p>a<a href=\"u\">x<ul><li>b</li></ul>y</a>c</p>\n",
+    ),
+    (
+        "link_with_unordered_list_alone",
+        "<p>a<a href=\"u\"><ul><li>b</li></ul></a>c</p>\n",
+    ),
+    (
+        "link_with_ordered_list_between_text",
+        "<p>a<a href=\"u\">x<ol><li>b</li></ol>y</a>c</p>\n",
+    ),
+    (
+        "link_with_ordered_list_alone",
+        "<p>a<a href=\"u\"><ol><li>b</li></ol></a>c</p>\n",
+    ),
+    (
+        "link_with_blockquote_between_text",
+        "<p>a<a href=\"u\">x<blockquote>b</blockquote>y</a>c</p>\n",
+    ),
+    (
+        "link_with_blockquote_alone",
+        "<p>a<a href=\"u\"><blockquote>b</blockquote></a>c</p>\n",
+    ),
+    (
+        "link_with_pre_between_text",
+        "<p>a<a href=\"u\">x<pre>b</pre>y</a>c</p>\n",
+    ),
+    (
+        "link_with_pre_alone",
+        "<p>a<a href=\"u\"><pre>b</pre></a>c</p>\n",
+    ),
+    (
+        "link_with_thematic_break_between_text",
+        "<p>a<a href=\"u\">x<hr>y</a>c</p>\n",
+    ),
+    (
+        "link_with_thematic_break_alone",
+        "<p>a<a href=\"u\"><hr></a>c</p>\n",
+    ),
+    (
+        "link_with_table_between_text",
+        "<p>a<a href=\"u\">x<table><tbody><tr><td>b</td></tr></tbody></table>y</a>c</p>\n",
+    ),
+    (
+        "link_with_table_alone",
+        "<p>a<a href=\"u\"><table><tbody><tr><td>b</td></tr></tbody></table></a>c</p>\n",
+    ),
+    (
+        "link_with_div_between_text",
+        "<p>a<a href=\"u\">x<div>b</div>y</a>c</p>\n",
+    ),
+    (
+        "link_with_div_alone",
+        "<p>a<a href=\"u\"><div>b</div></a>c</p>\n",
+    ),
+    (
+        "em_with_paragraph_between_text",
+        "<p>a<em>x<p>b</p>y</em>c</p>\n",
+    ),
+    ("em_with_paragraph_alone", "<p>a<em><p>b</p></em>c</p>\n"),
+    (
+        "em_with_heading_between_text",
+        "<p>a<em>x<h2>b</h2>y</em>c</p>\n",
+    ),
+    ("em_with_heading_alone", "<p>a<em><h2>b</h2></em>c</p>\n"),
+    (
+        "em_with_unordered_list_between_text",
+        "<p>a<em>x<ul><li>b</li></ul>y</em>c</p>\n",
+    ),
+    (
+        "em_with_unordered_list_alone",
+        "<p>a<em><ul><li>b</li></ul></em>c</p>\n",
+    ),
+    (
+        "em_with_ordered_list_between_text",
+        "<p>a<em>x<ol><li>b</li></ol>y</em>c</p>\n",
+    ),
+    (
+        "em_with_ordered_list_alone",
+        "<p>a<em><ol><li>b</li></ol></em>c</p>\n",
+    ),
+    (
+        "em_with_blockquote_between_text",
+        "<p>a<em>x<blockquote>b</blockquote>y</em>c</p>\n",
+    ),
+    (
+        "em_with_blockquote_alone",
+        "<p>a<em><blockquote>b</blockquote></em>c</p>\n",
+    ),
+    (
+        "em_with_pre_between_text",
+        "<p>a<em>x<pre>b</pre>y</em>c</p>\n",
+    ),
+    ("em_with_pre_alone", "<p>a<em><pre>b</pre></em>c</p>\n"),
+    (
+        "em_with_thematic_break_between_text",
+        "<p>a<em>x<hr>y</em>c</p>\n",
+    ),
+    ("em_with_thematic_break_alone", "<p>a<em><hr></em>c</p>\n"),
+    (
+        "em_with_table_between_text",
+        "<p>a<em>x<table><tbody><tr><td>b</td></tr></tbody></table>y</em>c</p>\n",
+    ),
+    (
+        "em_with_table_alone",
+        "<p>a<em><table><tbody><tr><td>b</td></tr></tbody></table></em>c</p>\n",
+    ),
+    (
+        "em_with_div_between_text",
+        "<p>a<em>x<div>b</div>y</em>c</p>\n",
+    ),
+    ("em_with_div_alone", "<p>a<em><div>b</div></em>c</p>\n"),
+    (
+        "i_with_paragraph_between_text",
+        "<p>a<em>x<p>b</p>y</em>c</p>\n",
+    ),
+    ("i_with_paragraph_alone", "<p>a<i><p>b</p></i>c</p>\n"),
+    (
+        "i_with_heading_between_text",
+        "<p>a<em>x<h2>b</h2>y</em>c</p>\n",
+    ),
+    ("i_with_heading_alone", "<p>a<i><h2>b</h2></i>c</p>\n"),
+    (
+        "i_with_unordered_list_between_text",
+        "<p>a<em>x<ul><li>b</li></ul>y</em>c</p>\n",
+    ),
+    (
+        "i_with_unordered_list_alone",
+        "<p>a<i><ul><li>b</li></ul></i>c</p>\n",
+    ),
+    (
+        "i_with_ordered_list_between_text",
+        "<p>a<em>x<ol><li>b</li></ol>y</em>c</p>\n",
+    ),
+    (
+        "i_with_ordered_list_alone",
+        "<p>a<i><ol><li>b</li></ol></i>c</p>\n",
+    ),
+    (
+        "i_with_blockquote_between_text",
+        "<p>a<em>x<blockquote>b</blockquote>y</em>c</p>\n",
+    ),
+    (
+        "i_with_blockquote_alone",
+        "<p>a<i><blockquote>b</blockquote></i>c</p>\n",
+    ),
+    (
+        "i_with_pre_between_text",
+        "<p>a<em>x<pre>b</pre>y</em>c</p>\n",
+    ),
+    ("i_with_pre_alone", "<p>a<i><pre>b</pre></i>c</p>\n"),
+    (
+        "i_with_thematic_break_between_text",
+        "<p>a<em>x<hr>y</em>c</p>\n",
+    ),
+    ("i_with_thematic_break_alone", "<p>a<i><hr></i>c</p>\n"),
+    (
+        "i_with_table_between_text",
+        "<p>a<em>x<table><tbody><tr><td>b</td></tr></tbody></table>y</em>c</p>\n",
+    ),
+    (
+        "i_with_table_alone",
+        "<p>a<i><table><tbody><tr><td>b</td></tr></tbody></table></i>c</p>\n",
+    ),
+    (
+        "i_with_div_between_text",
+        "<p>a<em>x<div>b</div>y</em>c</p>\n",
+    ),
+    ("i_with_div_alone", "<p>a<i><div>b</div></i>c</p>\n"),
+    (
+        "strong_with_paragraph_between_text",
+        "<p>a<strong>x<p>b</p>y</strong>c</p>\n",
+    ),
+    (
+        "strong_with_paragraph_alone",
+        "<p>a<strong><p>b</p></strong>c</p>\n",
+    ),
+    (
+        "strong_with_heading_between_text",
+        "<p>a<strong>x<h2>b</h2>y</strong>c</p>\n",
+    ),
+    (
+        "strong_with_heading_alone",
+        "<p>a<strong><h2>b</h2></strong>c</p>\n",
+    ),
+    (
+        "strong_with_unordered_list_between_text",
+        "<p>a<strong>x<ul><li>b</li></ul>y</strong>c</p>\n",
+    ),
+    (
+        "strong_with_unordered_list_alone",
+        "<p>a<strong><ul><li>b</li></ul></strong>c</p>\n",
+    ),
+    (
+        "strong_with_ordered_list_between_text",
+        "<p>a<strong>x<ol><li>b</li></ol>y</strong>c</p>\n",
+    ),
+    (
+        "strong_with_ordered_list_alone",
+        "<p>a<strong><ol><li>b</li></ol></strong>c</p>\n",
+    ),
+    (
+        "strong_with_blockquote_between_text",
+        "<p>a<strong>x<blockquote>b</blockquote>y</strong>c</p>\n",
+    ),
+    (
+        "strong_with_blockquote_alone",
+        "<p>a<strong><blockquote>b</blockquote></strong>c</p>\n",
+    ),
+    (
+        "strong_with_pre_between_text",
+        "<p>a<strong>x<pre>b</pre>y</strong>c</p>\n",
+    ),
+    (
+        "strong_with_pre_alone",
+        "<p>a<strong><pre>b</pre></strong>c</p>\n",
+    ),
+    (
+        "strong_with_thematic_break_between_text",
+        "<p>a<strong>x<hr>y</strong>c</p>\n",
+    ),
+    (
+        "strong_with_thematic_break_alone",
+        "<p>a<strong><hr></strong>c</p>\n",
+    ),
+    (
+        "strong_with_table_between_text",
+        "<p>a<strong>x<table><tbody><tr><td>b</td></tr></tbody></table>y</strong>c</p>\n",
+    ),
+    (
+        "strong_with_table_alone",
+        "<p>a<strong><table><tbody><tr><td>b</td></tr></tbody></table></strong>c</p>\n",
+    ),
+    (
+        "strong_with_div_between_text",
+        "<p>a<strong>x<div>b</div>y</strong>c</p>\n",
+    ),
+    (
+        "strong_with_div_alone",
+        "<p>a<strong><div>b</div></strong>c</p>\n",
+    ),
+    (
+        "b_with_paragraph_between_text",
+        "<p>a<strong>x<p>b</p>y</strong>c</p>\n",
+    ),
+    ("b_with_paragraph_alone", "<p>a<b><p>b</p></b>c</p>\n"),
+    (
+        "b_with_heading_between_text",
+        "<p>a<strong>x<h2>b</h2>y</strong>c</p>\n",
+    ),
+    ("b_with_heading_alone", "<p>a<b><h2>b</h2></b>c</p>\n"),
+    (
+        "b_with_unordered_list_between_text",
+        "<p>a<strong>x<ul><li>b</li></ul>y</strong>c</p>\n",
+    ),
+    (
+        "b_with_unordered_list_alone",
+        "<p>a<b><ul><li>b</li></ul></b>c</p>\n",
+    ),
+    (
+        "b_with_ordered_list_between_text",
+        "<p>a<strong>x<ol><li>b</li></ol>y</strong>c</p>\n",
+    ),
+    (
+        "b_with_ordered_list_alone",
+        "<p>a<b><ol><li>b</li></ol></b>c</p>\n",
+    ),
+    (
+        "b_with_blockquote_between_text",
+        "<p>a<strong>x<blockquote>b</blockquote>y</strong>c</p>\n",
+    ),
+    (
+        "b_with_blockquote_alone",
+        "<p>a<b><blockquote>b</blockquote></b>c</p>\n",
+    ),
+    (
+        "b_with_pre_between_text",
+        "<p>a<strong>x<pre>b</pre>y</strong>c</p>\n",
+    ),
+    ("b_with_pre_alone", "<p>a<b><pre>b</pre></b>c</p>\n"),
+    (
+        "b_with_thematic_break_between_text",
+        "<p>a<strong>x<hr>y</strong>c</p>\n",
+    ),
+    ("b_with_thematic_break_alone", "<p>a<b><hr></b>c</p>\n"),
+    (
+        "b_with_table_between_text",
+        "<p>a<strong>x<table><tbody><tr><td>b</td></tr></tbody></table>y</strong>c</p>\n",
+    ),
+    (
+        "b_with_table_alone",
+        "<p>a<b><table><tbody><tr><td>b</td></tr></tbody></table></b>c</p>\n",
+    ),
+    (
+        "b_with_div_between_text",
+        "<p>a<strong>x<div>b</div>y</strong>c</p>\n",
+    ),
+    ("b_with_div_alone", "<p>a<b><div>b</div></b>c</p>\n"),
+    (
+        "code_with_paragraph_between_text",
+        "<p>a<code>x<p>b</p>y</code>c</p>\n",
+    ),
+    (
+        "code_with_paragraph_alone",
+        "<p>a<code><p>b</p></code>c</p>\n",
+    ),
+    (
+        "code_with_heading_between_text",
+        "<p>a<code>x<h2>b</h2>y</code>c</p>\n",
+    ),
+    (
+        "code_with_heading_alone",
+        "<p>a<code><h2>b</h2></code>c</p>\n",
+    ),
+    (
+        "code_with_unordered_list_between_text",
+        "<p>a<code>x<ul><li>b</li></ul>y</code>c</p>\n",
+    ),
+    (
+        "code_with_unordered_list_alone",
+        "<p>a<code><ul><li>b</li></ul></code>c</p>\n",
+    ),
+    (
+        "code_with_ordered_list_between_text",
+        "<p>a<code>x<ol><li>b</li></ol>y</code>c</p>\n",
+    ),
+    (
+        "code_with_ordered_list_alone",
+        "<p>a<code><ol><li>b</li></ol></code>c</p>\n",
+    ),
+    (
+        "code_with_blockquote_between_text",
+        "<p>a<code>x<blockquote>b</blockquote>y</code>c</p>\n",
+    ),
+    (
+        "code_with_blockquote_alone",
+        "<p>a<code><blockquote>b</blockquote></code>c</p>\n",
+    ),
+    (
+        "code_with_pre_between_text",
+        "<p>a<code>x<pre>b</pre>y</code>c</p>\n",
+    ),
+    (
+        "code_with_pre_alone",
+        "<p>a<code><pre>b</pre></code>c</p>\n",
+    ),
+    (
+        "code_with_thematic_break_between_text",
+        "<p>a<code>x<hr>y</code>c</p>\n",
+    ),
+    (
+        "code_with_thematic_break_alone",
+        "<p>a<code><hr></code>c</p>\n",
+    ),
+    (
+        "code_with_table_between_text",
+        "<p>a<code>x<table><tbody><tr><td>b</td></tr></tbody></table>y</code>c</p>\n",
+    ),
+    (
+        "code_with_table_alone",
+        "<p>a<code><table><tbody><tr><td>b</td></tr></tbody></table></code>c</p>\n",
+    ),
+    (
+        "code_with_div_between_text",
+        "<p>a<code>x<div>b</div>y</code>c</p>\n",
+    ),
+    (
+        "code_with_div_alone",
+        "<p>a<code><div>b</div></code>c</p>\n",
+    ),
+    (
+        "del_with_paragraph_between_text",
+        "<p>a<del>x<p>b</p>y</del>c</p>\n",
+    ),
+    ("del_with_paragraph_alone", "<p>a<del><p>b</p></del>c</p>\n"),
+    (
+        "del_with_heading_between_text",
+        "<p>a<del>x<h2>b</h2>y</del>c</p>\n",
+    ),
+    ("del_with_heading_alone", "<p>a<del><h2>b</h2></del>c</p>\n"),
+    (
+        "del_with_unordered_list_between_text",
+        "<p>a<del>x<ul><li>b</li></ul>y</del>c</p>\n",
+    ),
+    (
+        "del_with_unordered_list_alone",
+        "<p>a<del><ul><li>b</li></ul></del>c</p>\n",
+    ),
+    (
+        "del_with_ordered_list_between_text",
+        "<p>a<del>x<ol><li>b</li></ol>y</del>c</p>\n",
+    ),
+    (
+        "del_with_ordered_list_alone",
+        "<p>a<del><ol><li>b</li></ol></del>c</p>\n",
+    ),
+    (
+        "del_with_blockquote_between_text",
+        "<p>a<del>x<blockquote>b</blockquote>y</del>c</p>\n",
+    ),
+    (
+        "del_with_blockquote_alone",
+        "<p>a<del><blockquote>b</blockquote></del>c</p>\n",
+    ),
+    (
+        "del_with_pre_between_text",
+        "<p>a<del>x<pre>b</pre>y</del>c</p>\n",
+    ),
+    ("del_with_pre_alone", "<p>a<del><pre>b</pre></del>c</p>\n"),
+    (
+        "del_with_thematic_break_between_text",
+        "<p>a<del>x<hr>y</del>c</p>\n",
+    ),
+    (
+        "del_with_thematic_break_alone",
+        "<p>a<del><hr></del>c</p>\n",
+    ),
+    (
+        "del_with_table_between_text",
+        "<p>a<del>x<table><tbody><tr><td>b</td></tr></tbody></table>y</del>c</p>\n",
+    ),
+    (
+        "del_with_table_alone",
+        "<p>a<del><table><tbody><tr><td>b</td></tr></tbody></table></del>c</p>\n",
+    ),
+    (
+        "del_with_div_between_text",
+        "<p>a<del>x<div>b</div>y</del>c</p>\n",
+    ),
+    ("del_with_div_alone", "<p>a<del><div>b</div></del>c</p>\n"),
+    (
+        "span_with_paragraph_between_text",
+        "<p>a<span class=\"s\">x<p>b</p>y</span>c</p>\n",
+    ),
+    (
+        "span_with_paragraph_alone",
+        "<p>a<span class=\"s\"><p>b</p></span>c</p>\n",
+    ),
+    (
+        "span_with_heading_between_text",
+        "<p>a<span class=\"s\">x<h2>b</h2>y</span>c</p>\n",
+    ),
+    (
+        "span_with_heading_alone",
+        "<p>a<span class=\"s\"><h2>b</h2></span>c</p>\n",
+    ),
+    (
+        "span_with_unordered_list_between_text",
+        "<p>a<span class=\"s\">x<ul><li>b</li></ul>y</span>c</p>\n",
+    ),
+    (
+        "span_with_unordered_list_alone",
+        "<p>a<span class=\"s\"><ul><li>b</li></ul></span>c</p>\n",
+    ),
+    (
+        "span_with_ordered_list_between_text",
+        "<p>a<span class=\"s\">x<ol><li>b</li></ol>y</span>c</p>\n",
+    ),
+    (
+        "span_with_ordered_list_alone",
+        "<p>a<span class=\"s\"><ol><li>b</li></ol></span>c</p>\n",
+    ),
+    (
+        "span_with_blockquote_between_text",
+        "<p>a<span class=\"s\">x<blockquote>b</blockquote>y</span>c</p>\n",
+    ),
+    (
+        "span_with_blockquote_alone",
+        "<p>a<span class=\"s\"><blockquote>b</blockquote></span>c</p>\n",
+    ),
+    (
+        "span_with_pre_between_text",
+        "<p>a<span class=\"s\">x<pre>b</pre>y</span>c</p>\n",
+    ),
+    (
+        "span_with_pre_alone",
+        "<p>a<span class=\"s\"><pre>b</pre></span>c</p>\n",
+    ),
+    (
+        "span_with_thematic_break_between_text",
+        "<p>a<span class=\"s\">x<hr>y</span>c</p>\n",
+    ),
+    (
+        "span_with_thematic_break_alone",
+        "<p>a<span class=\"s\"><hr></span>c</p>\n",
+    ),
+    (
+        "span_with_table_between_text",
+        "<p>a<span class=\"s\">x<table><tbody><tr><td>b</td></tr></tbody></table>y</span>c</p>\n",
+    ),
+    (
+        "span_with_table_alone",
+        "<p>a<span class=\"s\"><table><tbody><tr><td>b</td></tr></tbody></table></span>c</p>\n",
+    ),
+    (
+        "span_with_div_between_text",
+        "<p>a<span class=\"s\">x<div>b</div>y</span>c</p>\n",
+    ),
+    (
+        "span_with_div_alone",
+        "<p>a<span class=\"s\"><div>b</div></span>c</p>\n",
+    ),
+];
 
 /// [Translating HTML nodes](../translation_approach.md#translating-html-nodes).
 /// The "Translating HTML nodes" rule that an inline begins an inline context,
@@ -493,6 +1017,16 @@ fn blocks_inside_inlines() {
             id,
             html,
             expected_markdown: Some(expected),
+            expectation: Some(HtmlExpectation::DocumentedDifference {
+                kind: DifferenceKind::Loss,
+                expected_html: INLINE_BLOCK_EXPECTED_HTML
+                    .iter()
+                    .find(|(case_id, _)| *case_id == id.as_str())
+                    .map(|(_, html)| *html)
+                    .expect("generated inline-block case needs expected HTML"),
+                reason: "CommonMark wraps root inline content and HTML parsing repairs block children inside inline elements",
+                reference: "translation_approach.md#translating-html-nodes",
+            }),
             stability: INLINE_BLOCK_INSTABILITIES
                 .iter()
                 .find(|(documented_html, _)| *documented_html == html)
@@ -506,6 +1040,7 @@ fn blocks_inside_inlines() {
         })
         .collect::<Vec<_>>();
     assert_eq!(144, cases.len());
+    assert_eq!(cases.len(), INLINE_BLOCK_EXPECTED_HTML.len());
     assert_eq!(128, INLINE_BLOCK_INSTABILITIES.len());
     assert_eq!(
         INLINE_BLOCK_INSTABILITIES.len(),
@@ -530,6 +1065,7 @@ fn code_blocks_and_code_spans() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "code_blocks_and_code_spans_case_2",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<code>x<br>y</code>b</p>",
         expected_markdown: Some("a<code>x<br>y</code>b"),
         ..Case::default()
@@ -537,6 +1073,7 @@ fn code_blocks_and_code_spans() {
 
     faithful_cases.extend([Case {
         id: "code_blocks_and_code_spans_case_3",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<code>x<br><br><br>y</code>b</p>",
         expected_markdown: Some("a<code>x<br><br><br>y</code>b"),
         ..Case::default()
@@ -544,6 +1081,7 @@ fn code_blocks_and_code_spans() {
 
     faithful_cases.extend([Case {
         id: "code_blocks_and_code_spans_case_4",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<code><br></code>b</p>",
         expected_markdown: Some("a<code><br></code>b"),
         ..Case::default()
@@ -551,6 +1089,7 @@ fn code_blocks_and_code_spans() {
 
     faithful_cases.extend([Case {
         id: "code_blocks_and_code_spans_case_5",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<code><br><br><br></code>b</p>",
         expected_markdown: Some("a<code><br><br><br></code>b"),
         ..Case::default()
@@ -558,6 +1097,7 @@ fn code_blocks_and_code_spans() {
 
     faithful_cases.extend([Case {
         id: "code_blocks_and_code_spans_case_6",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<pre><code>a<br>b</code></pre>",
         expected_markdown: Some("<pre><code>a<br>b</code></pre>"),
         ..Case::default()
@@ -565,6 +1105,7 @@ fn code_blocks_and_code_spans() {
 
     faithful_cases.extend([Case {
         id: "code_blocks_and_code_spans_case_7",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<pre><code>a<br><br><br>b</code></pre>",
         expected_markdown: Some("<pre><code>a<br><br><br>b</code></pre>"),
         ..Case::default()
@@ -572,6 +1113,7 @@ fn code_blocks_and_code_spans() {
 
     faithful_cases.extend([Case {
         id: "code_blocks_and_code_spans_case_8",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<pre><code><br></code></pre>",
         expected_markdown: Some("<pre><code><br></code></pre>"),
         ..Case::default()
@@ -579,6 +1121,7 @@ fn code_blocks_and_code_spans() {
 
     faithful_cases.extend([Case {
         id: "code_blocks_and_code_spans_case_9",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<pre><code><br><br><br></code></pre>",
         expected_markdown: Some("<pre><code><br><br><br></code></pre>"),
         ..Case::default()
@@ -601,6 +1144,12 @@ fn code_span_holding_a_line_ending() {
 
     faithful_cases.extend([Case {
         id: "code_span_holding_a_line_ending_case_10",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<h1>a<code>x y</code>b</h1>\n",
+            reason: "CommonMark code spans replace line endings with spaces",
+            reference: "translation_approach.md#code-blocks-and-code-spans",
+        }),
         html: "<h1>a<code>x\ny</code>b</h1>",
         expected_markdown: Some("# a<code>x y</code>b"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -614,6 +1163,12 @@ fn code_span_holding_a_line_ending() {
 
     faithful_cases.extend([Case {
         id: "code_span_holding_a_line_ending_case_11_setext",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<h1>a<code>x y</code>b</h1>\n",
+            reason: "CommonMark code spans replace line endings with spaces",
+            reference: "translation_approach.md#code-blocks-and-code-spans",
+        }),
         html: "<h1>a<code>x\ny</code>b</h1>",
         expected_markdown: Some("a<code>x y</code>b\n=================="),
         htmd_options: Options {
@@ -633,6 +1188,12 @@ fn code_span_holding_a_line_ending() {
 
     faithful_cases.extend([Case {
         id: "code_span_holding_a_line_ending_case_12",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>a<code>x y</code>b</p>\n",
+            reason: "CommonMark code spans replace line endings with spaces",
+            reference: "translation_approach.md#code-blocks-and-code-spans",
+        }),
         html: "<p>a<code>x\n\ny</code>b</p>",
         expected_markdown: Some("a<code>x y</code>b"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -645,6 +1206,12 @@ fn code_span_holding_a_line_ending() {
 
     faithful_cases.extend([Case {
         id: "code_span_holding_a_line_ending_case_13",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<blockquote>\n<p>a<code>x y</code>b</p>\n</blockquote>\n",
+            reason: "CommonMark code spans replace line endings with spaces",
+            reference: "translation_approach.md#code-blocks-and-code-spans",
+        }),
         html: "<blockquote><p>a<code>x\n\ny</code>b</p></blockquote>",
         expected_markdown: Some("> a<code>x y</code>b"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -659,6 +1226,12 @@ fn code_span_holding_a_line_ending() {
 
     faithful_cases.extend([Case {
         id: "code_span_holding_a_line_ending_case_14",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<blockquote>\n<p><code>x y</code></p>\n</blockquote>\n",
+            reason: "CommonMark code spans replace line endings with spaces",
+            reference: "translation_approach.md#code-blocks-and-code-spans",
+        }),
         html: "<blockquote><code>x\n\ny</code></blockquote>",
         expected_markdown: Some("> <code>x y</code>"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -681,6 +1254,7 @@ fn empty_code_span() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "empty_code_span_case_15",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<code></code>b</p>",
         expected_markdown: Some("a<code></code>b"),
         ..Case::default()
@@ -688,6 +1262,7 @@ fn empty_code_span() {
 
     faithful_cases.extend([Case {
         id: "empty_code_span_case_16",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<code> </code>b</p>",
         expected_markdown: Some("a<code> </code>b"),
         ..Case::default()
@@ -698,6 +1273,12 @@ fn empty_code_span() {
 
     faithful_cases.extend([Case {
         id: "empty_code_span_case_17",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>a<code> </code>b</p>\n",
+            reason: "a raw inline code span collapses its line ending to a space",
+            reference: "translation_approach.md#code-blocks-and-code-spans",
+        }),
         html: "<p>a<code>\n</code>b</p>",
         expected_markdown: Some("a<code> </code>b"),
         ..Case::default()
@@ -725,6 +1306,7 @@ fn emphasis_and_strong_emphasis() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "emphasis_and_strong_emphasis_case_18",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><em><br>a</em></p>",
         expected_markdown: Some("<em><br>a</em>"),
         ..Case::default()
@@ -732,6 +1314,7 @@ fn emphasis_and_strong_emphasis() {
 
     faithful_cases.extend([Case {
         id: "emphasis_and_strong_emphasis_case_19",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><em><br><br><br>a</em></p>",
         expected_markdown: Some("<em><br><br><br>a</em>"),
         ..Case::default()
@@ -739,6 +1322,7 @@ fn emphasis_and_strong_emphasis() {
 
     faithful_cases.extend([Case {
         id: "emphasis_and_strong_emphasis_case_20",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><em>a<br></em></p>",
         expected_markdown: Some("<em>a<br></em>"),
         ..Case::default()
@@ -746,6 +1330,7 @@ fn emphasis_and_strong_emphasis() {
 
     faithful_cases.extend([Case {
         id: "emphasis_and_strong_emphasis_case_21",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><em>a<br><br><br></em></p>",
         expected_markdown: Some("<em>a<br><br><br></em>"),
         ..Case::default()
@@ -753,6 +1338,7 @@ fn emphasis_and_strong_emphasis() {
 
     faithful_cases.extend([Case {
         id: "emphasis_and_strong_emphasis_case_22",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><em>a<br>b</em></p>",
         expected_markdown: Some("*a<br>b*"),
         ..Case::default()
@@ -760,6 +1346,7 @@ fn emphasis_and_strong_emphasis() {
 
     faithful_cases.extend([Case {
         id: "emphasis_and_strong_emphasis_case_23",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><em>a<br><br><br>b</em></p>",
         expected_markdown: Some("*a<br><br><br>b*"),
         ..Case::default()
@@ -767,6 +1354,7 @@ fn emphasis_and_strong_emphasis() {
 
     faithful_cases.extend([Case {
         id: "emphasis_and_strong_emphasis_case_24",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<em><br></em>b</p>",
         expected_markdown: Some("a<em><br></em>b"),
         ..Case::default()
@@ -774,6 +1362,7 @@ fn emphasis_and_strong_emphasis() {
 
     faithful_cases.extend([Case {
         id: "emphasis_and_strong_emphasis_case_25",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<em><br><br><br></em>b</p>",
         expected_markdown: Some("a<em><br><br><br></em>b"),
         ..Case::default()
@@ -781,6 +1370,7 @@ fn emphasis_and_strong_emphasis() {
 
     faithful_cases.extend([Case {
         id: "emphasis_and_strong_emphasis_case_26",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<em> </em>b</p>",
         expected_markdown: Some("a<em> </em>b"),
         ..Case::default()
@@ -788,6 +1378,7 @@ fn emphasis_and_strong_emphasis() {
 
     faithful_cases.extend([Case {
         id: "emphasis_and_strong_emphasis_case_27",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<strong> </strong>b</p>",
         expected_markdown: Some("a<strong> </strong>b"),
         ..Case::default()
@@ -797,6 +1388,7 @@ fn emphasis_and_strong_emphasis() {
 
     faithful_cases.extend([Case {
         id: "emphasis_and_strong_emphasis_case_28",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<em>&#160;</em>b</p>",
         expected_markdown: Some("a<em>\u{a0}</em>b"),
         ..Case::default()
@@ -804,6 +1396,7 @@ fn emphasis_and_strong_emphasis() {
 
     faithful_cases.extend([Case {
         id: "emphasis_and_strong_emphasis_case_29",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<em></em>b</p>",
         expected_markdown: Some("a<em></em>b"),
         ..Case::default()
@@ -859,6 +1452,7 @@ fn links() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "links_case_34",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p>a<a href="u"><br></a>b</p>"#,
         expected_markdown: Some("a[<br>](u)b"),
         ..Case::default()
@@ -866,6 +1460,7 @@ fn links() {
 
     faithful_cases.extend([Case {
         id: "links_case_35",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p>a<a href="u"><br><br><br></a>b</p>"#,
         expected_markdown: Some("a[<br><br><br>](u)b"),
         ..Case::default()
@@ -873,6 +1468,7 @@ fn links() {
 
     faithful_cases.extend([Case {
         id: "links_case_36",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p>a<a href="u"><br>c</a>b</p>"#,
         expected_markdown: Some("a[<br>c](u)b"),
         ..Case::default()
@@ -880,6 +1476,7 @@ fn links() {
 
     faithful_cases.extend([Case {
         id: "links_case_37",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p>a<a href="u"><br><br><br>c</a>b</p>"#,
         expected_markdown: Some("a[<br><br><br>c](u)b"),
         ..Case::default()
@@ -887,6 +1484,7 @@ fn links() {
 
     faithful_cases.extend([Case {
         id: "links_case_38",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p>a<a href="u">c<br></a>b</p>"#,
         expected_markdown: Some("a[c<br>](u)b"),
         ..Case::default()
@@ -894,6 +1492,7 @@ fn links() {
 
     faithful_cases.extend([Case {
         id: "links_case_39",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p>a<a href="u">c<br><br><br></a>b</p>"#,
         expected_markdown: Some("a[c<br><br><br>](u)b"),
         ..Case::default()
@@ -908,6 +1507,7 @@ fn at_the_document_root() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "at_the_document_root_case_40",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<br>",
         expected_markdown: Some("<br>"),
         ..Case::default()
@@ -915,6 +1515,12 @@ fn at_the_document_root() {
 
     faithful_cases.extend([Case {
         id: "at_the_document_root_case_41",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><br><br><br></p>\n",
+            reason: "a run of root breaks gains a paragraph on rendering",
+            reference: "translation_approach.md#at-the-document-root",
+        }),
         html: "<br><br><br>",
         expected_markdown: Some("<br><br><br>"),
         ..Case::default()
@@ -922,6 +1528,7 @@ fn at_the_document_root() {
 
     faithful_cases.extend([Case {
         id: "at_the_document_root_case_42",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<br><p>a</p>",
         expected_markdown: Some("<br>\n\na"),
         ..Case::default()
@@ -929,6 +1536,7 @@ fn at_the_document_root() {
 
     faithful_cases.extend([Case {
         id: "at_the_document_root_case_43",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a</p><br>",
         expected_markdown: Some("a\n\n<br>"),
         ..Case::default()
@@ -939,6 +1547,7 @@ fn at_the_document_root() {
 
     faithful_cases.extend([Case {
         id: "at_the_document_root_case_44",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<div><br></div>",
         expected_markdown: Some("<div><br></div>"),
         ..Case::default()
@@ -946,6 +1555,7 @@ fn at_the_document_root() {
 
     faithful_cases.extend([Case {
         id: "at_the_document_root_case_45",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<div><br><br><br></div>",
         expected_markdown: Some("<div><br><br><br></div>"),
         ..Case::default()
@@ -962,6 +1572,7 @@ fn setext_headings() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "setext_headings_case_46_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><br></h1>",
         expected_markdown: Some("# <br>"),
         htmd_options: Options {
@@ -973,6 +1584,7 @@ fn setext_headings() {
 
     faithful_cases.extend([Case {
         id: "setext_headings_case_47_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><br><br><br></h1>",
         expected_markdown: Some("<br><br><br>\n============"),
         htmd_options: Options {
@@ -984,6 +1596,7 @@ fn setext_headings() {
 
     faithful_cases.extend([Case {
         id: "setext_headings_case_48_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>a #</h1>",
         expected_markdown: Some("a #\n==="),
         htmd_options: Options {
@@ -995,6 +1608,7 @@ fn setext_headings() {
 
     faithful_cases.extend([Case {
         id: "setext_headings_case_49_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>#</h1>",
         expected_markdown: Some("\\#\n=="),
         htmd_options: Options {
@@ -1015,6 +1629,7 @@ fn an_empty_setext_heading_falls_back_to_atx() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "an_empty_setext_heading_falls_back_to_atx_case_50_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1></h1>",
         expected_markdown: Some("#"),
         htmd_options: Options {
@@ -1026,6 +1641,7 @@ fn an_empty_setext_heading_falls_back_to_atx() {
 
     faithful_cases.extend([Case {
         id: "an_empty_setext_heading_falls_back_to_atx_case_51_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h2></h2>",
         expected_markdown: Some("##"),
         htmd_options: Options {
@@ -1037,6 +1653,7 @@ fn an_empty_setext_heading_falls_back_to_atx() {
 
     faithful_cases.extend([Case {
         id: "an_empty_setext_heading_falls_back_to_atx_case_52_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>   </h1>",
         expected_markdown: Some("#"),
         htmd_options: Options {
@@ -1050,6 +1667,7 @@ fn an_empty_setext_heading_falls_back_to_atx() {
 
     faithful_cases.extend([Case {
         id: "an_empty_setext_heading_falls_back_to_atx_case_53_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1></h1><p>a</p>",
         expected_markdown: Some("#\n\na"),
         htmd_options: Options {
@@ -1075,6 +1693,7 @@ fn atx_headings() {
 
     faithful_cases.extend([Case {
         id: "atx_headings_case_54",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1></h1>",
         expected_markdown: Some("#"),
         ..Case::default()
@@ -1082,6 +1701,7 @@ fn atx_headings() {
 
     faithful_cases.extend([Case {
         id: "atx_headings_case_55",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1></h1><p>a</p>",
         expected_markdown: Some("#\n\na"),
         ..Case::default()
@@ -1089,6 +1709,7 @@ fn atx_headings() {
 
     faithful_cases.extend([Case {
         id: "atx_headings_case_56",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h3></h3><p>a</p>",
         expected_markdown: Some("###\n\na"),
         ..Case::default()
@@ -1096,6 +1717,7 @@ fn atx_headings() {
 
     faithful_cases.extend([Case {
         id: "atx_headings_case_57",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><br></h1>",
         expected_markdown: Some("# <br>"),
         ..Case::default()
@@ -1103,6 +1725,7 @@ fn atx_headings() {
 
     faithful_cases.extend([Case {
         id: "atx_headings_case_58",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><br><br><br></h1>",
         expected_markdown: Some("# <br><br><br>"),
         ..Case::default()
@@ -1110,6 +1733,7 @@ fn atx_headings() {
 
     faithful_cases.extend([Case {
         id: "atx_headings_case_59",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>a #</h1>",
         expected_markdown: Some(r"# a \#"),
         ..Case::default()
@@ -1117,6 +1741,7 @@ fn atx_headings() {
 
     faithful_cases.extend([Case {
         id: "atx_headings_case_60",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>#</h1>",
         expected_markdown: Some(r"# \#"),
         ..Case::default()
@@ -1135,6 +1760,7 @@ fn paragraphs() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "paragraphs_case_61",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><iframe src="u">a</iframe></p>"#,
         expected_markdown: Some(r#"<p><iframe src="u">a</iframe></p>"#),
         ..Case::default()
@@ -1142,6 +1768,7 @@ fn paragraphs() {
 
     faithful_cases.extend([Case {
         id: "paragraphs_case_62",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><br></p>",
         expected_markdown: Some("<p><br></p>"),
         ..Case::default()
@@ -1149,6 +1776,7 @@ fn paragraphs() {
 
     faithful_cases.extend([Case {
         id: "paragraphs_case_63",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><br><br></p>",
         expected_markdown: Some("<br><br>"),
         ..Case::default()
@@ -1156,6 +1784,7 @@ fn paragraphs() {
 
     faithful_cases.extend([Case {
         id: "paragraphs_case_64",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><br><br><br></p>",
         expected_markdown: Some("<br><br><br>"),
         ..Case::default()
@@ -1163,6 +1792,7 @@ fn paragraphs() {
 
     faithful_cases.extend([Case {
         id: "paragraphs_case_65",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><br><em>b</em></p>",
         expected_markdown: Some("<br>*b*"),
         ..Case::default()
@@ -1170,6 +1800,7 @@ fn paragraphs() {
 
     faithful_cases.extend([Case {
         id: "paragraphs_case_66",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><em>a</em><br></p>",
         expected_markdown: Some("*a*<br>"),
         ..Case::default()
@@ -1177,6 +1808,7 @@ fn paragraphs() {
 
     faithful_cases.extend([Case {
         id: "paragraphs_case_67",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><br><img src="i" alt=""></p>"#,
         expected_markdown: Some("<br>![](i)"),
         ..Case::default()
@@ -1184,6 +1816,7 @@ fn paragraphs() {
 
     faithful_cases.extend([Case {
         id: "paragraphs_case_68",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><img src="i" alt=""><br></p>"#,
         expected_markdown: Some("![](i)<br>"),
         ..Case::default()
@@ -1200,6 +1833,7 @@ fn blockquotes() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "blockquotes_case_69",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<blockquote><br></blockquote>",
         expected_markdown: Some("> <br>"),
         ..Case::default()
@@ -1207,6 +1841,12 @@ fn blockquotes() {
 
     faithful_cases.extend([Case {
         id: "blockquotes_case_70",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<blockquote>\n<p><br><br><br></p>\n</blockquote>\n",
+            reason: "a run of breaks in a blockquote gains a paragraph on rendering",
+            reference: "translation_approach.md#blockquotes",
+        }),
         html: "<blockquote><br><br><br></blockquote>",
         expected_markdown: Some("> <br><br><br>"),
         ..Case::default()
@@ -1214,6 +1854,7 @@ fn blockquotes() {
 
     faithful_cases.extend([Case {
         id: "blockquotes_case_71",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<blockquote><p><br></p></blockquote>",
         expected_markdown: Some("> <p><br></p>"),
         ..Case::default()
@@ -1221,6 +1862,7 @@ fn blockquotes() {
 
     faithful_cases.extend([Case {
         id: "blockquotes_case_72",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<blockquote><p><br><em>b</em></p></blockquote>",
         expected_markdown: Some("> <br>*b*"),
         ..Case::default()
@@ -1228,6 +1870,7 @@ fn blockquotes() {
 
     faithful_cases.extend([Case {
         id: "blockquotes_case_73",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<blockquote><p><em>a</em><br></p></blockquote>",
         expected_markdown: Some("> *a*<br>"),
         ..Case::default()
@@ -1268,6 +1911,7 @@ fn tables() {
             html,
             expected_markdown: Some(markdown),
             markdown_options: pulldown_cmark::Options::ENABLE_TABLES,
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         })
         .collect::<Vec<_>>();

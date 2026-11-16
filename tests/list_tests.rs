@@ -37,6 +37,7 @@ fn unordered_lists() {
         id: "unordered_lists_original",
         html,
         expected_markdown: Some("*   Item 1\n*   Item 2\n*   Item 3"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -59,6 +60,7 @@ fn unordered_lists_custom_bullet_spacing() {
             ..Case::default().htmd_options
         },
         expected_markdown: Some("*  Item 1\n*  Item 2\n*  Item 3"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -77,6 +79,7 @@ fn ordered_lists() {
         id: "ordered_lists_original",
         html,
         expected_markdown: Some("1.  Item 1\n2.  Item 2\n3.  Item 3"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -99,6 +102,7 @@ fn ordered_lists_custom_bullet_spacing() {
             ..Case::default().htmd_options
         },
         expected_markdown: Some("1. Item 1\n2. Item 2\n3. Item 3"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -171,6 +175,7 @@ fn list_spacing_outside_the_commonmark_range() {
                 ..Case::default().htmd_options
             },
             expected_markdown: Some("* Item 1\n* Item 2"),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         },
         Case {
@@ -181,6 +186,7 @@ fn list_spacing_outside_the_commonmark_range() {
                 ..Case::default().htmd_options
             },
             expected_markdown: Some("*    Item 1\n*    Item 2"),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         },
         Case {
@@ -191,6 +197,7 @@ fn list_spacing_outside_the_commonmark_range() {
                 ..Case::default().htmd_options
             },
             expected_markdown: Some("1. Item 1\n2. Item 2"),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         },
         Case {
@@ -201,6 +208,7 @@ fn list_spacing_outside_the_commonmark_range() {
                 ..Case::default().htmd_options
             },
             expected_markdown: Some("1.    Item 1\n2.    Item 2"),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         },
         Case {
@@ -211,6 +219,7 @@ fn list_spacing_outside_the_commonmark_range() {
                 ..Case::default().htmd_options
             },
             expected_markdown: Some("*    Outer\n     *    Inner"),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         },
         Case {
@@ -221,6 +230,7 @@ fn list_spacing_outside_the_commonmark_range() {
                 ..Case::default().htmd_options
             },
             expected_markdown: Some("1.    Outer\n      1.    Inner"),
+            expectation: Some(HtmlExpectation::Preserved),
             ..Case::default()
         },
     ]);
@@ -238,6 +248,7 @@ fn ordered_list_alignment_across_a_digit_boundary() {
         id: "ordered_list_alignment_across_a_digit_boundary_998",
         html: &html,
         expected_markdown: Some("998.   Item\n999.   Item\n1000.  Item\n1001.  Item\n1002.  Item"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 
@@ -246,6 +257,7 @@ fn ordered_list_alignment_across_a_digit_boundary() {
         id: "ordered_list_alignment_across_a_digit_boundary_9",
         html: &html,
         expected_markdown: Some("9.   Item\n10.  Item"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -266,6 +278,7 @@ fn ordered_list_alignment_yields_to_the_spacing_limit() {
         id: "ordered_list_alignment_yields_to_the_spacing_limit",
         html: &html,
         expected_markdown: Some(&expected_markdown),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }

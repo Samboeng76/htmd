@@ -16,6 +16,7 @@ fn html_at_the_document_root_is_a_block() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "html_at_the_document_root_is_a_block_case_1",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<div>a</div><div>b</div>",
         expected_markdown: Some("<div>a</div>\n\n<div>b</div>"),
         ..Case::default()
@@ -23,6 +24,7 @@ fn html_at_the_document_root_is_a_block() {
 
     faithful_cases.extend([Case {
         id: "html_at_the_document_root_is_a_block_case_2",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<div><br><br></div>",
         expected_markdown: Some("<div><br><br></div>"),
         ..Case::default()
@@ -30,6 +32,7 @@ fn html_at_the_document_root_is_a_block() {
 
     faithful_cases.extend([Case {
         id: "html_at_the_document_root_is_a_block_case_3",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><div><p>a</p></div></h1>",
         expected_markdown: Some("# <div><p>a</p></div>"),
         ..Case::default()
@@ -49,6 +52,7 @@ fn a_type_7_tag_is_a_raw_inline_even_in_a_block_context() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_4",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<br>",
         expected_markdown: Some("<br>"),
         ..Case::default()
@@ -56,6 +60,12 @@ fn a_type_7_tag_is_a_raw_inline_even_in_a_block_context() {
 
     faithful_cases.extend([Case {
         id: "a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_5",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><br><br></p>\n",
+            reason: "CommonMark wraps root inline content or blockquote text in a paragraph",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "<br><br>",
         expected_markdown: Some("<br><br>"),
         ..Case::default()
@@ -63,6 +73,12 @@ fn a_type_7_tag_is_a_raw_inline_even_in_a_block_context() {
 
     faithful_cases.extend([Case {
         id: "a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_6",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>This is <em foo=\"\">really</em> important.</p>\n",
+            reason: "CommonMark wraps root inline content or blockquote text in a paragraph",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "This is <em foo>really</em> important.",
         expected_markdown: Some(r#"This is <em foo="">really</em> important."#),
         ..Case::default()
@@ -70,6 +86,7 @@ fn a_type_7_tag_is_a_raw_inline_even_in_a_block_context() {
 
     faithful_cases.extend([Case {
         id: "a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_7",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<ul><li>a<br>b</li></ul>",
         expected_markdown: Some("*   a<br>b"),
         ..Case::default()
@@ -77,6 +94,12 @@ fn a_type_7_tag_is_a_raw_inline_even_in_a_block_context() {
 
     faithful_cases.extend([Case {
         id: "a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_8",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<blockquote>\n<p>a<br>b</p>\n</blockquote>\n",
+            reason: "CommonMark wraps root inline content or blockquote text in a paragraph",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "<blockquote>a<br>b</blockquote>",
         expected_markdown: Some("> a<br>b"),
         ..Case::default()
@@ -86,6 +109,7 @@ fn a_type_7_tag_is_a_raw_inline_even_in_a_block_context() {
 
     faithful_cases.extend([Case {
         id: "a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_9",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<br><p>a</p>",
         expected_markdown: Some("<br>\n\na"),
         ..Case::default()
@@ -93,6 +117,7 @@ fn a_type_7_tag_is_a_raw_inline_even_in_a_block_context() {
 
     faithful_cases.extend([Case {
         id: "a_type_7_tag_is_a_raw_inline_even_in_a_block_context_case_10",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a</p><br>",
         expected_markdown: Some("a\n\n<br>"),
         ..Case::default()
@@ -106,6 +131,7 @@ fn a_commonmark_block_in_an_inline_context_is_a_raw_inline() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_11",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><p>a</p></h1>",
         expected_markdown: Some("# <p>a</p>"),
         ..Case::default()
@@ -113,6 +139,7 @@ fn a_commonmark_block_in_an_inline_context_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_12",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>x<p>a</p>y</h1>",
         expected_markdown: Some("# x<p>a</p>y"),
         ..Case::default()
@@ -120,6 +147,7 @@ fn a_commonmark_block_in_an_inline_context_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_13",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><blockquote>a</blockquote></h1>",
         expected_markdown: Some("# <blockquote>a</blockquote>"),
         ..Case::default()
@@ -127,6 +155,7 @@ fn a_commonmark_block_in_an_inline_context_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_14",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><ul><li>a</li></ul></h1>",
         expected_markdown: Some("# <ul><li>a</li></ul>"),
         ..Case::default()
@@ -134,6 +163,7 @@ fn a_commonmark_block_in_an_inline_context_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_15",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><hr></h1>",
         expected_markdown: Some("# <hr>"),
         ..Case::default()
@@ -143,6 +173,7 @@ fn a_commonmark_block_in_an_inline_context_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_16",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><pre><code>a</code></pre></h1>",
         expected_markdown: Some("# <pre><code>a</code></pre>"),
         ..Case::default()
@@ -150,6 +181,7 @@ fn a_commonmark_block_in_an_inline_context_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "a_commonmark_block_in_an_inline_context_is_a_raw_inline_case_17",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><table><thead><tr><th>h</th></tr></thead>\
              <tbody><tr><td>a</td></tr></tbody></table></h1>",
         expected_markdown: Some(
@@ -168,6 +200,12 @@ fn a_commonmark_block_in_an_inline_context_is_a_raw_inline() {
 fn raw_text_at_the_document_root_is_left_alone() {
     check_cases(&[Case {
         id: "raw_text_at_the_document_root_is_left_alone_case_18",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>foo</p>\n",
+            reason: "CommonMark wraps root text in a paragraph",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "foo",
         expected_markdown: Some("foo"),
         ..Case::default()
@@ -180,6 +218,7 @@ fn html_in_a_paragraph_is_a_raw_inline() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "html_in_a_paragraph_is_a_raw_inline_case_19",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><br><br></p>",
         expected_markdown: Some("<br><br>"),
         ..Case::default()
@@ -187,6 +226,7 @@ fn html_in_a_paragraph_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_a_paragraph_is_a_raw_inline_case_20",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><br><em>b</em></p>",
         expected_markdown: Some("<br>*b*"),
         ..Case::default()
@@ -194,6 +234,7 @@ fn html_in_a_paragraph_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_a_paragraph_is_a_raw_inline_case_21",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><em>a</em><br></p>",
         expected_markdown: Some("*a*<br>"),
         ..Case::default()
@@ -201,6 +242,7 @@ fn html_in_a_paragraph_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_a_paragraph_is_a_raw_inline_case_22",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><br><img src="i" alt=""></p>"#,
         expected_markdown: Some("<br>![](i)"),
         ..Case::default()
@@ -214,6 +256,7 @@ fn html_in_a_heading_is_a_raw_inline() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "html_in_a_heading_is_a_raw_inline_case_23",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><br><br></h1>",
         expected_markdown: Some("# <br><br>"),
         ..Case::default()
@@ -221,6 +264,7 @@ fn html_in_a_heading_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_a_heading_is_a_raw_inline_case_24",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><br><em>b</em></h1>",
         expected_markdown: Some("# <br>*b*"),
         ..Case::default()
@@ -228,6 +272,7 @@ fn html_in_a_heading_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_a_heading_is_a_raw_inline_case_25",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h6><em>a</em><br></h6>",
         expected_markdown: Some("###### *a*<br>"),
         ..Case::default()
@@ -241,6 +286,7 @@ fn html_in_a_blockquote_is_a_block() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "html_in_a_blockquote_is_a_block_case_26",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<blockquote><div>a</div><div>b</div></blockquote>",
         expected_markdown: Some("> <div>a</div>\n> \n> <div>b</div>"),
         ..Case::default()
@@ -248,6 +294,12 @@ fn html_in_a_blockquote_is_a_block() {
 
     faithful_cases.extend([Case {
         id: "html_in_a_blockquote_is_a_block_case_27",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<blockquote>\n<p><br><br></p>\n</blockquote>\n",
+            reason: "a run of breaks in a blockquote gains a paragraph on rendering",
+            reference: "translation_approach.md#blockquotes",
+        }),
         html: "<blockquote><br><br></blockquote>",
         expected_markdown: Some("> <br><br>"),
         ..Case::default()
@@ -255,6 +307,7 @@ fn html_in_a_blockquote_is_a_block() {
 
     faithful_cases.extend([Case {
         id: "html_in_a_blockquote_is_a_block_case_28",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<blockquote><p><br><em>b</em></p></blockquote>",
         expected_markdown: Some("> <br>*b*"),
         ..Case::default()
@@ -268,6 +321,7 @@ fn html_in_a_list_item_is_a_block() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "html_in_a_list_item_is_a_block_case_29",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<ul><li><div>a</div><div>b</div></li></ul>",
         expected_markdown: Some("*   <div>a</div>\n\n    <div>b</div>"),
         ..Case::default()
@@ -275,6 +329,7 @@ fn html_in_a_list_item_is_a_block() {
 
     faithful_cases.extend([Case {
         id: "html_in_a_list_item_is_a_block_case_30",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<ul><li><br><p>a</p></li></ul>",
         expected_markdown: Some("*   <br>\n\n    a"),
         ..Case::default()
@@ -284,6 +339,7 @@ fn html_in_a_list_item_is_a_block() {
 
     faithful_cases.extend([Case {
         id: "html_in_a_list_item_is_a_block_case_31",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<ul><li><br><br></li></ul>",
         expected_markdown: Some("*   <br><br>"),
         ..Case::default()
@@ -299,6 +355,7 @@ fn html_in_a_table_cell_is_a_raw_inline() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "html_in_a_table_cell_is_a_raw_inline_case_32",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<table><thead><tr><th>h</th></tr></thead>\
              <tbody><tr><td><br><em>b</em></td></tr></tbody></table>",
         expected_markdown: Some("| h       |\n| ------- |\n| <br>*b* |"),
@@ -309,6 +366,7 @@ fn html_in_a_table_cell_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_a_table_cell_is_a_raw_inline_case_33",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<table><thead><tr><th>h</th></tr></thead>\
              <tbody><tr><td><p>a</p></td></tr></tbody></table>",
         expected_markdown: Some("| h        |\n| -------- |\n| <p>a</p> |"),
@@ -318,6 +376,7 @@ fn html_in_a_table_cell_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_a_table_cell_is_a_raw_inline_case_34",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<table><thead><tr><th>h</th></tr></thead>\
              <tbody><tr><td><ul><li>a</li></ul></td></tr></tbody></table>",
         expected_markdown: Some(
@@ -367,6 +426,7 @@ fn html_in_an_inline_element_is_a_raw_inline() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "html_in_an_inline_element_is_a_raw_inline_case_37",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<span><br></span>b</p>",
         expected_markdown: Some("a<span><br></span>b"),
         ..Case::default()
@@ -374,6 +434,7 @@ fn html_in_an_inline_element_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_an_inline_element_is_a_raw_inline_case_38",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<del><br></del>b</p>",
         expected_markdown: Some("a<del><br></del>b"),
         ..Case::default()
@@ -381,6 +442,7 @@ fn html_in_an_inline_element_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_an_inline_element_is_a_raw_inline_case_39",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p>a<a href="u"><br></a>b</p>"#,
         expected_markdown: Some("a[<br>](u)b"),
         ..Case::default()
@@ -396,6 +458,7 @@ fn html_in_code_is_a_raw_inline() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "html_in_code_is_a_raw_inline_case_40",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<code>x<br>y</code>b</p>",
         expected_markdown: Some("a<code>x<br>y</code>b"),
         ..Case::default()
@@ -403,6 +466,7 @@ fn html_in_code_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_code_is_a_raw_inline_case_41",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<pre><code>a<br>b</code></pre>",
         expected_markdown: Some("<pre><code>a<br>b</code></pre>"),
         ..Case::default()
@@ -412,6 +476,12 @@ fn html_in_code_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_code_is_a_raw_inline_case_42",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<h1><pre><strong>a</strong></pre></h1>\n",
+            reason: "a pre element in an inline context is walked as raw HTML, changing nested markup or code whitespace",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "<h1><pre><b>a</b></pre></h1>",
         expected_markdown: Some("# <pre>**a**</pre>"),
         ..Case::default()
@@ -419,6 +489,12 @@ fn html_in_code_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_code_is_a_raw_inline_case_43",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<h1><pre class=\"x\"><strong>a</strong></pre></h1>\n",
+            reason: "a pre element in an inline context is walked as raw HTML, changing nested markup or code whitespace",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: r#"<h1><pre class="x"><b>a</b></pre></h1>"#,
         expected_markdown: Some(r#"# <pre class="x">**a**</pre>"#),
         ..Case::default()
@@ -428,6 +504,12 @@ fn html_in_code_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_code_is_a_raw_inline_case_44",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<h1><pre><code>a*b c</code></pre></h1>\n",
+            reason: "a pre element in an inline context is walked as raw HTML, changing nested markup or code whitespace",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "<h1><pre><code>a*b\nc</code></pre></h1>",
         expected_markdown: Some(r"# <pre><code>a\*b c</code></pre>"),
         ..Case::default()
@@ -437,6 +519,7 @@ fn html_in_code_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "html_in_code_is_a_raw_inline_case_45",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><div>a<code>c*d</code>b</div></h1>",
         expected_markdown: Some("# <div>a`c*d`b</div>"),
         ..Case::default()
@@ -454,6 +537,7 @@ fn a_raw_text_element_escapes_the_markdown_it_holds() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_raw_text_element_escapes_the_markdown_it_holds_case_46",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><script>a*b_c[d]</script></h1>",
         expected_markdown: Some(r"# <script>a\*b\_c\[d\]</script>"),
         ..Case::default()
@@ -483,6 +567,7 @@ fn a_raw_text_element_escapes_the_markdown_it_holds() {
 
     faithful_cases.extend([Case {
         id: "a_raw_text_element_escapes_the_markdown_it_holds_case_48",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>x<script>a*b</script>y</p>",
         expected_markdown: Some(r"x<script>a\*b</script>y"),
         ..Case::default()
@@ -493,6 +578,7 @@ fn a_raw_text_element_escapes_the_markdown_it_holds() {
 
     faithful_cases.extend([Case {
         id: "a_raw_text_element_escapes_the_markdown_it_holds_case_49",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<body><script>a*b\nc</script></body>",
         expected_markdown: Some("<script>a*b\nc</script>"),
         ..Case::default()
@@ -501,6 +587,7 @@ fn a_raw_text_element_escapes_the_markdown_it_holds() {
 
     faithful_cases.extend([Case {
         id: "a_raw_text_element_escapes_the_markdown_it_holds_case_50",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><script>a\nb</script></h1>",
         expected_markdown: Some("# <script>a b</script>"),
         ..Case::default()
@@ -517,6 +604,7 @@ fn an_rcdata_element_is_translated() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "an_rcdata_element_is_translated_case_51",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><textarea>a*b*c</textarea></h1>",
         expected_markdown: Some(r"# <textarea>a\*b\*c</textarea>"),
         ..Case::default()
@@ -524,6 +612,7 @@ fn an_rcdata_element_is_translated() {
 
     faithful_cases.extend([Case {
         id: "an_rcdata_element_is_translated_case_52",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><title>a*b*c</title></h1>",
         expected_markdown: Some(r"# <title>a\*b\*c</title>"),
         ..Case::default()
@@ -531,6 +620,7 @@ fn an_rcdata_element_is_translated() {
 
     faithful_cases.extend([Case {
         id: "an_rcdata_element_is_translated_case_53",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><textarea>a\nb</textarea></h1>",
         expected_markdown: Some("# <textarea>a b</textarea>"),
         ..Case::default()
@@ -538,6 +628,7 @@ fn an_rcdata_element_is_translated() {
 
     faithful_cases.extend([Case {
         id: "an_rcdata_element_is_translated_case_54",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<textarea>a*b\nc</textarea>",
         expected_markdown: Some("<textarea>a*b\nc</textarea>"),
         ..Case::default()
@@ -558,6 +649,7 @@ fn a_raw_inline_collapses_the_whitespace_of_its_content() {
 
     faithful_cases.extend([Case {
         id: "a_raw_inline_collapses_the_whitespace_of_its_content_case_55",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>x<div>a\nb</div>y</h1>",
         expected_markdown: Some("# x<div>a b</div>y"),
         ..Case::default()
@@ -566,6 +658,7 @@ fn a_raw_inline_collapses_the_whitespace_of_its_content() {
 
     faithful_cases.extend([Case {
         id: "a_raw_inline_collapses_the_whitespace_of_its_content_case_56",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<del>\n  b\n</del>c</p>",
         expected_markdown: Some("a<del> b </del>c"),
         ..Case::default()
@@ -575,6 +668,12 @@ fn a_raw_inline_collapses_the_whitespace_of_its_content() {
 
     faithful_cases.extend([Case {
         id: "a_raw_inline_collapses_the_whitespace_of_its_content_case_57",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<h1><pre>a b</pre></h1>\n",
+            reason: "raw HTML inline content collapses line endings and indentation even inside pre",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "<h1><pre>a\n  b</pre></h1>",
         expected_markdown: Some("# <pre>a b</pre>"),
         ..Case::default()
@@ -583,6 +682,7 @@ fn a_raw_inline_collapses_the_whitespace_of_its_content() {
 
     faithful_cases.extend([Case {
         id: "a_raw_inline_collapses_the_whitespace_of_its_content_case_58",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a\nb</p>",
         expected_markdown: Some("a b"),
         ..Case::default()
@@ -590,6 +690,7 @@ fn a_raw_inline_collapses_the_whitespace_of_its_content() {
 
     faithful_cases.extend([Case {
         id: "a_raw_inline_collapses_the_whitespace_of_its_content_case_59",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>a\n  b</h1>",
         expected_markdown: Some("# a b"),
         ..Case::default()
@@ -607,6 +708,7 @@ fn a_raw_inline_escapes_the_line_endings_of_its_attributes() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_raw_inline_escapes_the_line_endings_of_its_attributes_case_60",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>a<em foo=\"1\n\n2\">y</em>b</p>",
         expected_markdown: Some(r#"a<em foo="1&#10;&#10;2">y</em>b"#),
         ..Case::default()
@@ -615,6 +717,7 @@ fn a_raw_inline_escapes_the_line_endings_of_its_attributes() {
 
     faithful_cases.extend([Case {
         id: "a_raw_inline_escapes_the_line_endings_of_its_attributes_case_61",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>a<div title=\"x  y\">z  w</div>b</h1>",
         expected_markdown: Some(r#"# a<div title="x  y">z w</div>b"#),
         ..Case::default()
@@ -623,6 +726,7 @@ fn a_raw_inline_escapes_the_line_endings_of_its_attributes() {
 
     faithful_cases.extend([Case {
         id: "a_raw_inline_escapes_the_line_endings_of_its_attributes_case_62",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<h1>a<div title="p  q"><em foo="r  s">t</em></div>b</h1>"#,
         expected_markdown: Some(r#"# a<div title="p  q"><em foo="r  s">t</em></div>b"#),
         ..Case::default()
@@ -630,6 +734,7 @@ fn a_raw_inline_escapes_the_line_endings_of_its_attributes() {
 
     faithful_cases.extend([Case {
         id: "a_raw_inline_escapes_the_line_endings_of_its_attributes_case_63",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>a<div title=\"p\nq\"><em foo=\"r\ns\">t</em></div>b</h1>",
         expected_markdown: Some(r#"# a<div title="p&#10;q"><em foo="r&#10;s">t</em></div>b"#),
         ..Case::default()
@@ -637,6 +742,7 @@ fn a_raw_inline_escapes_the_line_endings_of_its_attributes() {
 
     faithful_cases.extend([Case {
         id: "a_raw_inline_escapes_the_line_endings_of_its_attributes_case_64",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<table><thead><tr><th>h</th></tr></thead>\
              <tbody><tr><td><em foo=\"1\n2\">y</em></td></tr></tbody></table>",
         expected_markdown: Some(concat!(
@@ -652,6 +758,7 @@ fn a_raw_inline_escapes_the_line_endings_of_its_attributes() {
 
     faithful_cases.extend([Case {
         id: "a_raw_inline_escapes_the_line_endings_of_its_attributes_case_65",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<div>a\n\nb</div>",
         expected_markdown: Some("<div>a\n&#10;b</div>"),
         ..Case::default()
@@ -669,6 +776,7 @@ fn a_raw_inline_encodes_the_pipes_of_its_attributes() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_raw_inline_encodes_the_pipes_of_its_attributes_case_66",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<table><thead><tr><th>h</th></tr></thead>\
              <tbody><tr><td><em foo=\"1|2\">y|z</em></td></tr></tbody></table>",
         expected_markdown: Some(concat!(
@@ -685,6 +793,7 @@ fn a_raw_inline_encodes_the_pipes_of_its_attributes() {
 
     faithful_cases.extend([Case {
         id: "a_raw_inline_encodes_the_pipes_of_its_attributes_case_67",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p>a<em foo="1|2">y|z</em>b</p>"#,
         expected_markdown: Some(r#"a<em foo="1&#124;2">y|z</em>b"#),
         ..Case::default()
@@ -704,6 +813,7 @@ fn a_type_1_block_keeps_its_blank_lines() {
 
     faithful_cases.extend([Case {
         id: "a_type_1_block_keeps_its_blank_lines_case_68",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<body><script>a\n\nb</script></body>",
         expected_markdown: Some("<script>a\n\nb</script>"),
         ..Case::default()
@@ -711,6 +821,7 @@ fn a_type_1_block_keeps_its_blank_lines() {
 
     faithful_cases.extend([Case {
         id: "a_type_1_block_keeps_its_blank_lines_case_69",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<body><style>a\n\nb</style></body>",
         expected_markdown: Some("<style>a\n\nb</style>"),
         ..Case::default()
@@ -718,6 +829,7 @@ fn a_type_1_block_keeps_its_blank_lines() {
 
     faithful_cases.extend([Case {
         id: "a_type_1_block_keeps_its_blank_lines_case_70",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<pre>a\n\nb</pre>",
         expected_markdown: Some("<pre>a\n\nb</pre>"),
         ..Case::default()
@@ -725,6 +837,7 @@ fn a_type_1_block_keeps_its_blank_lines() {
 
     faithful_cases.extend([Case {
         id: "a_type_1_block_keeps_its_blank_lines_case_71",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<textarea>a\n\nb</textarea>",
         expected_markdown: Some("<textarea>a\n\nb</textarea>"),
         ..Case::default()
@@ -734,6 +847,7 @@ fn a_type_1_block_keeps_its_blank_lines() {
 
     faithful_cases.extend([Case {
         id: "a_type_1_block_keeps_its_blank_lines_case_72",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><script>a\n\nb</script></h1>",
         expected_markdown: Some("# <script>a b</script>"),
         ..Case::default()
@@ -752,6 +866,7 @@ fn a_title_escapes_its_line_endings() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_title_escapes_its_line_endings_case_73",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><a href=\"u\" title=\"a\nb\">t</a></h1>",
         expected_markdown: Some(r#"# [t](u "a&#10;b")"#),
         ..Case::default()
@@ -759,6 +874,7 @@ fn a_title_escapes_its_line_endings() {
 
     faithful_cases.extend([Case {
         id: "a_title_escapes_its_line_endings_case_74",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><img src=\"i\" alt=\"a\nb\" title=\"c\nd\"></h1>",
         expected_markdown: Some(r#"# ![a&#10;b](i "c&#10;d")"#),
         ..Case::default()
@@ -767,6 +883,7 @@ fn a_title_escapes_its_line_endings() {
 
     faithful_cases.extend([Case {
         id: "a_title_escapes_its_line_endings_case_75",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><a href=\"u\" title=\"a\n\nb\">t</a></p>",
         expected_markdown: Some(r#"[t](u "a&#10;&#10;b")"#),
         ..Case::default()
@@ -813,6 +930,7 @@ fn a_title_escapes_its_line_endings() {
 
     faithful_cases.extend([Case {
         id: "a_title_escapes_its_line_endings_case_78",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<table><thead><tr><th>h</th></tr></thead>\
              <tbody><tr><td><a href=\"u\" title=\"a\nb\">t</a></td></tr></tbody></table>",
         expected_markdown: Some(concat!(
@@ -836,6 +954,7 @@ fn a_comment_follows_its_context() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_comment_follows_its_context_case_79",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<!--a\n\nb-->",
         expected_markdown: Some("<!--a\n\nb-->"),
         ..Case::default()
@@ -843,6 +962,7 @@ fn a_comment_follows_its_context() {
 
     faithful_cases.extend([Case {
         id: "a_comment_follows_its_context_case_80",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<div>a</div><!--c--><div>b</div>",
         expected_markdown: Some("<div>a</div>\n\n<!--c-->\n\n<div>b</div>"),
         ..Case::default()
@@ -850,6 +970,7 @@ fn a_comment_follows_its_context() {
 
     faithful_cases.extend([Case {
         id: "a_comment_follows_its_context_case_81",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<blockquote><!--c--></blockquote>",
         expected_markdown: Some("> <!--c-->"),
         ..Case::default()
@@ -857,6 +978,12 @@ fn a_comment_follows_its_context() {
 
     faithful_cases.extend([Case {
         id: "a_comment_follows_its_context_case_82",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<h1>x<!--a b-->y</h1>\n",
+            reason: "raw HTML inline comments collapse their internal line endings",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "<h1>x<!--a\nb-->y</h1>",
         expected_markdown: Some("# x<!--a b-->y"),
         ..Case::default()
@@ -864,6 +991,12 @@ fn a_comment_follows_its_context() {
 
     faithful_cases.extend([Case {
         id: "a_comment_follows_its_context_case_83",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>x<!--a b-->y</p>\n",
+            reason: "raw HTML inline comments collapse their internal line endings",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "<p>x<!--a\n\nb-->y</p>",
         expected_markdown: Some("x<!--a b-->y"),
         ..Case::default()
@@ -871,6 +1004,12 @@ fn a_comment_follows_its_context() {
 
     faithful_cases.extend([Case {
         id: "a_comment_follows_its_context_case_84",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<h1>x<!--a b-->y</h1>\n",
+            reason: "raw HTML inline comments collapse their internal line endings",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "<h1>x<!--a\r\nb-->y</h1>",
         expected_markdown: Some("# x<!--a b-->y"),
         ..Case::default()
@@ -879,6 +1018,12 @@ fn a_comment_follows_its_context() {
 
     faithful_cases.extend([Case {
         id: "a_comment_follows_its_context_case_85",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<h1><div>x<!--a b-->y</div></h1>\n",
+            reason: "raw HTML inline comments collapse their internal line endings",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "<h1><div>x<!--a\nb-->y</div></h1>",
         expected_markdown: Some("# <div>x<!--a b-->y</div>"),
         ..Case::default()
@@ -895,6 +1040,7 @@ fn a_cdata_section_and_a_processing_instruction_are_comments() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_cdata_section_and_a_processing_instruction_are_comments_case_86",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<![CDATA[x\n\ny]]>",
         expected_markdown: Some("<!--[CDATA[x\n\ny]]-->"),
         ..Case::default()
@@ -902,6 +1048,12 @@ fn a_cdata_section_and_a_processing_instruction_are_comments() {
 
     faithful_cases.extend([Case {
         id: "a_cdata_section_and_a_processing_instruction_are_comments_case_87",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>a<!--[CDATA[x y]]-->b</p>\n",
+            reason: "the HTML parser treats the input as a comment and raw inline whitespace is collapsed",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "<p>a<![CDATA[x\ny]]>b</p>",
         expected_markdown: Some("a<!--[CDATA[x y]]-->b"),
         ..Case::default()
@@ -909,6 +1061,12 @@ fn a_cdata_section_and_a_processing_instruction_are_comments() {
 
     faithful_cases.extend([Case {
         id: "a_cdata_section_and_a_processing_instruction_are_comments_case_88",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>a<!--?php echo \"x y\"; ?-->b</p>\n",
+            reason: "the HTML parser treats the input as a comment and raw inline whitespace is collapsed",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html: "<p>a<?php echo \"x\ny\"; ?>b</p>",
         expected_markdown: Some("a<!--?php echo \"x y\"; ?-->b"),
         ..Case::default()
@@ -925,6 +1083,7 @@ fn a_commonmark_block_inside_a_raw_inline_is_a_raw_inline() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_commonmark_block_inside_a_raw_inline_is_a_raw_inline_case_89",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><div><blockquote>a</blockquote></div></h1>",
         expected_markdown: Some("# <div><blockquote>a</blockquote></div>"),
         ..Case::default()
@@ -932,6 +1091,7 @@ fn a_commonmark_block_inside_a_raw_inline_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "a_commonmark_block_inside_a_raw_inline_is_a_raw_inline_case_90",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><div><ul><li>a</li></ul></div></h1>",
         expected_markdown: Some("# <div><ul><li>a</li></ul></div>"),
         ..Case::default()
@@ -939,6 +1099,7 @@ fn a_commonmark_block_inside_a_raw_inline_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "a_commonmark_block_inside_a_raw_inline_is_a_raw_inline_case_91",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><div><h2>a</h2></div></h1>",
         expected_markdown: Some("# <div><h2>a</h2></div>"),
         ..Case::default()
@@ -946,6 +1107,7 @@ fn a_commonmark_block_inside_a_raw_inline_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "a_commonmark_block_inside_a_raw_inline_is_a_raw_inline_case_92",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><div><hr></div></h1>",
         expected_markdown: Some("# <div><hr></div>"),
         ..Case::default()
@@ -954,6 +1116,7 @@ fn a_commonmark_block_inside_a_raw_inline_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "a_commonmark_block_inside_a_raw_inline_is_a_raw_inline_case_93",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><div>a<em>b</em>c</div></h1>",
         expected_markdown: Some("# <div>a*b*c</div>"),
         ..Case::default()
@@ -961,6 +1124,7 @@ fn a_commonmark_block_inside_a_raw_inline_is_a_raw_inline() {
 
     faithful_cases.extend([Case {
         id: "a_commonmark_block_inside_a_raw_inline_is_a_raw_inline_case_94",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<h1><div>a<a href="u">l*m</a>b</div></h1>"#,
         expected_markdown: Some(r"# <div>a[l\*m](u)b</div>"),
         ..Case::default()
@@ -974,6 +1138,7 @@ fn a_serialized_element_follows_its_context() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_serialized_element_follows_its_context_case_95",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>x <em foo>y</em> z</p>",
         expected_markdown: Some(r#"x <em foo="">y</em> z"#),
         ..Case::default()
@@ -981,6 +1146,7 @@ fn a_serialized_element_follows_its_context() {
 
     faithful_cases.extend([Case {
         id: "a_serialized_element_follows_its_context_case_96",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><em foo>y</em></h1>",
         expected_markdown: Some(r#"# <em foo="">y</em>"#),
         ..Case::default()
@@ -988,6 +1154,7 @@ fn a_serialized_element_follows_its_context() {
 
     faithful_cases.extend([Case {
         id: "a_serialized_element_follows_its_context_case_97",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<ul><li><em foo>y</em></li></ul>",
         expected_markdown: Some(r#"*   <em foo="">y</em>"#),
         ..Case::default()
@@ -1004,6 +1171,7 @@ fn a_math_span_replaces_its_line_endings_with_spaces() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_math_span_replaces_its_line_endings_with_spaces_case_98",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p>x<span class=\"math math-inline\">a\nb</span>y</p>",
         expected_markdown: Some("x$a b$y"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1012,6 +1180,7 @@ fn a_math_span_replaces_its_line_endings_with_spaces() {
 
     faithful_cases.extend([Case {
         id: "a_math_span_replaces_its_line_endings_with_spaces_case_99",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><span class=\"math math-display\">a\nb</span></p>",
         expected_markdown: Some("$$a b$$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1023,6 +1192,7 @@ fn a_math_span_replaces_its_line_endings_with_spaces() {
 
     faithful_cases.extend([Case {
         id: "a_math_span_replaces_its_line_endings_with_spaces_case_100",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><span class=\"math math-inline\">a&#13;&#10;b</span></p>",
         expected_markdown: Some("$a b$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1032,6 +1202,7 @@ fn a_math_span_replaces_its_line_endings_with_spaces() {
 
     faithful_cases.extend([Case {
         id: "a_math_span_replaces_its_line_endings_with_spaces_case_101",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><span class=\"math math-inline\">a&#13;b</span></p>",
         expected_markdown: Some("$a b$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1042,6 +1213,7 @@ fn a_math_span_replaces_its_line_endings_with_spaces() {
 
     faithful_cases.extend([Case {
         id: "a_math_span_replaces_its_line_endings_with_spaces_case_102",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<p><span class=\"math math-inline\">a\\\nb</span></p>",
         expected_markdown: Some(r"$a\ b$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1060,6 +1232,12 @@ fn a_math_span_strips_its_comments() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_math_span_strips_its_comments_case_103",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><span class=\"math math-inline\">\\alpha x</span></p>\n",
+            reason: "the math rule strips comments and replaces them with spaces",
+            reference: "translation_approach.md#math",
+        }),
         html: "<p><span class=\"math math-inline\">\\alpha%c\n  \tx</span></p>",
         expected_markdown: Some(r"$\alpha x$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1069,6 +1247,12 @@ fn a_math_span_strips_its_comments() {
 
     faithful_cases.extend([Case {
         id: "a_math_span_strips_its_comments_case_104",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><span class=\"math math-inline\">\\text{fo o}</span></p>\n",
+            reason: "the math rule strips comments and replaces them with spaces",
+            reference: "translation_approach.md#math",
+        }),
         html: "<p><span class=\"math math-inline\">\\text{fo%c\no}</span></p>",
         expected_markdown: Some(r"$\text{fo o}$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1079,6 +1263,12 @@ fn a_math_span_strips_its_comments() {
 
     faithful_cases.extend([Case {
         id: "a_math_span_strips_its_comments_case_105",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><span class=\"math math-display\">a b c d</span></p>\n",
+            reason: "the math rule strips comments and replaces them with spaces",
+            reference: "translation_approach.md#math",
+        }),
         html: "<p><span class=\"math math-display\">a%x&#13;&#10;b&#13;c%y&#13;d</span></p>",
         expected_markdown: Some("$$a b c d$$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1089,6 +1279,12 @@ fn a_math_span_strips_its_comments() {
 
     faithful_cases.extend([Case {
         id: "a_math_span_strips_its_comments_case_106",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><span class=\"math math-display\">a </span></p>\n",
+            reason: "the math rule strips comments and replaces them with spaces",
+            reference: "translation_approach.md#math",
+        }),
         html: "<p><span class=\"math math-display\">a%b</span></p>",
         expected_markdown: Some("$$a $$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1098,6 +1294,7 @@ fn a_math_span_strips_its_comments() {
 
     faithful_cases.extend([Case {
         id: "a_math_span_strips_its_comments_case_107",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><span class="math math-inline">a\%b</span></p>"#,
         expected_markdown: Some(r"$a\%b$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1107,6 +1304,12 @@ fn a_math_span_strips_its_comments() {
 
     faithful_cases.extend([Case {
         id: "a_math_span_strips_its_comments_case_108",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><span class=\"math math-inline\">a\\\\</span></p>\n",
+            reason: "the math rule strips comments and replaces them with spaces",
+            reference: "translation_approach.md#math",
+        }),
         html: r#"<p><span class="math math-inline">a\\%b</span></p>"#,
         expected_markdown: Some(r"$a\\$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1118,6 +1321,12 @@ fn a_math_span_strips_its_comments() {
 
     faithful_cases.extend([Case {
         id: "a_math_span_strips_its_comments_case_109",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><span class=\"math math-inline\"> </span></p>\n",
+            reason: "the math rule strips comments and replaces them with spaces",
+            reference: "translation_approach.md#math",
+        }),
         html: r#"<p><span class="math math-inline">%a</span></p>"#,
         expected_markdown: Some(r#"<span class="math math-inline"> </span>"#),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1136,6 +1345,12 @@ fn an_unwritable_math_span_strips_its_comments() {
 
     check_cases(&[Case {
         id: "an_unwritable_math_span_strips_its_comments_case_110",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><span class=\"math math-inline\">a$b d</span></p>\n",
+            reason: "the math rule strips comments before serializing an unwritable math span",
+            reference: "translation_approach.md#math",
+        }),
         html,
         expected_markdown: Some(r#"<span class="math math-inline">a\$b d</span>"#),
         ..Case::default()

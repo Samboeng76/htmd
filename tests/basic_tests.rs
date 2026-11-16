@@ -118,6 +118,12 @@ fn referenced_links_with_title() {
         "#;
     check_cases(&[Case {
         id: "referenced_links_with_title",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"https://example.com\" title=\"Some title\">Example</a></p>\n",
+            reason: "CommonMark wraps the root link in a paragraph",
+            reference: "translation_approach.md#links",
+        }),
         html,
         htmd_options: Options {
             link_style: LinkStyle::Referenced,
@@ -136,6 +142,12 @@ fn consecutive_referenced_links_with_title() {
         "#;
     check_cases(&[Case {
         id: "consecutive_referenced_links_with_title",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"https://example.com\" title=\"Some title\">Example</a><a href=\"https://example.com\" title=\"Some title\">Another example</a></p>\n",
+            reason: "CommonMark wraps the root links in a paragraph",
+            reference: "translation_approach.md#links",
+        }),
         html,
         htmd_options: Options {
             link_style: LinkStyle::Referenced,
@@ -161,6 +173,12 @@ fn images() {
         "#;
     check_cases(&[Case {
         id: "images_case_2",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><img src=\"https://example.com\" alt=\"\" /> <img src=\"https://example.com\" alt=\"Image 1\" /> <img src=\"https://example.com\" alt=\"Image 2\" title=\"Hello\" /></p>\n",
+            reason: "CommonMark wraps root images in a paragraph",
+            reference: "translation_approach.md#images",
+        }),
         html,
         expected_markdown: Some(
             "![](https://example.com) ![Image 1](https://example.com) \
@@ -262,6 +280,7 @@ fn heading_content_trims_only_document_whitespace() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "heading_content_trims_only_document_whitespace_case_5",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1> \t\r\n a \t\r\n </h1>",
         expected_markdown: Some("# a"),
         ..Case::default()
@@ -269,6 +288,7 @@ fn heading_content_trims_only_document_whitespace() {
 
     faithful_cases.extend([Case {
         id: "heading_content_trims_only_document_whitespace_case_6",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>&nbsp;</h1>",
         expected_markdown: Some("# \u{a0}"),
         ..Case::default()
@@ -276,6 +296,7 @@ fn heading_content_trims_only_document_whitespace() {
 
     faithful_cases.extend([Case {
         id: "heading_content_trims_only_document_whitespace_case_7_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>&nbsp;</h1>",
         expected_markdown: Some("\u{a0}\n="),
         htmd_options: Options {
@@ -296,6 +317,7 @@ fn setext_underline() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "setext_underline_case_8_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h2>a</h2>",
         expected_markdown: Some("a\n-"),
         htmd_options: Options {
@@ -307,6 +329,7 @@ fn setext_underline() {
 
     faithful_cases.extend([Case {
         id: "setext_underline_case_9_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>é</h1>",
         expected_markdown: Some("é\n="),
         htmd_options: Options {
@@ -318,6 +341,7 @@ fn setext_underline() {
 
     faithful_cases.extend([Case {
         id: "setext_underline_case_10_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>a*b</h1>",
         expected_markdown: Some("a\\*b\n===="),
         htmd_options: Options {
@@ -329,6 +353,7 @@ fn setext_underline() {
 
     faithful_cases.extend([Case {
         id: "setext_underline_case_11_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><br><em>b</em></h1>",
         expected_markdown: Some("<br>*b*\n======="),
         htmd_options: Options {
@@ -340,6 +365,7 @@ fn setext_underline() {
 
     faithful_cases.extend([Case {
         id: "setext_underline_case_12_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1><em>a</em><br></h1>",
         expected_markdown: Some("*a*<br>\n======="),
         htmd_options: Options {
@@ -351,6 +377,7 @@ fn setext_underline() {
 
     faithful_cases.extend([Case {
         id: "setext_underline_case_13_setext",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h3>a</h3>",
         expected_markdown: Some("### a"),
         htmd_options: Options {
@@ -379,7 +406,7 @@ fn paragraphs() {
     }]);
 }
 
-/// [Translating HTML nodes](../translation_approach.md#translating-html-nodes).
+/// [Blockquotes](../translation_approach.md#blockquotes).
 #[test]
 fn quotes() {
     let html = r#"
@@ -390,11 +417,17 @@ fn quotes() {
         id: "quotes_case_15",
         html,
         expected_markdown: Some("> Once upon a time"),
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<blockquote>\n<p>Once upon a time</p>\n</blockquote>\n",
+            reason: "CommonMark renders the blockquote text inside a paragraph",
+            reference: "translation_approach.md#blockquotes",
+        }),
         ..Case::default()
     }]);
 }
 
-/// [At the document root](../translation_approach.md#at-the-document-root).
+/// [Paragraphs](../translation_approach.md#paragraphs).
 #[test]
 fn br() {
     let html = r#"
@@ -404,6 +437,7 @@ fn br() {
         id: "br_case_16",
         html,
         expected_markdown: Some("Hi<br>there<br><br>!"),
+        expectation: Some(HtmlExpectation::Preserved),
         ..Case::default()
     }]);
 }
@@ -417,6 +451,12 @@ fn hr() {
         id: "hr_case_17",
         html,
         expected_markdown: Some("Hi\n\n* * *\n\nthere"),
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>Hi</p>\n<hr />\n<p>there</p>\n",
+            reason: "CommonMark wraps the root text on either side of the thematic break in paragraphs",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         ..Case::default()
     }]);
 }
@@ -428,6 +468,12 @@ fn strong_italic() {
 
     check_cases(&[Case {
         id: "strong_italic_case_18",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><i>Italic</i><em>Also italic</em><strong>Strong</strong><b>Stronger</b></p>\n",
+            reason: "CommonMark wraps the root raw HTML in a paragraph",
+            reference: "translation_approach.md#emphasis-and-strong-emphasis",
+        }),
         html,
         expected_markdown: Some(
             "<i>Italic</i><em>Also italic</em><strong>Strong</strong><b>Stronger</b>",
@@ -599,6 +645,12 @@ fn italic_inside_word() {
 
     check_cases(&[Case {
         id: "italic_inside_word_case_27",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>It<em>al</em>ic St<strong>ro</strong>ng</p>\n",
+            reason: "CommonMark renders emphasis as em and strong, and wraps root inline text in a paragraph",
+            reference: "translation_approach.md#emphasis-and-strong-emphasis",
+        }),
         html,
         expected_markdown: Some("It*al*ic St**ro**ng"),
         ..Case::default()
@@ -612,6 +664,12 @@ fn italic_with_br() {
 
     check_cases(&[Case {
         id: "italic_with_br_case_28",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>a<i>b<br></i>c d<b><br>e</b>f</p>\n",
+            reason: "CommonMark wraps the root raw HTML in a paragraph",
+            reference: "translation_approach.md#emphasis-and-strong-emphasis",
+        }),
         html,
         expected_markdown: Some("a<i>b<br></i>c d<b><br>e</b>f"),
         ..Case::default()
@@ -625,6 +683,12 @@ fn inline_raw_html_escaping() {
 
     check_cases(&[Case {
         id: "inline_raw_html_escaping_case_29",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>Test &lt;code&gt;tags&lt;/code&gt;, &lt;!-- comments --&gt;, &lt;?processing instructions?&gt;, &lt;!A declaration&gt;, and &lt;![CDATA[character data]]&gt;.</p>\n",
+            reason: "CommonMark wraps the root inline text in a paragraph",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html,
         expected_markdown: Some(
             r#"Test \<code>tags\</code>, \<!-- comments -->, \<?processing instructions?>, \<!A declaration>, and <!\[CDATA\[character data\]\]>."#,
@@ -650,6 +714,12 @@ fn multiline_raw_html_escaping() {
 
     check_cases(&[Case {
         id: "multiline_raw_html_escaping_case_30",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>Test &lt;code&gt;multi-line tags&lt;/code&gt;, &lt;!-- multi-line comments --&gt;, &lt;?multi-line processing instructions?&gt;, &lt;!A multi-line declaration&gt;, and &lt;![CDATA[multi-line character data]]&gt;.</p>\n",
+            reason: "CommonMark wraps the root inline text in a paragraph",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html,
         expected_markdown: Some(
             r#"Test \<code>multi-line tags\</code>, \<!-- multi-line comments -->, \<?multi-line processing instructions?>, \<!A multi-line declaration>, and <!\[CDATA\[multi-line character data\]\]>."#,
@@ -734,6 +804,7 @@ fn html_escaping() {
 
     check_cases(&[Case {
         id: "html_escaping_case_32",
+        expectation: Some(HtmlExpectation::Preserved),
         html,
         expected_markdown: Some(indoc!(
             r#"\<pre
@@ -1089,6 +1160,12 @@ fn spaces_check() {
 
     check_cases(&[Case {
         id: "spaces_check_case_46",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><em>Italic</em> <em>Also italic</em> <strong>Strong</strong> <strong>Stronger</strong></p>\n",
+            reason: "CommonMark renders emphasis as em and strong, and wraps root inline text in a paragraph",
+            reference: "translation_approach.md#emphasis-and-strong-emphasis",
+        }),
         html,
         expected_markdown: Some("*Italic* *Also italic* **Strong** **Stronger**"),
         ..Case::default()
@@ -1116,6 +1193,12 @@ fn raw_text() {
 
     check_cases(&[Case {
         id: "raw_text_case_48",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>Hello world!</p>\n",
+            reason: "CommonMark wraps root text in a paragraph",
+            reference: "translation_approach.md#translating-html-nodes",
+        }),
         html,
         expected_markdown: Some("Hello world!"),
         ..Case::default()
@@ -1203,6 +1286,7 @@ fn upper_case_tags() {
 
     check_cases(&[Case {
         id: "upper_case_tags_case_49",
+        expectation: Some(HtmlExpectation::Preserved),
         html,
         expected_markdown: Some("# Hello\n\nWorld"),
         ..Case::default()
@@ -1220,6 +1304,7 @@ fn html_entities() {
 
     faithful_cases.extend([Case {
         id: "html_entities_case_50",
+        expectation: Some(HtmlExpectation::Preserved),
         html,
         expected_markdown: Some(r#"[my%20\&link](/my%20\&uri "my%20\&title")"#),
         ..Case::default()
@@ -1229,6 +1314,7 @@ fn html_entities() {
 
     faithful_cases.extend([Case {
         id: "html_entities_case_51",
+        expectation: Some(HtmlExpectation::Preserved),
         html: html_plain,
         expected_markdown: Some(r#"This \& that, then < > now."#),
         ..Case::default()
@@ -1305,6 +1391,12 @@ fn unterminated_html() {
 
     check_cases(&[Case {
         id: "unterminated_html_case_52",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<h1><em>A</em></h1>\n",
+            reason: "the HTML parser repairs the unclosed i tag and CommonMark renders it as em",
+            reference: "translation_approach.md#emphasis-and-strong-emphasis",
+        }),
         html: "<h1><i>A</h1>",
         expected_markdown: Some("# *A*"),
         ..Case::default()
@@ -1324,6 +1416,7 @@ fn math() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "math_case_53",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><span class="math math-inline">x^2</span></p>"#,
         expected_markdown: Some("$x^2$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1332,6 +1425,7 @@ fn math() {
 
     faithful_cases.extend([Case {
         id: "math_case_54",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><span class="math math-display">x^2</span></p>"#,
         expected_markdown: Some("$$x^2$$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1342,6 +1436,7 @@ fn math() {
 
     faithful_cases.extend([Case {
         id: "math_case_55",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><span class="math math-display">{a}_1, b_{2}, a*1, b*2, [a](b), 3 &lt;a&gt; b, a \; b</span></p>"#,
         expected_markdown: Some("$${a}_1, b_{2}, a*1, b*2, [a](b), 3 <a> b, a \\; b$$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1387,6 +1482,12 @@ fn math_span_whitespace() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "math_span_whitespace_case_57",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><span class=\"math math-inline\">x</span></p>\n",
+            reason: "inline math trims leading and trailing whitespace",
+            reference: "translation_approach.md#math",
+        }),
         html: "<p><span class=\"math math-inline\"> \u{b}x\t</span></p>",
         expected_markdown: Some("$x$"),
         markdown_options: CommonMarkOptions::ENABLE_MATH,
@@ -1557,6 +1658,7 @@ fn dollar_sign_in_text() {
 fn document_whitespace() {
     check_cases(&[Case {
         id: "document_whitespace_case_58",
+        expectation: Some(HtmlExpectation::Preserved),
         html: indoc!(
             "
             <p>bar&nbsp;</p>
@@ -1577,48 +1679,56 @@ fn multibyte_paragraph_markers() {
     check_cases(&[
         Case {
             id: "multibyte_ordered_list_escape_half",
+            expectation: Some(HtmlExpectation::Preserved),
             html: "<p>2½. Long shot</p>",
             expected_markdown: Some("2½. Long shot"),
             ..Case::default()
         },
         Case {
             id: "multibyte_ordered_list_escape_accented",
+            expectation: Some(HtmlExpectation::Preserved),
             html: "<p>1é. text</p>",
             expected_markdown: Some("1é. text"),
             ..Case::default()
         },
         Case {
             id: "multibyte_ordered_list_escape_trademark",
+            expectation: Some(HtmlExpectation::Preserved),
             html: "<p>3™. text</p>",
             expected_markdown: Some("3™. text"),
             ..Case::default()
         },
         Case {
             id: "ascii_ordered_list_escape",
+            expectation: Some(HtmlExpectation::Preserved),
             html: "<p>10. normal</p>",
             expected_markdown: Some(r"10\. normal"),
             ..Case::default()
         },
         Case {
             id: "multibyte_no_dot",
+            expectation: Some(HtmlExpectation::Preserved),
             html: "<p>2½</p>",
             expected_markdown: Some("2½"),
             ..Case::default()
         },
         Case {
             id: "cjk_before_ordered_list",
+            expectation: Some(HtmlExpectation::Preserved),
             html: "<p>日本語1. test</p>",
             expected_markdown: Some("日本語1. test"),
             ..Case::default()
         },
         Case {
             id: "multibyte_atx_heading_escape",
+            expectation: Some(HtmlExpectation::Preserved),
             html: "<p># héading</p>",
             expected_markdown: Some(r"\# héading"),
             ..Case::default()
         },
         Case {
             id: "multibyte_atx_heading_escape_umlaut",
+            expectation: Some(HtmlExpectation::Preserved),
             html: "<p>## über</p>",
             expected_markdown: Some(r"\## über"),
             ..Case::default()
@@ -2274,6 +2384,7 @@ fn round_trip_of_an_atx_heading_ending_in_a_hash_run() {
 
     faithful_cases.extend([Case {
         id: "round_trip_of_an_atx_heading_ending_in_a_hash_run_case_60",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>a#</h1>",
         expected_markdown: Some("# a#"),
         ..Case::default()
@@ -2281,6 +2392,7 @@ fn round_trip_of_an_atx_heading_ending_in_a_hash_run() {
 
     faithful_cases.extend([Case {
         id: "round_trip_of_an_atx_heading_ending_in_a_hash_run_case_61",
+        expectation: Some(HtmlExpectation::Preserved),
         html: "<h1>a&nbsp;#</h1>",
         expected_markdown: Some("# a\u{a0}#"),
         ..Case::default()

@@ -9,7 +9,7 @@ use markup5ever_rcdom::NodeData;
 use pretty_assertions::assert_eq;
 
 mod common;
-use common::{Case, HtmlExpectation, check_cases};
+use common::{Case, DifferenceKind, HtmlExpectation, check_cases};
 
 fn find_element(node: &Rc<Node>, tag: &str) -> Option<Rc<Node>> {
     if let NodeData::Element { name, .. } = &node.data
@@ -32,6 +32,12 @@ fn code_blocks() {
         "#;
     check_cases(&[Case {
         id: "code_blocks",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<pre><code>println!(\"Hello\");\n</code></pre>\n",
+            reason: "fenced code rendering appends a terminal line feed inside code",
+            reference: "translation_approach.md#code-blocks-and-code-spans",
+        }),
         html,
         expected_markdown: Some("```\nprintln!(\"Hello\");\n```"),
         ..Case::default()
@@ -46,6 +52,12 @@ fn code_blocks_with_lang_class() {
         "#;
     check_cases(&[Case {
         id: "code_blocks_with_lang_class",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<pre><code class=\"language-rust\">println!(\"Hello\");\n</code></pre>\n",
+            reason: "fenced code rendering appends a terminal line feed inside code",
+            reference: "translation_approach.md#code-blocks-and-code-spans",
+        }),
         html,
         expected_markdown: Some("```rust\nprintln!(\"Hello\");\n```"),
         ..Case::default()
@@ -73,6 +85,12 @@ fn code_blocks_decode_html_entities() {
 
     check_cases(&[Case {
         id: "code_blocks_decode_html_entities",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<pre><code>let x = 5 &amp;&amp; y &lt; 10;\n</code></pre>\n",
+            reason: "fenced code rendering appends a terminal line feed inside code",
+            reference: "translation_approach.md#code-blocks-and-code-spans",
+        }),
         html,
         expected_markdown: Some("```\nlet x = 5 && y < 10;\n```"),
         ..Case::default()

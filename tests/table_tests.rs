@@ -1,5 +1,5 @@
 mod common;
-use common::{Case, HtmlExpectation, check_cases};
+use common::{Case, DifferenceKind, HtmlExpectation, check_cases};
 use indoc::indoc;
 use pretty_assertions::assert_eq;
 use pulldown_cmark::Options as CommonMarkOptions;
@@ -50,6 +50,12 @@ fn simple_table() {
 
     check_cases(&[Case {
         id: "simple_table_original",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<table><thead><tr><th>Header 1</th><th>Header 2</th></tr></thead><tbody>\n<tr><td>Cell 1</td><td>Cell 2</td></tr>\n<tr><td>Cell 3</td><td>Cell 4</td></tr>\n</tbody></table>\n",
+            reason: "GFM rendering adds explicit thead and tbody sections around the header and body rows",
+            reference: "translation_approach.md#tables",
+        }),
         html,
         expected_markdown: Some(expected),
         markdown_options: CommonMarkOptions::ENABLE_TABLES,
@@ -141,6 +147,7 @@ fn table_with_thead_tbody() {
 
     check_cases(&[Case {
         id: "table_with_thead_tbody_original",
+        expectation: Some(HtmlExpectation::Preserved),
         html,
         expected_markdown: Some(expected),
         markdown_options: CommonMarkOptions::ENABLE_TABLES,
@@ -708,6 +715,12 @@ fn a_comment_in_a_table_is_written_as_html() {
 
     check_cases(&[Case {
         id: "a_comment_in_a_table_is_written_as_html_case_6",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>stray</p>\n<table><thead><tr><th>A</th></tr></thead><tbody>\n<tr><td>c</td></tr>\n</tbody></table>\n",
+            reason: "stray table text is foster-parented before the table and renders inside a paragraph",
+            reference: "translation_approach.md#tables",
+        }),
         html: with_stray_text,
         expected_markdown: Some("stray\n\n| A |\n| - |\n| c |"),
         markdown_options: CommonMarkOptions::ENABLE_TABLES,
@@ -730,6 +743,7 @@ fn a_pipe_in_an_open_tag_is_encoded() {
 
     faithful_cases.extend([Case {
         id: "a_pipe_in_an_open_tag_is_encoded_case_7",
+        expectation: Some(HtmlExpectation::Preserved),
         html: in_a_body_cell,
         expected_markdown: Some(concat!(
             "| A                               |\n",
@@ -747,6 +761,7 @@ fn a_pipe_in_an_open_tag_is_encoded() {
 
     faithful_cases.extend([Case {
         id: "a_pipe_in_an_open_tag_is_encoded_case_8",
+        expectation: Some(HtmlExpectation::Preserved),
         html: in_a_header_cell,
         expected_markdown: Some(concat!(
             "| <span title=\"a&#124;b\">c</span> |\n",
@@ -822,6 +837,7 @@ fn a_comment_holding_a_pipe_is_written_as_html() {
 
     check_cases(&[Case {
         id: "a_comment_holding_a_pipe_is_written_as_html_case_10",
+        expectation: Some(HtmlExpectation::Preserved),
         html: without_a_pipe,
         expected_markdown: Some("| A            |\n| ------------ |\n| a<!-- c -->b |"),
         markdown_options: CommonMarkOptions::ENABLE_TABLES,
@@ -844,6 +860,7 @@ fn an_empty_column_is_one_wide() {
 
     faithful_cases.extend([Case {
         id: "an_empty_column_is_one_wide_case_11",
+        expectation: Some(HtmlExpectation::Preserved),
         html: only_column,
         expected_markdown: Some("|   |\n| - |\n|   |"),
         markdown_options: CommonMarkOptions::ENABLE_TABLES,
@@ -857,6 +874,7 @@ fn an_empty_column_is_one_wide() {
 
     faithful_cases.extend([Case {
         id: "an_empty_column_is_one_wide_case_12",
+        expectation: Some(HtmlExpectation::Preserved),
         html: among_others,
         expected_markdown: Some("|   | B |\n| - | - |\n|   | d |"),
         markdown_options: CommonMarkOptions::ENABLE_TABLES,
@@ -973,6 +991,7 @@ fn table_with_inlines() {
 
     check_cases(&[Case {
         id: "table_with_inlines_original",
+        expectation: Some(HtmlExpectation::Preserved),
         html,
         expected_markdown: Some(expected),
         markdown_options: CommonMarkOptions::ENABLE_TABLES,

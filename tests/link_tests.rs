@@ -33,6 +33,12 @@ fn links() {
         expected_markdown: Some(
             "[Link 1](https://example.com) [Link 2](https://example.com \"Hello\")",
         ),
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"https://example.com\">Link 1</a> <a href=\"https://example.com\" title=\"Hello\">Link 2</a></p>\n",
+            reason: "CommonMark wraps the root links in a paragraph",
+            reference: "translation_approach.md#links",
+        }),
         ..Case::default()
     }]);
 }
@@ -44,6 +50,12 @@ fn links_with_spaces_in_destination_and_title() {
         id: "links_with_spaces_in_destination_and_title_case_2",
         html: r#"<a href="https://example.com/hello world" title="Hello">Link</a>"#,
         expected_markdown: Some(r#"[Link](<https://example.com/hello world> "Hello")"#),
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"https://example.com/hello%20world\" title=\"Hello\">Link</a></p>\n",
+            reason: "the root link gains a paragraph and pulldown-cmark percent-encodes the destination space",
+            reference: "translation_approach.md#links",
+        }),
         stability: StabilityExpectation::DocumentedInstability {
             second_markdown: "[Link](https://example.com/hello%20world \"Hello\")",
             reason: "pulldown-cmark percent-encodes the destination when rendering its CommonMark link or image",
@@ -61,6 +73,12 @@ fn links_with_spaces_around_text() {
         id: "links_with_spaces_around_text_case_3",
         html: r#"<a href="/"> bla </a>"#,
         expected_markdown: Some("[ bla ](/)"),
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"/\"> bla </a></p>\n",
+            reason: "CommonMark wraps the root link in a paragraph",
+            reference: "translation_approach.md#links",
+        }),
         ..Case::default()
     }]);
 
@@ -68,6 +86,12 @@ fn links_with_spaces_around_text() {
         id: "links_with_spaces_around_text_case_4",
         html: r#"Some <a href="/"> random </a> text"#,
         expected_markdown: Some("Some [ random ](/) text"),
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>Some <a href=\"/\"> random </a> text</p>\n",
+            reason: "CommonMark wraps the root text and link in a paragraph",
+            reference: "translation_approach.md#links",
+        }),
         ..Case::default()
     }]);
     check_cases(&faithful_cases);
@@ -86,6 +110,12 @@ fn links_inlined_prefer_autolinks() {
             html: r#"<a href="https://example.com">https://example.com</a>"#,
             htmd_options: options.clone(),
             expected_markdown: Some("<https://example.com>"),
+            expectation: Some(HtmlExpectation::DocumentedDifference {
+                kind: DifferenceKind::Loss,
+                expected_html: "<p><a href=\"https://example.com\">https://example.com</a></p>\n",
+                reason: "CommonMark wraps the root autolink in a paragraph",
+                reference: "translation_approach.md#links",
+            }),
             ..Case::default()
         },
         Case {
@@ -93,6 +123,12 @@ fn links_inlined_prefer_autolinks() {
             html: r#"<a href="https://example.com">Link</a>"#,
             htmd_options: options.clone(),
             expected_markdown: Some("[Link](https://example.com)"),
+            expectation: Some(HtmlExpectation::DocumentedDifference {
+                kind: DifferenceKind::Loss,
+                expected_html: "<p><a href=\"https://example.com\">Link</a></p>\n",
+                reason: "CommonMark wraps the root link in a paragraph",
+                reference: "translation_approach.md#links",
+            }),
             ..Case::default()
         },
         Case {
@@ -100,6 +136,12 @@ fn links_inlined_prefer_autolinks() {
             html: r#"<a href="https://example.com" title="https://example.com">Link</a>"#,
             htmd_options: options,
             expected_markdown: Some(r#"[Link](https://example.com "https://example.com")"#),
+            expectation: Some(HtmlExpectation::DocumentedDifference {
+                kind: DifferenceKind::Loss,
+                expected_html: "<p><a href=\"https://example.com\" title=\"https://example.com\">Link</a></p>\n",
+                reason: "CommonMark wraps the root link in a paragraph",
+                reference: "translation_approach.md#links",
+            }),
             ..Case::default()
         },
     ]);
@@ -114,6 +156,12 @@ fn a_link_destination_escapes_its_line_endings() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_link_destination_escapes_its_line_endings_case_5",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>a<a href=\"u%0Av\">t</a>b</p>\n",
+            reason: "pulldown-cmark percent-encodes line endings in link or image destinations",
+            reference: "translation_approach.md#links",
+        }),
         html: "<p>a<a href=\"u\nv\">t</a>b</p>",
         expected_markdown: Some("a[t](u&#10;v)b"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -126,6 +174,12 @@ fn a_link_destination_escapes_its_line_endings() {
 
     faithful_cases.extend([Case {
         id: "a_link_destination_escapes_its_line_endings_case_6",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>a<a href=\"u%0A%0Av\">t</a>b</p>\n",
+            reason: "pulldown-cmark percent-encodes line endings in link or image destinations",
+            reference: "translation_approach.md#links",
+        }),
         html: "<p>a<a href=\"u\n\nv\">t</a>b</p>",
         expected_markdown: Some("a[t](u&#10;&#10;v)b"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -138,6 +192,12 @@ fn a_link_destination_escapes_its_line_endings() {
 
     faithful_cases.extend([Case {
         id: "a_link_destination_escapes_its_line_endings_case_7",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<h1>a<a href=\"u%0Av\">t</a>b</h1>\n",
+            reason: "pulldown-cmark percent-encodes line endings in link or image destinations",
+            reference: "translation_approach.md#links",
+        }),
         html: "<h1>a<a href=\"u\nv\">t</a>b</h1>",
         expected_markdown: Some("# a[t](u&#10;v)b"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -152,6 +212,12 @@ fn a_link_destination_escapes_its_line_endings() {
 
     faithful_cases.extend([Case {
         id: "a_link_destination_escapes_its_line_endings_case_8",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>a<a href=\"u%0Dv\">t</a>b</p>\n",
+            reason: "pulldown-cmark percent-encodes line endings in link or image destinations",
+            reference: "translation_approach.md#links",
+        }),
         html: "<p>a<a href=\"u&#13;v\">t</a>b</p>",
         expected_markdown: Some("a[t](u&#13;v)b"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -165,6 +231,12 @@ fn a_link_destination_escapes_its_line_endings() {
 
     faithful_cases.extend([Case {
         id: "a_link_destination_escapes_its_line_endings_case_9",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p>a<img src=\"i%0Aj\" alt=\"\" />b</p>\n",
+            reason: "pulldown-cmark percent-encodes line endings in link or image destinations",
+            reference: "translation_approach.md#links",
+        }),
         html: "<p>a<img src=\"i\nj\" alt=\"\">b</p>",
         expected_markdown: Some("a![](i&#10;j)b"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -177,6 +249,7 @@ fn a_link_destination_escapes_its_line_endings() {
 
     faithful_cases.extend([Case {
         id: "a_link_destination_escapes_its_line_endings_case_10",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><a href="u">t</a></p>"#,
         expected_markdown: Some("[t](u)"),
         ..Case::default()
@@ -184,6 +257,7 @@ fn a_link_destination_escapes_its_line_endings() {
 
     faithful_cases.extend([Case {
         id: "a_link_destination_escapes_its_line_endings_case_11",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><a href="u(v)">t</a></p>"#,
         expected_markdown: Some(r"[t](u\(v\))"),
         ..Case::default()
@@ -316,6 +390,12 @@ fn a_link_destination_escapes_its_backslashes() {
 
     faithful_cases.extend([Case {
         id: "a_link_destination_escapes_its_backslashes_case_13",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><img src=\"i%5C\" alt=\"q\" /></p>\n",
+            reason: "the root link or image gains a paragraph and destination backslashes are percent-encoded",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<img src="i\" alt="q">"#,
         expected_markdown: Some(r"![q](i\\)"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -330,6 +410,12 @@ fn a_link_destination_escapes_its_backslashes() {
 
     faithful_cases.extend([Case {
         id: "a_link_destination_escapes_its_backslashes_case_14",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"a%20b%5C\">x</a></p>\n",
+            reason: "the root link or image gains a paragraph and destination backslashes are percent-encoded",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="a b\">x</a>"#,
         expected_markdown: Some(r"[x](<a b\\>)"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -344,6 +430,12 @@ fn a_link_destination_escapes_its_backslashes() {
 
     faithful_cases.extend([Case {
         id: "a_link_destination_escapes_its_backslashes_case_15",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"a%5C(b\">x</a></p>\n",
+            reason: "the root link or image gains a paragraph and destination backslashes are percent-encoded",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="a\(b">x</a>"#,
         expected_markdown: Some(r"[x](a\\\(b)"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -365,6 +457,12 @@ fn a_link_title_escapes_its_backslashes() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "a_link_title_escapes_its_backslashes_case_16",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"x\" title=\"a\\\">t</a></p>\n",
+            reason: "CommonMark wraps the root link or image in a paragraph",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="x" title="a\">t</a>"#,
         expected_markdown: Some(r#"[t](x "a\\")"#),
         ..Case::default()
@@ -375,6 +473,12 @@ fn a_link_title_escapes_its_backslashes() {
 
     faithful_cases.extend([Case {
         id: "a_link_title_escapes_its_backslashes_case_17",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"x\" title=\"a\\*b\">t</a></p>\n",
+            reason: "CommonMark wraps the root link or image in a paragraph",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="x" title="a\*b">t</a>"#,
         expected_markdown: Some(r#"[t](x "a\\*b")"#),
         ..Case::default()
@@ -382,6 +486,12 @@ fn a_link_title_escapes_its_backslashes() {
 
     faithful_cases.extend([Case {
         id: "a_link_title_escapes_its_backslashes_case_18",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><img src=\"i\" alt=\"q\" title=\"a\\\" /></p>\n",
+            reason: "CommonMark wraps the root link or image in a paragraph",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<img src="i" alt="q" title="a\">"#,
         expected_markdown: Some(r#"![q](i "a\\")"#),
         ..Case::default()
@@ -417,6 +527,12 @@ fn an_image_alt_escapes_its_markdown_specials() {
 
     faithful_cases.extend([Case {
         id: "an_image_alt_escapes_its_markdown_specials_case_20",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><img src=\"x\" alt=\"a[b\" /></p>\n",
+            reason: "CommonMark wraps the root image in a paragraph",
+            reference: "translation_approach.md#images",
+        }),
         html: r#"<img src="x" alt="a[b">"#,
         expected_markdown: Some(r"![a\[b](x)"),
         ..Case::default()
@@ -424,6 +540,12 @@ fn an_image_alt_escapes_its_markdown_specials() {
 
     faithful_cases.extend([Case {
         id: "an_image_alt_escapes_its_markdown_specials_case_21",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><img src=\"x\" alt=\"a\\b*c_d`e$f\" /></p>\n",
+            reason: "CommonMark wraps the root image in a paragraph",
+            reference: "translation_approach.md#images",
+        }),
         html: r#"<img src="x" alt="a\b*c_d`e$f">"#,
         expected_markdown: Some(r"![a\\b\*c\_d\`e\$f](x)"),
         ..Case::default()
@@ -463,6 +585,12 @@ fn an_image_alt_escapes_its_raw_html() {
 
     faithful_cases.extend([Case {
         id: "an_image_alt_escapes_its_raw_html_case_23",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><img src=\"x\" alt=\"a &lt; b\" /></p>\n",
+            reason: "CommonMark wraps the root image in a paragraph",
+            reference: "translation_approach.md#images",
+        }),
         html: r#"<img src="x" alt="a < b">"#,
         expected_markdown: Some("![a < b](x)"),
         ..Case::default()
@@ -500,6 +628,12 @@ fn a_bracketed_link_destination_escapes_its_angle_brackets() {
 
     faithful_cases.extend([Case {
         id: "a_bracketed_link_destination_escapes_its_angle_brackets_case_25",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><img src=\"a%20b%3Cc\" alt=\"q\" /></p>\n",
+            reason: "the root image gains a paragraph and its destination angle bracket is percent-encoded",
+            reference: "translation_approach.md#images",
+        }),
         html: r#"<img src="a b<c" alt="q">"#,
         expected_markdown: Some(r"![q](<a b\<c>)"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -524,6 +658,12 @@ fn an_autolink_spells_its_destination_without_escapes() {
     let mut faithful_cases = Vec::new();
     faithful_cases.extend([Case {
         id: "an_autolink_spells_its_destination_without_escapes_case_1_autolinks",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"https://example.com/a%5Cb\">https://example.com/a\\b</a></p>\n",
+            reason: "the root autolink gains a paragraph and its destination backslash is percent-encoded",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="https://example.com/a\b">https://example.com/a\b</a>"#,
         expected_markdown: Some(r"<https://example.com/a\b>"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -567,6 +707,12 @@ fn an_autolink_needs_every_condition() {
     // No autolink can hold a `<`.
     faithful_cases.extend([Case {
         id: "an_autolink_needs_every_condition_case_3_autolinks",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"https://example.com/a%3Cb\">https://example.com/a&lt;b</a></p>\n",
+            reason: "the root link gains a paragraph and pulldown-cmark may percent-encode its destination",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="https://example.com/a<b">https://example.com/a&lt;b</a>"#,
         expected_markdown: Some(r"[https://example.com/a\<b](https://example.com/a<b)"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -583,6 +729,12 @@ fn an_autolink_needs_every_condition() {
     // An autolink would write a `&` as `&amp;`.
     faithful_cases.extend([Case {
         id: "an_autolink_needs_every_condition_case_4_autolinks",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"https://example.com/?a&amp;b\">https://example.com/?a&amp;b</a></p>\n",
+            reason: "the root link gains a paragraph and pulldown-cmark may percent-encode its destination",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="https://example.com/?a&amp;b">https://example.com/?a&amp;b</a>"#,
         expected_markdown: Some(r"[https://example.com/?a\&b](https://example.com/?a\&b)"),
         htmd_options: Options {
@@ -594,6 +746,12 @@ fn an_autolink_needs_every_condition() {
     // An autolink can't hold a title.
     faithful_cases.extend([Case {
         id: "an_autolink_needs_every_condition_case_5_autolinks",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"https://example.com\" title=\"t\">https://example.com</a></p>\n",
+            reason: "the root link gains a paragraph and pulldown-cmark may percent-encode its destination",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="https://example.com" title="t">https://example.com</a>"#,
         expected_markdown: Some(r#"[https://example.com](https://example.com "t")"#),
         htmd_options: Options {
@@ -605,6 +763,12 @@ fn an_autolink_needs_every_condition() {
     // The content must be a single text node.
     faithful_cases.extend([Case {
         id: "an_autolink_needs_every_condition_case_6_autolinks",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"https://example.com\"><em>https://example.com</em></a></p>\n",
+            reason: "the root link gains a paragraph and pulldown-cmark may percent-encode its destination",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="https://example.com"><em>https://example.com</em></a>"#,
         expected_markdown: Some("[*https://example.com*](https://example.com)"),
         htmd_options: Options {
@@ -618,6 +782,12 @@ fn an_autolink_needs_every_condition() {
 
     faithful_cases.extend([Case {
         id: "an_autolink_needs_every_condition_case_7_autolinks",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"a/b\">a/b</a></p>\n",
+            reason: "the root link gains a paragraph and pulldown-cmark may percent-encode its destination",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="a/b">a/b</a>"#,
         expected_markdown: Some("[a/b](a/b)"),
         htmd_options: Options {
@@ -630,6 +800,12 @@ fn an_autolink_needs_every_condition() {
 
     faithful_cases.extend([Case {
         id: "an_autolink_needs_every_condition_case_8_autolinks",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"a:b\">a:b</a></p>\n",
+            reason: "the root link gains a paragraph and pulldown-cmark may percent-encode its destination",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="a:b">a:b</a>"#,
         expected_markdown: Some("[a:b](a:b)"),
         htmd_options: Options {
@@ -653,6 +829,12 @@ fn an_autolink_needs_every_condition() {
 fn a_referenced_link_destination_brackets_its_spaces() {
     check_cases(&[Case {
         id: "a_referenced_link_destination_brackets_its_spaces_case_9_referenced",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"a%20b\">t</a></p>\n",
+            reason: "the root link gains a paragraph and its destination space is percent-encoded",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="a b">t</a>"#,
         expected_markdown: Some("[t][1]\n\n[1]: <a b>"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -700,6 +882,7 @@ fn a_bang_before_a_link_is_escaped() {
 
     faithful_cases.extend([Case {
         id: "a_bang_before_a_link_is_escaped_case_27",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p>\!<a href="x">t</a></p>"#,
         expected_markdown: Some(r"\\\![t](x)"),
         ..Case::default()
@@ -708,6 +891,7 @@ fn a_bang_before_a_link_is_escaped() {
 
     faithful_cases.extend([Case {
         id: "a_bang_before_a_link_is_escaped_case_28",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p>Hi! <a href="x">t</a></p>"#,
         expected_markdown: Some("Hi! [t](x)"),
         ..Case::default()
@@ -715,6 +899,7 @@ fn a_bang_before_a_link_is_escaped() {
 
     faithful_cases.extend([Case {
         id: "a_bang_before_a_link_is_escaped_case_29",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><img src="i" alt="a"><img src="j" alt="b"></p>"#,
         expected_markdown: Some("![a](i)![b](j)"),
         ..Case::default()
@@ -759,6 +944,12 @@ fn a_link_escapes_its_ampersands() {
 
     faithful_cases.extend([Case {
         id: "a_link_escapes_its_ampersands_case_10_referenced",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"a&amp;b\">t</a></p>\n",
+            reason: "CommonMark wraps the root referenced link in a paragraph",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="a&amp;b">t</a>"#,
         expected_markdown: Some(
             r"[t][1]
@@ -828,6 +1019,12 @@ fn a_link_destination_takes_pointy_brackets_where_needed() {
 
     faithful_cases.extend([Case {
         id: "a_link_destination_takes_pointy_brackets_where_needed_case_11_referenced",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"\">t</a></p>\n",
+            reason: "CommonMark wraps the root link or image in a paragraph",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="">t</a>"#,
         expected_markdown: Some("[t][1]\n\n[1]: <>"),
         htmd_options: Options {
@@ -896,6 +1093,12 @@ fn a_link_destination_takes_pointy_brackets_where_needed() {
 
     faithful_cases.extend([Case {
         id: "a_link_destination_takes_pointy_brackets_where_needed_case_38",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><img src=\"\" alt=\"q\" /></p>\n",
+            reason: "CommonMark wraps the root link or image in a paragraph",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<img src="" alt="q">"#,
         expected_markdown: Some("![q](<>)"),
         ..Case::default()
@@ -938,6 +1141,12 @@ fn link_text_encodes_its_line_endings() {
 
     faithful_cases.extend([Case {
         id: "link_text_encodes_its_line_endings_case_12_referenced",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><a href=\"x\"><p>a</p><p>b</p></a></p>\n",
+            reason: "line endings in referenced link text render as paragraphs inside the raw anchor",
+            reference: "translation_approach.md#links",
+        }),
         html: r#"<a href="x"><p>a</p><p>b</p></a>"#,
         expected_markdown: Some("[<p>a</p><p>b</p>][1]\n\n[1]: x"),
         stability: StabilityExpectation::DocumentedInstability {
@@ -965,6 +1174,12 @@ fn link_text_encodes_its_line_endings() {
 fn an_image_is_inline_in_the_referenced_style() {
     check_cases(&[Case {
         id: "an_image_is_inline_in_the_referenced_style_case_13_referenced",
+        expectation: Some(HtmlExpectation::DocumentedDifference {
+            kind: DifferenceKind::Loss,
+            expected_html: "<p><img src=\"i\" alt=\"a\" title=\"t\" /></p>\n",
+            reason: "CommonMark wraps the root image in a paragraph",
+            reference: "translation_approach.md#images",
+        }),
         html: r#"<img src="i" alt="a" title="t">"#,
         expected_markdown: Some(r#"![a](i "t")"#),
         htmd_options: Options {
@@ -1003,6 +1218,7 @@ fn a_link_keeps_the_whitespace_around_its_text() {
 
     faithful_cases.extend([Case {
         id: "a_link_keeps_the_whitespace_around_its_text_case_41",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p>Hi! <a href="x"> t</a></p>"#,
         expected_markdown: Some("Hi! [ t](x)"),
         ..Case::default()
@@ -1010,6 +1226,7 @@ fn a_link_keeps_the_whitespace_around_its_text() {
 
     faithful_cases.extend([Case {
         id: "a_link_keeps_the_whitespace_around_its_text_case_42",
+        expectation: Some(HtmlExpectation::Preserved),
         html: r#"<p><a href="x">t </a>now</p>"#,
         expected_markdown: Some("[t ](x)now"),
         ..Case::default()
