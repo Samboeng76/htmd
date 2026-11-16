@@ -459,76 +459,65 @@ GitHub userid: Samboeng76
 
 #### Contributions
 
-Refined implementation. A large part of this was identifying missed migrations
-from the inventory.
+Implemented the migration of the existing tests to the common case format and
+refined it, largely by finding cases the inventory had missed.
 
 #### Specification review rounds
 
-No final-stage rounds are recorded here yet.
-
-Testing Standardization Implementation:
-
-| Round | Findings | Main changes made                                                                                                                                                                                                              |
-| ----- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1     | 3        | Fixed some implementation errors                                                                                                                                                                                               |
-| 2     | 3        | Documented the root-link round-trip loss, grouped test cases with descriptive IDs, and corrected the migration inventory links.                                                                                                |
-| 3     | 4        | Documented list and link/image round-trip limitations, removed duplicate Faithful assertions, added an exact HTML expectation for the ordered-list loss, and recorded generated cases individually in the migration inventory. |
-| 4     | N\\A     | Merged PR feedback into implemntation branch and updated implementation accordingly                                                                                                                                            |
-| 5     | 2        | Added HTML expectations for link and image URLs containing spaces; corrected case classifications and source links in the migration inventory.                                                                                 |
-| 6     | 3        | Added HTML preservation checks for 29 Faithful cases, limited smart punctuation overrides to affected fixtures, and corrected migration inventory links and classifications.                                                   |
-| 7     | 1        | Added HTML preservation checks for the original headings, paragraphs, and consecutive blocks cases; updated their migration inventory classifications and links.                                                               |
-| 8     | 2        | Fixed more missed migrations                                                                                                                                                                                                   |
+Section 2 was reviewed together with its implementation in the rounds below;
+there were no separate final-stage specification-only rounds.
 
 #### Last specification review
 
-The prompt used was "review the migration of existing tests section of spec.md
-along with its corresponding implementation" with GPT-6 sol on extra high:
-
-Review findings
-
-* P1 — An unapproved code-whitespace loss is now treated as expected. The new
-  fixture in \[code\_tests.rs (line 35)\](/C:/Users/tmsse/OneDrive/Family
-  Files/Desktop/Literate
-  Programming/htmd\_sbe80Fork/htmd/tests/code\_tests.rs:35) accepts an added
-  newline inside `. [code.rs (line 62)](/C:/Users/tmsse/OneDrive/Family
-  Files/Desktop/Literate
-  Programming/htmd_sbe80Fork/htmd/src/element_handler/code.rs:62) produces it
-  when the input has no terminal newline. The cited [translation rule (line
-  240)](/C:/Users/tmsse/OneDrive/Family Files/Desktop/Literate
-  Programming/htmd_sbe80Fork/htmd/translation_approach.md:240) calls code
-  content literal but does not approve this loss. Under [spec.md (line
-  169)](/C:/Users/tmsse/OneDrive/Family Files/Desktop/Literate
-  Programming/htmd_sbe80Fork/htmd/spec.md:169), this needs a converter fix or an
-  independently approved exception before it is recorded as a
-  DocumentedDifference.`
-
-P2 — The generated inline/block cases use a reference that does not
-support their loss classification. All 144 cases in \[blocks\_inside\_inlines
-(line 1014)\](/C:/Users/tmsse/OneDrive/Family Files/Desktop/Literate
-Programming/htmd\_sbe80Fork/htmd/tests/translation\_approach\_tests.rs:1014)
-cite “Translating HTML nodes” for exact rendered HTML attributed partly to
-parser repair. That rule describes how htmd emits the nodes; it does not
-document those parser repairs or approve every resulting loss. The cases need
-references to the applicable approved rule or normative parsing rule, as
-\[spec.md (line 169)\](/C:/Users/tmsse/OneDrive/Family Files/Desktop/Literate
-Programming/htmd\_sbe80Fork/htmd/spec.md:169) requires. No files were changed.
-cargo build, cargo clippy -- --deny warnings, cargo test, and cargo run
---example simple all passed.
-
-Both of these findings are handled by the inventory.
+See the last implementation review below, whose prompt covers both Section 2
+and its implementation.
 
 #### Implementation review rounds
 
-The proposed implementation has not been completed in this documentation
-revision.
-
-| Round | Findings | Main changes made |
-| ----- | -------- | ----------------- |
+| Round | Findings | Main changes made                                                                                                                                                                                                              |
+| ----- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1     | 3        | Fixed some implementation errors.                                                                                                                                                                                              |
+| 2     | 3        | Documented the root-link round-trip loss, grouped test cases with descriptive IDs, and corrected the migration inventory links.                                                                                                |
+| 3     | 4        | Documented list and link/image round-trip limitations, removed duplicate Faithful assertions, added an exact HTML expectation for the ordered-list loss, and recorded generated cases individually in the migration inventory. |
+| 4     | N/A      | Merged the PR feedback into the implementation branch and updated the implementation accordingly.                                                                                                                              |
+| 5     | 2        | Added HTML expectations for link and image URLs containing spaces; corrected case classifications and source links in the migration inventory.                                                                                 |
+| 6     | 3        | Added HTML preservation checks for 29 Faithful cases, limited smart punctuation overrides to affected fixtures, and corrected migration inventory links and classifications.                                                   |
+| 7     | 1        | Added HTML preservation checks for the original headings, paragraphs, and consecutive blocks cases; updated their migration inventory classifications and links.                                                               |
+| 8     | 2        | Fixed more missed migrations.                                                                                                                                                                                                  |
 
 #### Last implementation review
 
-The implementation owner will add the actual model, prompt, and last review
-output after implementation and repeated review.
+**Model:** GPT-6 Sol, Extra High.
+
+**Prompt:**
+
+```text
+review the migration of existing tests section of spec.md along with its corresponding implementation
+```
+
+**Final output, verbatim** (links to local files are reduced to their text):
+
+> Review findings
+>
+> * P1 — An unapproved code-whitespace loss is now treated as expected. The new
+>   fixture in code\_tests.rs (line 35) accepts an added newline inside
+>   `<code>`. code.rs (line 62) produces it when the input has no terminal
+>   newline. The cited translation rule (line 240) calls code content literal
+>   but does not approve this loss. Under spec.md (line 169), this needs a
+>   converter fix or an independently approved exception before it is recorded
+>   as a DocumentedDifference.
+> * P2 — The generated inline/block cases use a reference that does not
+>   support their loss classification. All 144 cases in blocks\_inside\_inlines
+>   (line 1014) cite “Translating HTML nodes” for exact rendered HTML attributed
+>   partly to parser repair. That rule describes how htmd emits the nodes; it
+>   does not document those parser repairs or approve every resulting loss. The
+>   cases need references to the applicable approved rule or normative parsing
+>   rule, as spec.md (line 169) requires.
+>
+> No files were changed. cargo build, cargo clippy -- --deny warnings, cargo
+> test, and cargo run --example simple all passed.
+
+Both of these findings are handled by the inventory.
 
 ### Alibek Baisholanov
 
@@ -713,7 +702,7 @@ Instructor feedback and provenance
 | `Options::all()` by default               | Updated the case format, migration guidance, and runner strategy; explicit flag overrides remain possible.                                               |
 | Separate mandatory case ID is unnecessary | Use the test function name, plus a table row number or optional label for diagnostics.                                                                   |
 | HTML comparison was too strict            | Permit ASCII text-whitespace collapse and block formatting; preserve code/pre text, inline word separation, NBSP, structure, and attribute/comment data. |
-| Verify each member's environment          | Recorded Alibek's measured checks and Yuriy/Kamila's confirmed local results; Sam's own verification remains for him to add.                             |
+| Verify each member's environment          | Recorded Alibek's measured checks and Sam's, Yuriy's and Kamila's confirmed local results.                                                               |
 
 Source records are retained in Git history:
 
